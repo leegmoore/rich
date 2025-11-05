@@ -1,0 +1,60 @@
+===== COPY THIS INTO FRESH CLAUDE CODE WEB SESSION FOR PHASE 4 =====
+
+ROLE: You are a TypeScript developer porting the Rich Python library to TypeScript.
+
+PROJECT: Rich is a popular Python library for beautiful terminal formatting (colors, tables, progress bars, etc.). We're porting core features to TypeScript for Node.js and browser use.
+
+STRATEGY: Test-Driven Development - port Python tests to TypeScript first, then implement code to pass tests. Use a stateless log system to track progress across sessions.
+
+CURRENT PHASE: Phase 4 - Simple Formatting (3 modules: padding, rule, columns)
+
+PHASE 1 STATUS: ✅ COMPLETE (39/39 tests passing)
+PHASE 2 STATUS: ✅ COMPLETE (69/71 tests passing)
+PHASE 3 STATUS: ✅ COMPLETE (measure, text, console done)
+
+NOTE: Workspace is repo root (where .git lives)
+(TypeScript port is in the rich-ts/ subdirectory)
+
+FIRST: Read these logs to understand status (all in rich-ts/):
+- Read rich-ts/PORT_LOG_MASTER.md
+- Read rich-ts/phases/phase4/PORT_LOG_PADDING.md
+- Read rich-ts/phases/phase4/PORT_LOG_RULE.md
+- Read rich-ts/phases/phase4/PORT_LOG_COLUMNS.md
+- Read rich-ts/KNOWN_BUGS.md
+
+THEN: Read full instructions in rich-ts/phases/phase4/PROMPT_PHASE4.md
+
+TASK: Port all Phase 4 modules (padding, rule, columns) using Test-Driven Development:
+1. Read Python source: rich/[MODULE].py
+2. Read Python tests: tests/test_[MODULE].py
+3. Create rich-ts/tests/[MODULE].test.ts - port ALL tests to TypeScript/Vitest
+4. Run tests (should fail): cd rich-ts && npm test
+5. Create rich-ts/src/[MODULE].ts - implement until tests pass
+6. Run all checks: npm run check (format + typecheck + lint + tests - must pass!)
+7. Commit and push: git add -A && git commit -m "Port [MODULE] module" && git push
+8. Update rich-ts/phases/phase4/PORT_LOG_[MODULE].md and rich-ts/PORT_LOG_MASTER.md
+9. If bugs found: add to KNOWN_BUGS.md (don't fix unless critical)
+
+ORDER: Any order - all have same dependencies (console, measure, text from Phase 3)
+
+MODULES:
+- padding (~100 LOC, ~11 tests) - Add padding/margins around renderables
+- rule (~130 LOC, ~7 tests) - Horizontal lines with optional titles
+- columns (~130 LOC, ~6 tests) - Multi-column layouts
+
+THESE ARE SIMPLE MODULES - Quick wins to build momentum!
+
+DEV STANDARDS:
+- Use npm (not pnpm/bun) for consistency
+- TypeScript strict mode (no 'any' types allowed)
+- Prettier handles ALL formatting (single quotes, 100 char width)
+- ESLint for code quality ONLY (not formatting)
+- 'npm run check' runs: format → typecheck → lint → test
+- Write clear, descriptive variable names (no abbreviations)
+- Add JSDoc comments for public APIs
+- Use nullish coalescing (??) and optional chaining (?.) where appropriate
+
+GO!
+
+============================================================
+
