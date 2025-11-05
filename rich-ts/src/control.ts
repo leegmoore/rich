@@ -76,7 +76,11 @@ export class Control {
     const renderedCodes = controlCodes
       .map((code) => {
         const [type, ...parameters] = code;
-        return CONTROL_CODES_FORMAT[type](...parameters);
+        const formatFn = CONTROL_CODES_FORMAT[type];
+        // Parameters can be numbers or strings depending on control type
+        // We need to use any here because TypeScript can't properly type this union
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
+        return (formatFn as any)(...parameters);
       })
       .join('');
 
