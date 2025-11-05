@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { Span, Text } from '../src/text';
 import { Style } from '../src/style';
+import { Console } from '../src/console';
+import { Measurement } from '../src/measure';
 
 describe('Span', () => {
   it('test_span', () => {
@@ -305,17 +307,16 @@ describe('Text', () => {
     expect(text.equals(expected)).toBe(true);
   });
 
-  // TODO: Requires Console - defer until console ported
-  it.skip('test_console_width', () => {
-    // const console = new Console();
-    // const text = new Text('Hello World!\nfoobarbaz');
-    // expect(text.__richMeasure__(console, 80)).toEqual(new Measurement(9, 12));
-    // expect(new Text(' '.repeat(4)).__richMeasure__(console, 80)).toEqual(
-    //   new Measurement(4, 4)
-    // );
-    // expect(new Text(' \n  \n   ').__richMeasure__(console, 80)).toEqual(
-    //   new Measurement(3, 3)
-    // );
+  it('test_console_width', () => {
+    const console = new Console();
+    const text = new Text('Hello World!\nfoobarbaz');
+    expect(text.__richMeasure__(console, console.options)).toEqual(new Measurement(9, 12));
+    expect(new Text(' '.repeat(4)).__richMeasure__(console, console.options)).toEqual(
+      new Measurement(4, 4)
+    );
+    expect(new Text(' \n  \n   ').__richMeasure__(console, console.options)).toEqual(
+      new Measurement(3, 3)
+    );
   });
 
   it('test_join', () => {

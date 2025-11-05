@@ -21,16 +21,11 @@ import { cellLen, setCellSize } from './cells';
 import { stripControlCodes } from './control';
 // TODO: import { EmojiVariant } from './emoji';
 // TODO: import { JupyterMixin } from './jupyter';
-// import { Measurement } from './measure';
+import { Measurement } from './measure';
 import { Segment } from './segment';
 import { Style, StyleType } from './style';
 
-// TODO: Import these types when console module is ported
-// import type { Console, ConsoleOptions, JustifyMethod, OverflowMethod } from './console';
-
-// Placeholder types until console module is ported
-export type JustifyMethod = 'default' | 'left' | 'center' | 'right' | 'full';
-export type OverflowMethod = 'fold' | 'crop' | 'ellipsis' | 'ignore';
+import type { Console, ConsoleOptions, JustifyMethod, OverflowMethod } from './console';
 export type AlignMethod = 'left' | 'center' | 'right';
 
 const DEFAULT_JUSTIFY: JustifyMethod = 'default';
@@ -824,12 +819,26 @@ export class Text {
   // }
 
   /**
-   * Rich measure method.
-   * TODO: Requires Console and ConsoleOptions types.
+   * Rich measure method - returns the minimum and maximum widths of the text.
+   * Minimum is based on the longest word, maximum is based on the longest line.
    */
-  // __richMeasure__(console: Console, options: ConsoleOptions): Measurement {
-  //   // TODO: Implement when console module is ported
-  // }
+  __richMeasure__(_console: Console, _options: ConsoleOptions): Measurement {
+    const text = this.plain;
+    const lines = text.split('\n');
+
+    // Maximum is the longest line
+    const maxTextWidth = lines.length > 0
+      ? Math.max(...lines.map(line => cellLen(line)))
+      : 0;
+
+    // Minimum is the longest word (split by whitespace)
+    const words = text.split(/\s+/).filter(word => word.length > 0);
+    const minTextWidth = words.length > 0
+      ? Math.max(...words.map(word => cellLen(word)))
+      : maxTextWidth;
+
+    return new Measurement(minTextWidth, maxTextWidth);
+  }
 
   /**
    * Render the text as Segments.
