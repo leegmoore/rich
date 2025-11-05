@@ -8,12 +8,7 @@
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 
 import { Style } from './style';
-import {
-  cellLen,
-  getCharacterCellSize,
-  setCellSize,
-  isSingleCellWidths,
-} from './cells';
+import { cellLen, getCharacterCellSize, setCellSize, isSingleCellWidths } from './cells';
 
 /**
  * Non-printable control codes which typically translate to ANSI codes.
@@ -53,7 +48,7 @@ export class Segment {
   constructor(
     public readonly text: string,
     public readonly style?: Style,
-    public readonly control?: ReadonlyArray<ControlCode>,
+    public readonly control?: ReadonlyArray<ControlCode>
   ) {}
 
   /**
@@ -133,10 +128,7 @@ export class Segment {
       const outBy = cellPos - cut;
 
       if (outBy === 0) {
-        return [
-          new Segment(before, style, control),
-          new Segment(text.slice(pos), style, control),
-        ];
+        return [new Segment(before, style, control), new Segment(text.slice(pos), style, control)];
       }
 
       if (outBy === -1 && getCharacterCellSize(text[pos]!) === 2) {
@@ -175,7 +167,7 @@ export class Segment {
   static applyStyle(
     segments: Iterable<Segment>,
     style?: Style,
-    postStyle?: Style,
+    postStyle?: Style
   ): Iterable<Segment> {
     let resultSegments = segments;
 
@@ -187,7 +179,7 @@ export class Segment {
           yield new Segment(
             segment.text,
             segment.control ? undefined : apply(segment.style),
-            segment.control,
+            segment.control
           );
         }
       })();
@@ -199,12 +191,8 @@ export class Segment {
         for (const segment of inputSegments) {
           yield new Segment(
             segment.text,
+            segment.control ? undefined : segment.style ? segment.style.add(postStyle) : postStyle,
             segment.control
-              ? undefined
-              : segment.style
-                ? segment.style.add(postStyle)
-                : postStyle,
-            segment.control,
           );
         }
       })();
@@ -283,7 +271,7 @@ export class Segment {
     length: number,
     style?: Style,
     pad: boolean = true,
-    includeNewLines: boolean = true,
+    includeNewLines: boolean = true
   ): Iterable<Segment[]> {
     let line: Segment[] = [];
     const newLineSegment = new Segment('\n');
@@ -332,7 +320,7 @@ export class Segment {
     line: Segment[],
     length: number,
     style?: Style,
-    pad: boolean = true,
+    pad: boolean = true
   ): Segment[] {
     const lineLength = line.reduce((sum, seg) => sum + seg.cellLength, 0);
 
@@ -389,7 +377,7 @@ export class Segment {
     width: number,
     height?: number,
     style?: Style,
-    newLines: boolean = false,
+    newLines: boolean = false
   ): Segment[][] {
     const targetHeight = height ?? lines.length;
     const blank = newLines
@@ -416,14 +404,16 @@ export class Segment {
     width: number,
     height: number,
     style: Style,
-    newLines: boolean = false,
+    newLines: boolean = false
   ): Segment[][] {
     const extraLines = height - lines.length;
     if (extraLines === 0) {
       return [...lines];
     }
     const truncatedLines = lines.slice(0, height);
-    const blank = newLines ? new Segment(' '.repeat(width) + '\n', style) : new Segment(' '.repeat(width), style);
+    const blank = newLines
+      ? new Segment(' '.repeat(width) + '\n', style)
+      : new Segment(' '.repeat(width), style);
     const blankLines = Array(extraLines).fill([blank]);
     return [...truncatedLines, ...blankLines];
   }
@@ -436,14 +426,16 @@ export class Segment {
     width: number,
     height: number,
     style: Style,
-    newLines: boolean = false,
+    newLines: boolean = false
   ): Segment[][] {
     const extraLines = height - lines.length;
     if (extraLines === 0) {
       return [...lines];
     }
     const truncatedLines = lines.slice(0, height);
-    const blank = newLines ? new Segment(' '.repeat(width) + '\n', style) : new Segment(' '.repeat(width), style);
+    const blank = newLines
+      ? new Segment(' '.repeat(width) + '\n', style)
+      : new Segment(' '.repeat(width), style);
     const blankLines = Array(extraLines).fill([blank]);
     return [...blankLines, ...truncatedLines];
   }
@@ -456,14 +448,16 @@ export class Segment {
     width: number,
     height: number,
     style: Style,
-    newLines: boolean = false,
+    newLines: boolean = false
   ): Segment[][] {
     const extraLines = height - lines.length;
     if (extraLines === 0) {
       return [...lines];
     }
     const truncatedLines = lines.slice(0, height);
-    const blank = newLines ? new Segment(' '.repeat(width) + '\n', style) : new Segment(' '.repeat(width), style);
+    const blank = newLines
+      ? new Segment(' '.repeat(width) + '\n', style)
+      : new Segment(' '.repeat(width), style);
     const topLines = Math.floor(extraLines / 2);
     const bottomLines = extraLines - topLines;
     const topBlankLines = Array(topLines).fill([blank]);

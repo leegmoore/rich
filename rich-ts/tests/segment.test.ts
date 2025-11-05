@@ -34,9 +34,7 @@ describe('Segment', () => {
 
   it('test_split_and_crop_lines', () => {
     expect(
-      Array.from(
-        Segment.splitAndCropLines([new Segment('Hello\nWorld!\n'), new Segment('foo')], 4),
-      ),
+      Array.from(Segment.splitAndCropLines([new Segment('Hello\nWorld!\n'), new Segment('foo')], 4))
     ).toEqual([
       [new Segment('Hell'), new Segment('\n', undefined)],
       [new Segment('Worl'), new Segment('\n', undefined)],
@@ -52,10 +50,7 @@ describe('Segment', () => {
     ]);
 
     line = [new Segment('H'), new Segment('ello, World!')];
-    expect(Segment.adjustLineLength(line, 5)).toEqual([
-      new Segment('H'),
-      new Segment('ello'),
-    ]);
+    expect(Segment.adjustLineLength(line, 5)).toEqual([new Segment('H'), new Segment('ello')]);
 
     line = [new Segment('Hello')];
     expect(Segment.adjustLineLength(line, 5)).toEqual(line);
@@ -82,7 +77,7 @@ describe('Segment', () => {
 
   it('test_simplify', () => {
     expect(
-      Array.from(Segment.simplify([new Segment('Hello'), new Segment(' '), new Segment('World!')])),
+      Array.from(Segment.simplify([new Segment('Hello'), new Segment(' '), new Segment('World!')]))
     ).toEqual([new Segment('Hello World!')]);
     expect(
       Array.from(
@@ -90,8 +85,8 @@ describe('Segment', () => {
           new Segment('Hello', 'red' as any),
           new Segment(' ', 'red' as any),
           new Segment('World!', 'blue' as any),
-        ]),
-      ),
+        ])
+      )
     ).toEqual([new Segment('Hello ', 'red' as any), new Segment('World!', 'blue' as any)]);
     expect(Array.from(Segment.simplify([]))).toEqual([]);
   });
@@ -134,7 +129,7 @@ describe('Segment', () => {
     expect(new Segment('foo', new Style({ bold: true })).isControl).toBe(false);
     expect(new Segment('foo', new Style({ bold: true }), []).isControl).toBe(true);
     expect(new Segment('foo', new Style({ bold: true }), [[ControlType.HOME, 0]]).isControl).toBe(
-      true,
+      true
     );
   });
 
@@ -318,16 +313,14 @@ describe('Segment', () => {
     ]);
 
     const segmentLinesWithNewLines = new SegmentLines(lines, true);
-    expect(Array.from(segmentLinesWithNewLines.__richConsole__(null as any, null as any))).toEqual(
-      [
-        new Segment('hello'),
-        new Segment(' '),
-        new Segment('world'),
-        new Segment('\n'),
-        new Segment('foo'),
-        new Segment('\n'),
-      ],
-    );
+    expect(Array.from(segmentLinesWithNewLines.__richConsole__(null as any, null as any))).toEqual([
+      new Segment('hello'),
+      new Segment(' '),
+      new Segment('world'),
+      new Segment('\n'),
+      new Segment('foo'),
+      new Segment('\n'),
+    ]);
   });
 
   it('test_align_top', () => {
