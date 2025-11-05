@@ -14,7 +14,9 @@
  * - [key, value] (named argument)
  * - [key, value, default] (named argument with default)
  */
-export type Result = Array<any | [any] | [null, any] | [string, any] | [string, any, any]>;
+export type Result = Array<
+  unknown | [unknown] | [null, unknown] | [string, unknown] | [string, unknown, unknown]
+>;
 
 /**
  * Alias for Result type
@@ -68,11 +70,14 @@ interface RichReprFunction {
  * @param options - Options for the decorator
  * @returns The decorated class with __repr__ method
  */
-export function auto<T extends new (...args: any[]) => any>(cls: T, options: AutoOptions = {}): T {
+export function auto<T extends new (...args: unknown[]) => unknown>(
+  cls: T,
+  options: AutoOptions = {},
+): T {
   const { angular = false } = options;
 
   // Create the __repr__ method
-  function autoRepr(this: any): string {
+  function autoRepr(this: RichReprProtocol): string {
     const reprStr: string[] = [];
 
     // Check if __rich_repr__ has angular property
@@ -127,7 +132,7 @@ export function auto<T extends new (...args: any[]) => any>(cls: T, options: Aut
 
   // Auto-generate __rich_repr__ if it doesn't exist
   if (!cls.prototype.__rich_repr__) {
-    function autoRichRepr(this: any): Result {
+    function autoRichRepr(this: Record<string, unknown>): Result {
       try {
         const result: Result = [];
 
@@ -175,7 +180,7 @@ export function auto<T extends new (...args: any[]) => any>(cls: T, options: Aut
 
             // Extract parameter name and default value
             let name: string;
-            let defaultValue: any = undefined;
+            let defaultValue: unknown = undefined;
 
             if (hasDefault) {
               const parts = paramStr.split('=');
@@ -257,9 +262,9 @@ export function auto<T extends new (...args: any[]) => any>(cls: T, options: Aut
  * Alias for auto decorator.
  * Class decorator to create __repr__ from __rich_repr__.
  */
-export function richRepr<T extends new (...args: any[]) => any>(
+export function richRepr<T extends new (...args: unknown[]) => unknown>(
   cls: T,
-  options: AutoOptions = {}
+  options: AutoOptions = {},
 ): T {
   return auto(cls, options);
 }
@@ -268,7 +273,7 @@ export function richRepr<T extends new (...args: any[]) => any>(
  * Format a value for repr output.
  * Similar to Python's repr() function.
  */
-function formatValue(value: any): string {
+function formatValue(value: unknown): string {
   if (value === null) {
     return 'null';
   }
@@ -284,10 +289,10 @@ function formatValue(value: any): string {
   if (Array.isArray(value)) {
     return `[${value.map(formatValue).join(', ')}]`;
   }
-  if (typeof value === 'object') {
+  if (typeof value === 'object' && value !== null) {
     // Check if object has __repr__ method
     if ('__repr__' in value && typeof value.__repr__ === 'function') {
-      return value.__repr__();
+      return (value.__repr__ as () => string)();
     }
     // Check if object has toString that's not the default
     const str = value.toString();
@@ -295,7 +300,10 @@ function formatValue(value: any): string {
       return str;
     }
     // Default object representation
-    return `${value.constructor.name}()`;
+    if ('constructor' in value && typeof value.constructor === 'function') {
+      return `${value.constructor.name}()`;
+    }
+    return '[object Object]';
   }
   return String(value);
 }
