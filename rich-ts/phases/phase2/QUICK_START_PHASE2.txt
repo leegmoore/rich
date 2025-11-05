@@ -1,20 +1,57 @@
-===== PHASE 2: PRIMITIVES LAYER =====
+===== COPY THIS INTO FRESH CLAUDE CODE WEB SESSION FOR PHASE 2 =====
 
-PREREQUISITES: Phase 1 must be merged to master
-Check: phases/phase1/STATUS.md
+ROLE: You are a TypeScript developer porting the Rich Python library to TypeScript.
 
-TASK: Port repr, control, style, segment modules
+PROJECT: Rich is a popular Python library for beautiful terminal formatting (colors, tables, progress bars, etc.). We're porting core features to TypeScript for Node.js and browser use.
+
+STRATEGY: Test-Driven Development - port Python tests to TypeScript first, then implement code to pass tests. Use a stateless log system to track progress across sessions.
+
+CURRENT PHASE: Phase 2 - Primitives Layer (4 modules, builds on Phase 1)
+
+PHASE 1 STATUS: ✅ COMPLETE (38/39 tests passing, 1 known bug tracked)
+
+NOTE: Workspace is repo root (where .git lives)
+(TypeScript port is in the rich-ts/ subdirectory)
+
+FIRST: Read these logs to understand status (all in rich-ts/):
+- Read rich-ts/PORT_LOG_MASTER.md
+- Read rich-ts/PORT_LOG_REPR.md
+- Read rich-ts/PORT_LOG_CONTROL.md
+- Read rich-ts/PORT_LOG_STYLE.md
+- Read rich-ts/PORT_LOG_SEGMENT.md
+- Read rich-ts/KNOWN_BUGS.md
+
+THEN: Read full instructions in rich-ts/PROMPT_PHASE2.md
+
+TASK: Port all Phase 2 modules (repr, control, style, segment) using Test-Driven Development:
+1. Read Python source: rich/[MODULE].py
+2. Read Python tests: tests/test_[MODULE].py
+3. Create rich-ts/tests/[MODULE].test.ts - port ALL tests to TypeScript/Vitest
+4. Run tests (should fail): cd rich-ts && npm test
+5. Create rich-ts/src/[MODULE].ts - implement until tests pass
+6. Run all checks: npm run check (format + typecheck + lint + tests - must pass!)
+7. Commit and push: git add -A && git commit -m "Port [MODULE] module" && git push
+8. Update rich-ts/PORT_LOG_[MODULE].md and rich-ts/PORT_LOG_MASTER.md
+9. If bugs found: add to KNOWN_BUGS.md (don't fix unless critical)
+
+START with repr or control (simplest, no dependencies), then style, then segment.
 
 ORDER:
-1. repr + control (can do in parallel, no deps)
-2. style (needs Phase 1: color, color_triplet, errors)
-3. segment (needs style + cells)
+- repr + control can be done in parallel (no dependencies)
+- style depends on Phase 1 modules (already complete)
+- segment depends on style (do last)
 
-Read full instructions: phases/phase2/PROMPT_PHASE2.md
-Read module logs: phases/phase2/PORT_LOG_*.md
-
-TDD Process:
-1. Port tests → 2. Implement → 3. npm run check → 4. Commit → 5. Update logs
+DEV STANDARDS:
+- Use npm (not pnpm/bun) for consistency
+- TypeScript strict mode (no 'any' types allowed)
+- Prettier handles ALL formatting (single quotes, 100 char width)
+- ESLint for code quality ONLY (not formatting)
+- 'npm run check' runs: format → typecheck → lint → test
+- Write clear, descriptive variable names (no abbreviations)
+- Add JSDoc comments for public APIs
+- Use nullish coalescing (??) and optional chaining (?.) where appropriate
 
 GO!
+
+============================================================
 
