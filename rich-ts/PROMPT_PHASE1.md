@@ -38,7 +38,9 @@ You're a TypeScript developer using Test-Driven Development (TDD) to port Python
 **Success Criteria:**
 - All 4 modules have TypeScript tests
 - All tests pass
-- All code follows TypeScript strict mode
+- All code follows TypeScript strict mode (no `any` types)
+- Code is formatted (Prettier) and linted (ESLint)
+- `npm run check` passes for all modules
 - Progress logged in PORT_LOG files
 - Code committed to git
 
@@ -60,7 +62,17 @@ I'm continuing the Rich TypeScript port. This is **Phase 1: Foundation Layer**.
 - Navigate to project: `cd rich`
 - Install dependencies: `cd rich-ts && npm install`
 
-### 3. Pick your target module(s):
+### 3. Development Standards:
+- **Package Manager:** npm (not pnpm/bun)
+- **TypeScript:** Strict mode, no `any` types
+- **Formatting:** Prettier (single quotes, 100 char width, 2 space indent)
+- **Linting:** ESLint with TypeScript rules
+- **Pre-commit:** Always run `npm run check` before committing
+- **Naming:** Clear, descriptive names (no abbreviations like `clr`, `txt`)
+- **Comments:** JSDoc for public APIs, inline comments for complex logic
+- **Imports:** Use named imports, group by external/internal
+
+### 4. Pick your target module(s):
 Based on logs, identify which Phase 1 modules are NOT_STARTED or IN_PROGRESS.
 
 **Phase 1 modules (no dependencies, can be done in parallel):**
@@ -97,12 +109,17 @@ Port all Phase 1 modules using Test-Driven Development:
 - Run tests frequently from rich-ts/: `npm test [MODULE]`
 - Continue until ALL tests pass
 
-### Step 4: Commit and Push
+### Step 4: Format and Lint
+- Format code: `npm run format`
+- Fix lint issues: `npm run lint:fix`
+- Run all checks: `npm run check` (must pass!)
+
+### Step 5: Commit and Push
 - Stage all changes: `git add -A`
 - Commit with message: `git commit -m "Port [MODULE] module with tests"`
 - Push to remote: `git push`
 
-### Step 5: Update Logs
+### Step 6: Update Logs
 - Update the module's PORT_LOG file (in rich-ts/) with:
   - Status change (IN_PROGRESS → TESTS_COMPLETE → DONE)
   - Test checklist updates

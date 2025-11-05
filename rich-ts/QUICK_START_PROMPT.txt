@@ -26,14 +26,25 @@ TASK: Port all Phase 1 modules (color_triplet, errors, cells, color) using Test-
 3. Create rich-ts/tests/[MODULE].test.ts - port ALL tests to TypeScript/Vitest
 4. Run tests (should fail): cd rich-ts && npm test
 5. Create rich-ts/src/[MODULE].ts - implement until tests pass
-6. Commit and push: git add -A && git commit -m "Port [MODULE] module" && git push
-7. Update rich-ts/PORT_LOG_[MODULE].md and rich-ts/PORT_LOG_MASTER.md
+6. Format & lint: npm run format && npm run lint:fix
+7. Run all checks: npm run check (typecheck + lint + format + tests)
+8. Commit and push: git add -A && git commit -m "Port [MODULE] module" && git push
+9. Update rich-ts/PORT_LOG_[MODULE].md and rich-ts/PORT_LOG_MASTER.md
 
 START with color_triplet (simplest), then errors, then cells, then color.
 
 First time setup:
 1. Clone repo: git clone https://github.com/leegmoore/rich.git
 2. Install dependencies: cd rich-ts && npm install
+
+DEV STANDARDS:
+- Use npm (not pnpm/bun) for consistency
+- TypeScript strict mode (no 'any' types)
+- Prettier for formatting (single quotes, 100 char width)
+- ESLint for code quality
+- Run 'npm run check' before every commit
+- Write clear, descriptive variable names (no abbreviations)
+- Add JSDoc comments for public APIs
 
 GO!
 
