@@ -1,6 +1,32 @@
 import { ColorTriplet } from './color_triplet';
 
 /**
+ * Convert RGB color to HLS (Hue, Lightness, Saturation).
+ * RGB values should be in range 0-1 (normalized).
+ * Returns [hue (0-360), lightness (0-1), saturation (0-1)]
+ */
+function rgbToHls(r: number, g: number, b: number): [number, number, number] {
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0;
+  const l = (max + min) / 2;
+  const s = max === min ? 0 : l <= 0.5 ? (max - min) / (max + min) : (max - min) / (2 - max - min);
+
+  if (max !== min) {
+    if (max === r) {
+      h = (g - b) / (max - min) + (g < b ? 6 : 0);
+    } else if (max === g) {
+      h = (b - r) / (max - min) + 2;
+    } else {
+      h = (r - g) / (max - min) + 4;
+    }
+    h /= 6;
+  }
+
+  return [h * 360, l, s];
+}
+
+/**
  * One of the 4 color systems supported by terminals.
  */
 export enum ColorSystem {
@@ -95,7 +121,29 @@ const WINDOWS_PALETTE = new Palette([
 ]);
 
 // Standard ANSI palette (16 colors)
+// Used for downgrade matching - from Python Rich STANDARD_PALETTE
 const STANDARD_PALETTE = new Palette([
+  [0, 0, 0],
+  [170, 0, 0],
+  [0, 170, 0],
+  [170, 85, 0],
+  [0, 0, 170],
+  [170, 0, 170],
+  [0, 170, 170],
+  [170, 170, 170],
+  [85, 85, 85],
+  [255, 85, 85],
+  [85, 255, 85],
+  [255, 255, 85],
+  [85, 85, 255],
+  [255, 85, 255],
+  [85, 255, 255],
+  [255, 255, 255],
+]);
+
+// Default terminal theme ANSI colors (16 colors)
+// Used for getTruecolor() - from Python Rich DEFAULT_TERMINAL_THEME
+const DEFAULT_TERMINAL_THEME_ANSI_COLORS = new Palette([
   [0, 0, 0],
   [128, 0, 0],
   [0, 128, 0],
@@ -721,7 +769,7 @@ export class Color {
       return WINDOWS_PALETTE.get(this.number!);
     }
     if (this.type === ColorType.STANDARD) {
-      return STANDARD_PALETTE.get(this.number!);
+      return DEFAULT_TERMINAL_THEME_ANSI_COLORS.get(this.number!);
     }
     if (this.type === ColorType.EIGHT_BIT) {
       return EIGHT_BIT_PALETTE.get(this.number!);
@@ -792,28 +840,34 @@ export class Color {
     const triplet = this.triplet ?? new ColorTriplet(0, 0, 0);
 
     if (system === ColorSystem.EIGHT_BIT) {
-      // Check if it's grayscale
+      // Use Python's algorithm: convert to HLS and check saturation for grayscale
       const [red, green, blue] = [triplet.red, triplet.green, triplet.blue];
-      const isGray =
-        Math.abs(red - green) < 3 && Math.abs(red - blue) < 3 && Math.abs(green - blue) < 3;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [_h, l, s] = rgbToHls(red / 255, green / 255, blue / 255);
 
-      if (isGray) {
-        // Map to grayscale ramp (232-255 are grayscale in 256 palette)
-        const gray = (red + green + blue) / 3;
-        if (gray < 8) {
-          return new Color(this.name, ColorType.EIGHT_BIT, 16, undefined);
+      // If saturation is under 15%, treat as grayscale
+      if (s < 0.15) {
+        const gray = Math.round(l * 25);
+        let colorNumber: number;
+        if (gray === 0) {
+          colorNumber = 16;
+        } else if (gray === 25) {
+          colorNumber = 231;
+        } else {
+          colorNumber = 231 + gray;
         }
-        if (gray > 247) {
-          return new Color(this.name, ColorType.EIGHT_BIT, 231, undefined);
-        }
-        // Map to grayscale ramp (colors 232-255)
-        const grayIndex = Math.round(((gray - 8) / 247) * 23) + 232;
-        return new Color(this.name, ColorType.EIGHT_BIT, grayIndex, undefined);
+        return new Color(this.name, ColorType.EIGHT_BIT, colorNumber, undefined);
       }
 
-      // Match to 256 color palette
-      const number = EIGHT_BIT_PALETTE.match([red, green, blue]);
-      return new Color(this.name, ColorType.EIGHT_BIT, number, undefined);
+      // Use 6x6x6 color cube (colors 16-231)
+      // Python algorithm: map RGB (0-255) to 6 levels (0-5)
+      const sixRed = red < 95 ? red / 95 : 1 + (red - 95) / 40;
+      const sixGreen = green < 95 ? green / 95 : 1 + (green - 95) / 40;
+      const sixBlue = blue < 95 ? blue / 95 : 1 + (blue - 95) / 40;
+
+      const colorNumber =
+        16 + 36 * Math.round(sixRed) + 6 * Math.round(sixGreen) + Math.round(sixBlue);
+      return new Color(this.name, ColorType.EIGHT_BIT, colorNumber, undefined);
     }
 
     if (system === ColorSystem.STANDARD) {
