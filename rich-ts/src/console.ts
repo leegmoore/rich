@@ -9,6 +9,7 @@
 import { Segment } from './segment';
 import { Style } from './style';
 import { Text } from './text';
+import { Rule } from './rule.js';
 
 /** Justify methods for text alignment */
 export type JustifyMethod = 'default' | 'left' | 'center' | 'right' | 'full';
@@ -22,8 +23,8 @@ export type RenderableType =
   | Text
   | { __richConsole__: (console: Console, options: ConsoleOptions) => Generator<Segment> };
 
-/** Type for render results (generators of Segments) */
-export type RenderResult = Generator<Segment, void, unknown>;
+/** Type for render results (generators of Segments or Text instances) */
+export type RenderResult = Generator<Segment | Text, void, unknown>;
 
 /**
  * Size of the terminal.
@@ -76,6 +77,13 @@ export class ConsoleOptions {
     this.legacy_windows = options.legacy_windows ?? false;
     this.markup = options.markup ?? true;
     this.highlight = options.highlight ?? true;
+  }
+
+  /**
+   * Check if renderables should use ASCII only.
+   */
+  get asciiOnly(): boolean {
+    return !this.encoding.startsWith('utf');
   }
 
   /**
@@ -293,12 +301,25 @@ export class Console {
     if (typeof renderable === 'string') {
       output = renderable + '\n';
     } else if (renderable && typeof renderable === 'object' && '__richConsole__' in renderable) {
-      // Handle objects with __richConsole__ protocol (like Padding)
+      // Handle objects with __richConsole__ protocol (like Padding, Rule, etc.)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const richConsole = (renderable as any).__richConsole__;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-      const segments = Array.from(richConsole.call(renderable, this, this.options));
-      output = segments.map((seg) => (seg as Segment).text).join('');
+      const items = Array.from(richConsole.call(renderable, this, this.options));
+      // Items can be Segments or Text instances
+      output = items
+        .map((item) => {
+          if (item instanceof Text) {
+            // Render Text to segments and get their text, using the Text's end property
+            const segments = item.render(this, item.end);
+            return segments.map((seg) => seg.text).join('');
+          } else if (item instanceof Segment) {
+            return item.text;
+          } else {
+            return String(item);
+          }
+        })
+        .join('');
     } else if (renderable instanceof Text) {
       output = renderable.plain + '\n';
     } else {
@@ -386,9 +407,22 @@ export class Console {
     return result;
   }
 
+  /**
+   * Draw a horizontal rule with optional title.
+   *
+   * @param title - Text to display in the rule. Defaults to "".
+   * @param options - Additional options for the rule.
+   */
+  rule(
+    title?: string | Text,
+    options?: { characters?: string; style?: string | Style; align?: 'left' | 'center' | 'right' }
+  ): void {
+    const rule = new Rule(title ?? '', options);
+    this.print(rule);
+  }
+
   // TODO: Implement remaining Console methods:
   // - log()
-  // - rule()
   // - status()
   // - export_html()
   // - export_svg()
