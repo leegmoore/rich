@@ -11,21 +11,23 @@
 ## For Claude Code Web
 
 ### Step 1: Open Workspace
-Point Claude Code Web to:
-```
-/Users/leemoore/code/rich-port/rich/
-```
+Point Claude Code Web to your forked Rich repo (the repo root where .git lives)
 
 ### Step 2: Copy-Paste This Prompt
 
-Open `rich-ts/QUICK_START_PROMPT.txt` and copy its contents into Claude Code Web chat.
+Open the file at path (relative to repo root):
+```
+rich-ts/QUICK_START_PROMPT.txt
+```
+
+And copy its contents into Claude Code Web chat.
 
 Or copy this:
 
 ```
 I'm continuing the Rich TypeScript port - Phase 1 (Foundation Layer).
 
-WORKSPACE: /Users/leemoore/code/rich-port/rich/
+NOTE: Workspace is your repo root (where .git lives)
 (TypeScript port is in the rich-ts/ subdirectory)
 
 FIRST: Read these logs to understand status (all in rich-ts/):
@@ -66,7 +68,7 @@ Claude will:
 ## File Structure
 
 ```
-/Users/leemoore/code/rich-port/rich/  (GIT REPO ROOT)
+<REPO ROOT>  (where .git lives)
 │
 ├── rich/                    ← Python source (reference material)
 │   ├── color.py

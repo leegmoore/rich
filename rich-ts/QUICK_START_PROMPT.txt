@@ -2,7 +2,7 @@
 
 I'm continuing the Rich TypeScript port - Phase 1 (Foundation Layer).
 
-WORKSPACE: /Users/leemoore/code/rich-port/rich/
+NOTE: Workspace is repo root (where .git lives)
 (TypeScript port is in the rich-ts/ subdirectory)
 
 FIRST: Read these logs to understand status (all in rich-ts/):
