@@ -64,13 +64,15 @@ I'm continuing the Rich TypeScript port. This is **Phase 1: Foundation Layer**.
 
 ### 3. Development Standards:
 - **Package Manager:** npm (not pnpm/bun)
-- **TypeScript:** Strict mode, no `any` types
-- **Formatting:** Prettier (single quotes, 100 char width, 2 space indent)
-- **Linting:** ESLint with TypeScript rules
+- **TypeScript:** Strict mode, no `any` types allowed
+- **Formatting:** Prettier handles ALL formatting (runs first in `npm run check`)
+- **Linting:** ESLint for code quality ONLY (not formatting)
+- **Tool Order:** Format → TypeCheck → Lint → Test (via `npm run check`)
 - **Pre-commit:** Always run `npm run check` before committing
 - **Naming:** Clear, descriptive names (no abbreviations like `clr`, `txt`)
 - **Comments:** JSDoc for public APIs, inline comments for complex logic
 - **Imports:** Use named imports, group by external/internal
+- **Modern JS:** Use nullish coalescing (`??`) and optional chaining (`?.`) where appropriate
 
 ### 4. Pick your target module(s):
 Based on logs, identify which Phase 1 modules are NOT_STARTED or IN_PROGRESS.
@@ -109,10 +111,9 @@ Port all Phase 1 modules using Test-Driven Development:
 - Run tests frequently from rich-ts/: `npm test [MODULE]`
 - Continue until ALL tests pass
 
-### Step 4: Format and Lint
-- Format code: `npm run format`
-- Fix lint issues: `npm run lint:fix`
-- Run all checks: `npm run check` (must pass!)
+### Step 4: Run Quality Checks
+- Run all checks: `npm run check` (format + typecheck + lint + test - must pass!)
+- This runs Prettier (formatting), TypeScript (type checking), ESLint (code quality), and Vitest (tests)
 
 ### Step 5: Commit and Push
 - Stage all changes: `git add -A`

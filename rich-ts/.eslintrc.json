@@ -2,7 +2,7 @@
   "root": true,
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": 2020,
+    "ecmaVersion": 2022,
     "sourceType": "module",
     "project": "./tsconfig.json"
   },
@@ -19,11 +19,13 @@
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/no-non-null-assertion": "warn",
+    "@typescript-eslint/prefer-nullish-coalescing": "error",
+    "@typescript-eslint/prefer-optional-chain": "error",
     "no-console": "off"
   },
   "env": {
     "node": true,
-    "es6": true
+    "es2022": true
   }
 }
 
