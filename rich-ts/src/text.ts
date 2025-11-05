@@ -1121,11 +1121,16 @@ export class Text {
           throw new Error('style must not be set when appending Text instance');
         }
         const textLength = this._length;
-        if (text.style) {
-          this._spans.push(new Span(textLength, textLength + text.length, text.style));
+        // Copy text properties to avoid self-reference issues
+        const plainText = text.plain;
+        const textSpans = [...text._spans];
+        const textStyle = text.style;
+
+        if (textStyle) {
+          this._spans.push(new Span(textLength, textLength + text.length, textStyle));
         }
-        this._text.push(text.plain);
-        this._spans.push(...text._spans.map((span) => new Span(span.start + textLength, span.end + textLength, span.style)));
+        this._text.push(plainText);
+        this._spans.push(...textSpans.map((span) => new Span(span.start + textLength, span.end + textLength, span.style)));
         this._length += text.length;
       }
     }
@@ -1138,12 +1143,18 @@ export class Text {
    */
   appendText(text: Text): Text {
     const textLength = this._length;
-    if (text.style) {
-      this._spans.push(new Span(textLength, textLength + text.length, text.style));
+    // Copy text properties to avoid self-reference issues
+    const plainText = text.plain;
+    const textSpans = [...text._spans];
+    const textStyle = text.style;
+    const textLen = text.length;
+
+    if (textStyle) {
+      this._spans.push(new Span(textLength, textLength + textLen, textStyle));
     }
-    this._text.push(text.plain);
-    this._spans.push(...text._spans.map((span) => new Span(span.start + textLength, span.end + textLength, span.style)));
-    this._length += text.length;
+    this._text.push(plainText);
+    this._spans.push(...textSpans.map((span) => new Span(span.start + textLength, span.end + textLength, span.style)));
+    this._length += textLen;
     return this;
   }
 
@@ -1276,6 +1287,11 @@ export class Text {
 
       // eslint-disable-next-line no-constant-condition
       while (true) {
+        if (lowerBound > upperBound) {
+          // Bounds crossed - should not happen with valid data, use lower bound
+          startLineNo = Math.max(0, Math.min(lowerBound, lineCount - 1));
+          break;
+        }
         const [lineStart, lineEnd] = lineRanges[startLineNo]!;
         if (spanStart < lineStart) {
           upperBound = startLineNo - 1;
@@ -1297,6 +1313,11 @@ export class Text {
         endLineNo = Math.floor((lowerBound + upperBound) / 2);
         // eslint-disable-next-line no-constant-condition
         while (true) {
+          if (lowerBound > upperBound) {
+            // Bounds crossed - should not happen with valid data, use lower bound
+            endLineNo = Math.max(0, Math.min(lowerBound, lineCount - 1));
+            break;
+          }
           const [lineStart, lineEnd] = lineRanges[endLineNo]!;
           if (spanEnd < lineStart) {
             upperBound = endLineNo - 1;

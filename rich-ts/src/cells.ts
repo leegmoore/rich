@@ -163,6 +163,18 @@ export function setCellSize(text: string, total: number): string {
   // Binary search until we find the right size
   // eslint-disable-next-line no-constant-condition
   while (true) {
+    // Safety check to prevent infinite loop
+    if (start >= end || (end - start === 1 && start === Math.floor((start + end) / 2))) {
+      // Converged without exact match, return best fit
+      const result = chars.slice(0, start + 1).join('');
+      const resultLen = cellLen(result);
+      if (resultLen <= total) {
+        return result;
+      } else {
+        return chars.slice(0, start).join('');
+      }
+    }
+
     const pos = Math.floor((start + end) / 2);
     const before = chars.slice(0, pos + 1).join('');
     const beforeLen = cellLen(before);
