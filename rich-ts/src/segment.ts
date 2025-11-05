@@ -110,6 +110,7 @@ export class Segment {
 
   /**
    * Internal method to split a segment with complex cell widths
+   * Uses character arrays to properly handle UTF-16 surrogate pairs (emoji)
    */
   private static _splitCells(segment: Segment, cut: number): [Segment, Segment] {
     const { text, style, control } = segment;
@@ -119,29 +120,36 @@ export class Segment {
       return [segment, new Segment('', style, control)];
     }
 
-    // Start with an estimate
-    let pos = Math.floor((cut / cellLength) * text.length);
+    // Convert to character array for proper Unicode handling
+    // This ensures emoji (surrogate pairs) are treated as single characters
+    const chars = Array.from(text);
+
+    // Start with an estimate based on character count (not UTF-16 code units)
+    let pos = Math.floor((cut / cellLength) * chars.length);
 
     while (true) {
-      const before = text.slice(0, pos);
+      const before = chars.slice(0, pos).join('');
       const cellPos = cellLen(before);
       const outBy = cellPos - cut;
 
       if (outBy === 0) {
-        return [new Segment(before, style, control), new Segment(text.slice(pos), style, control)];
-      }
-
-      if (outBy === -1 && getCharacterCellSize(text[pos]!) === 2) {
         return [
-          new Segment(text.slice(0, pos) + ' ', style, control),
-          new Segment(' ' + text.slice(pos + 1), style, control),
+          new Segment(before, style, control),
+          new Segment(chars.slice(pos).join(''), style, control),
         ];
       }
 
-      if (outBy === 1 && getCharacterCellSize(text[pos - 1]!) === 2) {
+      if (outBy === -1 && getCharacterCellSize(chars[pos]!) === 2) {
         return [
-          new Segment(text.slice(0, pos - 1) + ' ', style, control),
-          new Segment(' ' + text.slice(pos), style, control),
+          new Segment(chars.slice(0, pos).join('') + ' ', style, control),
+          new Segment(' ' + chars.slice(pos + 1).join(''), style, control),
+        ];
+      }
+
+      if (outBy === 1 && getCharacterCellSize(chars[pos - 1]!) === 2) {
+        return [
+          new Segment(chars.slice(0, pos - 1).join('') + ' ', style, control),
+          new Segment(' ' + chars.slice(pos).join(''), style, control),
         ];
       }
 
