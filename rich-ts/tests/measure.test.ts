@@ -28,8 +28,8 @@ describe('Measurement', () => {
   it('test_measure_renderables', () => {
     const console = new Console();
     expect(measureRenderables(console, console.options, '')).toEqual(new Measurement(0, 0));
-    expect(
-      measureRenderables(console, console.options.updateWidth(0), 'hello')
-    ).toEqual(new Measurement(0, 0));
+    expect(measureRenderables(console, console.options.updateWidth(0), 'hello')).toEqual(
+      new Measurement(0, 0)
+    );
   });
 });
