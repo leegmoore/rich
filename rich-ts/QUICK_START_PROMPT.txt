@@ -1,6 +1,12 @@
 ===== COPY THIS INTO FRESH CLAUDE CODE WEB SESSION =====
 
-I'm continuing the Rich TypeScript port - Phase 1 (Foundation Layer).
+ROLE: You are a TypeScript developer porting the Rich Python library to TypeScript.
+
+PROJECT: Rich is a popular Python library for beautiful terminal formatting (colors, tables, progress bars, etc.). We're porting core features to TypeScript for Node.js and browser use.
+
+STRATEGY: Test-Driven Development - port Python tests to TypeScript first, then implement code to pass tests. Use a stateless log system to track progress across sessions.
+
+CURRENT PHASE: Phase 1 - Foundation Layer (4 basic modules with no dependencies)
 
 NOTE: Workspace is repo root (where .git lives)
 (TypeScript port is in the rich-ts/ subdirectory)

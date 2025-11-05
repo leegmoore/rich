@@ -4,6 +4,46 @@
 
 ---
 
+## 🎯 PROJECT OVERVIEW
+
+**What is Rich?**
+Rich is a popular Python library (70+ modules, 26K+ LOC) for rendering beautiful text, tables, progress bars, syntax highlighting, and more to the terminal. It's used by thousands of projects.
+
+**What are we doing?**
+Porting Rich's **core features** to TypeScript for use in Node.js and browser environments. We're implementing from scratch (no external dependencies for core features).
+
+**Your Role:**
+You're a TypeScript developer using Test-Driven Development (TDD) to port Python code. Port tests first, then implement code to pass those tests. Use logs to track progress across stateless sessions.
+
+**Project Stats:**
+- Python Source: ~26,274 LOC
+- Python Tests: ~10,719 LOC (668 test functions)
+- Target: Core features only (~19 modules)
+- Phases: 4 phases based on dependency layers
+
+---
+
+## 📋 PHASE 1 OVERVIEW
+
+**Goal:** Port 4 foundation modules that have NO internal dependencies.
+
+**Modules:**
+1. **color_triplet** - RGB color representation (~30 LOC, 3 tests, 15 min)
+2. **errors** - Exception classes (~50 LOC, minimal tests, 10 min)
+3. **cells** - Unicode character width calculations (~200 LOC, 8 tests, 45 min)
+4. **color** - Color parsing & manipulation (~500 LOC, 17 tests, 60 min)
+
+**Why these first?** They're foundational - other modules depend on them. They can be ported in parallel (no dependencies on each other except color→color_triplet).
+
+**Success Criteria:**
+- All 4 modules have TypeScript tests
+- All tests pass
+- All code follows TypeScript strict mode
+- Progress logged in PORT_LOG files
+- Code committed to git
+
+---
+
 ## 📋 SESSION STARTUP INSTRUCTIONS
 
 I'm continuing the Rich TypeScript port. This is **Phase 1: Foundation Layer**.
