@@ -37,6 +37,36 @@ The algorithm needs to properly convert RGB(255,0,0) to the nearest 256-color pa
 
 ---
 
+### 🐛 Bug #2: Segment emoji split UTF-16 handling
+**Module:** `segment`
+**File:** `src/segment.ts`
+**Test:** `tests/segment.test.ts > test_split_cells_emoji`
+**Severity:** Low (2 test cases failing out of 95)
+
+**Description:**
+When splitting a segment that cuts through a double-width emoji character, the replacement spaces contain UTF-16 replacement characters (�) instead of proper spaces.
+
+**Expected:**
+```typescript
+new Segment('💩').splitCells(1)
+// Should return: [Segment(' '), Segment(' ')]
+```
+
+**Actual:**
+```typescript
+// Returns: [Segment('�'), Segment('�')]
+```
+
+**Impact:**
+Emoji characters may display incorrectly when split at cell boundaries.
+
+**Notes:**
+This is related to UTF-16 surrogate pair handling in JavaScript/TypeScript. The slice operation may be breaking surrogate pairs. The Python implementation uses different string handling.
+
+**Priority:** Low (edge case with emoji splitting)
+
+---
+
 ## Fixed Bugs
 
 *None yet*

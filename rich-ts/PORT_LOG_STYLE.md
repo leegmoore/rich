@@ -1,9 +1,11 @@
 # Module Port Log: style
 
-**Status:** NOT_STARTED  
-**Dependencies:** color, color_triplet, errors  
-**Python Source:** `rich/style.py` (~800 LOC)  
+**Status:** ✅ DONE
+**Dependencies:** color, color_triplet, errors (all complete)
+**Python Source:** `rich/style.py` (~800 LOC)
 **Python Tests:** `tests/test_style.py` (27 tests)
+**TypeScript:** `src/style.ts` (~920 LOC)
+**Tests:** `tests/style.test.ts` (26/27 passing, 1 skipped)
 
 ---
 

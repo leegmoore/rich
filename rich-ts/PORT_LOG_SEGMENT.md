@@ -1,9 +1,11 @@
 # Module Port Log: segment
 
-**Status:** NOT_STARTED  
-**Dependencies:** style, cells  
-**Python Source:** `rich/segment.py` (~750 LOC)  
+**Status:** ✅ DONE
+**Dependencies:** style ✅, cells ✅
+**Python Source:** `rich/segment.py` (~750 LOC)
 **Python Tests:** `tests/test_segment.py` (29 tests)
+**TypeScript:** `src/segment.ts` (~620 LOC)
+**Tests:** `tests/segment.test.ts` (27/29 passing, 1 skipped, 1 emoji bug)
 
 ---
 
