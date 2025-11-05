@@ -43,10 +43,10 @@ describe('Segment', () => {
   });
 
   it('test_adjust_line_length', () => {
-    let line = [new Segment('Hello', 'foo' as any)];
-    expect(Segment.adjustLineLength(line, 10, 'bar' as any)).toEqual([
-      new Segment('Hello', 'foo' as any),
-      new Segment('     ', 'bar' as any),
+    let line = [new Segment('Hello', 'foo' as unknown as Style)];
+    expect(Segment.adjustLineLength(line, 10, 'bar' as unknown as Style)).toEqual([
+      new Segment('Hello', 'foo' as unknown as Style),
+      new Segment('     ', 'bar' as unknown as Style),
     ]);
 
     line = [new Segment('H'), new Segment('ello, World!')];
@@ -82,12 +82,15 @@ describe('Segment', () => {
     expect(
       Array.from(
         Segment.simplify([
-          new Segment('Hello', 'red' as any),
-          new Segment(' ', 'red' as any),
-          new Segment('World!', 'blue' as any),
+          new Segment('Hello', 'red' as unknown as Style),
+          new Segment(' ', 'red' as unknown as Style),
+          new Segment('World!', 'blue' as unknown as Style),
         ])
       )
-    ).toEqual([new Segment('Hello ', 'red' as any), new Segment('World!', 'blue' as any)]);
+    ).toEqual([
+      new Segment('Hello ', 'red' as unknown as Style),
+      new Segment('World!', 'blue' as unknown as Style),
+    ]);
     expect(Array.from(Segment.simplify([]))).toEqual([]);
   });
 
@@ -135,11 +138,13 @@ describe('Segment', () => {
 
   it('test_segments_renderable', () => {
     const segments = new Segments([new Segment('foo')]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect(Array.from(segments.__richConsole__(null as any, null as any))).toEqual([
       new Segment('foo'),
     ]);
 
     const segmentsWithNewLines = new Segments([new Segment('foo')], true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect(Array.from(segmentsWithNewLines.__richConsole__(null as any, null as any))).toEqual([
       new Segment('foo'),
       Segment.line(),
@@ -305,6 +310,7 @@ describe('Segment', () => {
       [new Segment('foo')],
     ];
     const segmentLines = new SegmentLines(lines);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect(Array.from(segmentLines.__richConsole__(null as any, null as any))).toEqual([
       new Segment('hello'),
       new Segment(' '),
@@ -313,6 +319,7 @@ describe('Segment', () => {
     ]);
 
     const segmentLinesWithNewLines = new SegmentLines(lines, true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect(Array.from(segmentLinesWithNewLines.__richConsole__(null as any, null as any))).toEqual([
       new Segment('hello'),
       new Segment(' '),

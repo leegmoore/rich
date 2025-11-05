@@ -235,7 +235,7 @@ describe('Style', () => {
   });
 
   it('test_clear_meta_and_links', () => {
-    let style = Style.parse('bold red on black link https://example.org').add(
+    const style = Style.parse('bold red on black link https://example.org').add(
       Style.on({}, { click: 'CLICK' })
     );
 
@@ -258,7 +258,7 @@ describe('Style', () => {
 
   it('test_clear_meta_and_links_clears_hash', () => {
     // Regression test for https://github.com/Textualize/rich/issues/2942
-    let style = Style.parse('bold red on black link https://example.org').add(
+    const style = Style.parse('bold red on black link https://example.org').add(
       Style.on({}, { click: 'CLICK' })
     );
     style.hash(); // Force hash caching

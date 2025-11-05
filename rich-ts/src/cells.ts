@@ -56,6 +56,7 @@ export function getCharacterCellSize(character: string): number {
   let upperBound = table.length - 1;
   let index = Math.floor((lowerBound + upperBound) / 2);
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const entry = table[index];
     if (!entry) break;
@@ -160,6 +161,7 @@ export function setCellSize(text: string, total: number): string {
   let end = chars.length;
 
   // Binary search until we find the right size
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const pos = Math.floor((start + end) / 2);
     const before = chars.slice(0, pos + 1).join('');
