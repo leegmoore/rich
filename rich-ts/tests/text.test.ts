@@ -785,9 +785,13 @@ describe('Text', () => {
     expect(String(text)).toBe('foobar');
 
     const spans = text.spans;
-    const expected = [new Span(3, 6, 'bold'), new Span(0, 6, Style.fromMeta({ foo: 'bar' }))];
 
-    expect(spans).toEqual(expected);
+    // Check spans structure (can't compare Style directly due to random _linkId)
+    expect(spans.length).toBe(2);
+    expect(spans[0]).toEqual(new Span(3, 6, 'bold'));
+    expect(spans[1]?.start).toBe(0);
+    expect(spans[1]?.end).toBe(6);
+    expect((spans[1]?.style as Style).meta).toEqual({ foo: 'bar' });
 
     // TODO: Requires Console - defer until console ported
     // const console = new Console();

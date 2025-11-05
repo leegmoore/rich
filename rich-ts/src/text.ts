@@ -388,8 +388,10 @@ export class Text {
    */
   get markup(): string {
     // TODO: Import escape from markup module when available
+    // For now, use a simplified escape that only escapes opening brackets of markup-like patterns
     const escape = (text: string): string => {
-      return text.replace(/\[/g, '\\[').replace(/\]/g, '\\]');
+      // Only escape [ that looks like it starts a markup tag (followed by a-z, #, /, or @)
+      return text.replace(/\[([a-z#\/@])/gi, '\\[$1');
     };
 
     const output: string[] = [];
@@ -1429,14 +1431,15 @@ export class Text {
    */
   detectIndentation(): number {
     const indentations = new Set<number>();
-    const regex = /^( *)(.*)$/gm;
-    let match: RegExpExecArray | null;
+    const regex = /^( +)/gm; // Only match lines that start with at least one space
 
-    while ((match = regex.exec(this.plain)) !== null) {
-      const indent = match[1]!.length;
-      if (indent > 0) {
-        indentations.add(indent);
-      }
+    // Use matchAll to safely iterate through all matches
+    const plainText = this.plain;
+    const matches = plainText.matchAll(regex);
+
+    for (const m of matches) {
+      const indent = m[1]!.length;
+      indentations.add(indent);
     }
 
     const validIndents = Array.from(indentations).filter((indent) => indent % 2 === 0);
