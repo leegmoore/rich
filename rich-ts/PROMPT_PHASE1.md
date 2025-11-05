@@ -16,7 +16,9 @@ I'm continuing the Rich TypeScript port. This is **Phase 1: Foundation Layer**.
 - Read `rich-ts/PORT_LOG_COLOR.md`
 
 ### 2. If first time running Phase 1:
-- Run `npm install` in the `rich-ts/` directory
+- Clone the repo: `git clone https://github.com/leegmoore/rich.git`
+- Navigate to project: `cd rich`
+- Install dependencies: `cd rich-ts && npm install`
 
 ### 3. Pick your target module(s):
 Based on logs, identify which Phase 1 modules are NOT_STARTED or IN_PROGRESS.
@@ -55,7 +57,12 @@ Port all Phase 1 modules using Test-Driven Development:
 - Run tests frequently from rich-ts/: `npm test [MODULE]`
 - Continue until ALL tests pass
 
-### Step 4: Update Logs
+### Step 4: Commit and Push
+- Stage all changes: `git add -A`
+- Commit with message: `git commit -m "Port [MODULE] module with tests"`
+- Push to remote: `git push`
+
+### Step 5: Update Logs
 - Update the module's PORT_LOG file (in rich-ts/) with:
   - Status change (IN_PROGRESS → TESTS_COMPLETE → DONE)
   - Test checklist updates
