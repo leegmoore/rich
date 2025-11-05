@@ -1,0 +1,20 @@
+===== PHASE 2: PRIMITIVES LAYER =====
+
+PREREQUISITES: Phase 1 must be merged to master
+Check: phases/phase1/STATUS.md
+
+TASK: Port repr, control, style, segment modules
+
+ORDER:
+1. repr + control (can do in parallel, no deps)
+2. style (needs Phase 1: color, color_triplet, errors)
+3. segment (needs style + cells)
+
+Read full instructions: phases/phase2/PROMPT_PHASE2.md
+Read module logs: phases/phase2/PORT_LOG_*.md
+
+TDD Process:
+1. Port tests → 2. Implement → 3. npm run check → 4. Commit → 5. Update logs
+
+GO!
+
