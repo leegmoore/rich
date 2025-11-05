@@ -1,0 +1,32 @@
+===== COPY THIS INTO FRESH CLAUDE CODE WEB SESSION =====
+
+I'm continuing the Rich TypeScript port - Phase 1 (Foundation Layer).
+
+WORKSPACE: /Users/leemoore/code/rich-port/rich/
+(TypeScript port is in the rich-ts/ subdirectory)
+
+FIRST: Read these logs to understand status (all in rich-ts/):
+- Read rich-ts/PORT_LOG_MASTER.md
+- Read rich-ts/PORT_LOG_COLOR_TRIPLET.md  
+- Read rich-ts/PORT_LOG_ERRORS.md
+- Read rich-ts/PORT_LOG_CELLS.md
+- Read rich-ts/PORT_LOG_COLOR.md
+
+THEN: Read full instructions in rich-ts/PROMPT_PHASE1.md
+
+TASK: Port all Phase 1 modules (color_triplet, errors, cells, color) using Test-Driven Development:
+1. Read Python source: rich/[MODULE].py
+2. Read Python tests: tests/test_[MODULE].py
+3. Create rich-ts/tests/[MODULE].test.ts - port ALL tests to TypeScript/Vitest
+4. Run tests (should fail): cd rich-ts && npm test
+5. Create rich-ts/src/[MODULE].ts - implement until tests pass
+6. Update rich-ts/PORT_LOG_[MODULE].md and rich-ts/PORT_LOG_MASTER.md
+
+START with color_triplet (simplest), then errors, then cells, then color.
+
+First time? Run: cd rich-ts && npm install
+
+GO!
+
+============================================================
+

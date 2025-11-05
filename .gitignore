@@ -119,3 +119,9 @@ benchmarks/env/
 benchmarks/html/
 
 sandbox/
+
+# TypeScript / Node.js (for rich-ts/)
+rich-ts/node_modules/
+rich-ts/dist/
+rich-ts/coverage/
+rich-ts/*.tsbuildinfo
