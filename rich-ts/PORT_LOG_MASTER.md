@@ -7,8 +7,10 @@
 
 ## Quick Stats
 - **Total Modules:** 19 (core features only)
-- **Completed:** 0
+- **Completed:** 4 (Phase 1)
 - **In Progress:** 0
+- **Test Pass Rate:** 38/39 (97%)
+- **Known Bugs:** 1 (see KNOWN_BUGS.md)
 - **Python Source:** ~26,274 LOC
 - **Python Tests:** ~10,719 LOC (668 test functions)
 
@@ -22,23 +24,27 @@
 - [x] Master log created
 - [ ] Dependencies installed (`npm install`)
 
-### 🔄 Phase 1: Foundation Layer (NO DEPENDENCIES - FULLY PARALLEL)
-| Module | Status | Tests | Implementation | Assigned | Log File |
-|--------|--------|-------|----------------|----------|----------|
-| color_triplet | NOT_STARTED | 0/3 | 0% | - | PORT_LOG_COLOR_TRIPLET.md |
-| errors | NOT_STARTED | 0/1 | 0% | - | PORT_LOG_ERRORS.md |
-| cells | NOT_STARTED | 0/8 | 0% | - | PORT_LOG_CELLS.md |
-| color | NOT_STARTED | 0/17 | 0% | - | PORT_LOG_COLOR.md |
+### ✅ Phase 1: Foundation Layer - COMPLETE (1 known bug)
+| Module | Status | Tests | Implementation | Notes |
+|--------|--------|-------|----------------|-------|
+| color_triplet | ✅ DONE | 3/3 | 100% | All tests passing |
+| errors | ✅ DONE | 12/12 | 100% | All tests passing |
+| cells | ✅ DONE | 8/8 | 100% | All tests passing + Unicode tables |
+| color | ✅ DONE | 15/16 | 95% | 1 bug: downgrade quantization (see KNOWN_BUGS.md) |
 
+**Total:** 38/39 tests passing (97%)  
 **Estimated Effort:** 4-8 hours total, <1 hour per module in parallel
 
-### ⏳ Phase 2: Primitives Layer (Depends on Phase 1)
-| Module | Status | Dependencies | Log File |
-|--------|--------|--------------|----------|
-| repr | BLOCKED | None | PORT_LOG_REPR.md |
-| control | BLOCKED | None | PORT_LOG_CONTROL.md |
-| segment | BLOCKED | style, cells | PORT_LOG_SEGMENT.md |
-| style | BLOCKED | color, color_triplet, errors | PORT_LOG_STYLE.md |
+### 🔄 Phase 2: Primitives Layer (READY TO START)
+| Module | Status | Tests | Implementation | Dependencies | Log File |
+|--------|--------|-------|----------------|--------------|----------|
+| repr | NOT_STARTED | 0/8 | 0% | None | PORT_LOG_REPR.md |
+| control | NOT_STARTED | 0/7 | 0% | None | PORT_LOG_CONTROL.md |
+| style | NOT_STARTED | 0/27 | 0% | color, color_triplet, errors | PORT_LOG_STYLE.md |
+| segment | NOT_STARTED | 0/29 | 0% | style, cells | PORT_LOG_SEGMENT.md |
+
+**Estimated Effort:** 8-12 hours total  
+**Note:** style and segment are more complex (~800 LOC each)
 
 ### ⏳ Phase 3: Core Layer (Depends on Phase 2)
 | Module | Status | Dependencies | Log File |
@@ -123,15 +129,15 @@ function memoized(key: string): Result {
 
 ## Next Actions
 
-**IMMEDIATE (Phase 1):**
-1. Run `npm install` in rich-ts directory
-2. Pick ONE module from Phase 1 (or run all 4 in parallel)
-3. Follow PROMPT_PHASE1.md instructions
+**IMMEDIATE (Phase 2):**
+1. Review Phase 1 completion (97% pass rate)
+2. Pick modules from Phase 2 (repr and control can be done in parallel)
+3. Follow PROMPT_PHASE2.md instructions
 4. Port tests → implement code → update logs
 
-**AFTER Phase 1 Complete:**
-- Move to Phase 2 (style, segment, repr, control)
-- Update master log status
+**Bug Pass:**
+- Scheduled after Phase 4 or when 5+ bugs accumulated
+- Current bugs: 1 (see KNOWN_BUGS.md)
 
 ---
 
