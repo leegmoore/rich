@@ -1,0 +1,74 @@
+===== COPY THIS INTO FRESH CLAUDE CODE WEB SESSION FOR PHASE 7 =====
+
+ROLE: You are a TypeScript developer porting the Rich Python library to TypeScript.
+
+PROJECT: Rich is a popular Python library for beautiful terminal formatting. We're porting core features to TypeScript for Node.js and browser use.
+
+STRATEGY: Port the FINAL module (columns), run comprehensive tests, create final summary.
+
+CURRENT PHASE: Phase 7 - Final Module + Completion
+
+PHASE 1-6 STATUS: ✅ COMPLETE (18/19 modules, all stubs replaced)
+
+NOTE: Workspace is repo root (where .git lives)
+(TypeScript port is in the rich-ts/ subdirectory)
+
+FIRST: Read these logs to understand status (all in rich-ts/):
+- Read rich-ts/PORT_LOG_MASTER.md
+- Read rich-ts/PHASE6_SUMMARY.md
+- Read rich-ts/phases/phase7/PORT_LOG_COLUMNS.md
+- Read rich-ts/KNOWN_BUGS.md
+
+THEN: Read full instructions in rich-ts/phases/phase7/PROMPT_PHASE7.md
+
+THIS IS THE FINAL MODULE! 🎉
+
+PHASE 7 WORKFLOW:
+
+STEP 1: PORT COLUMNS MODULE (~130 LOC, ~6 tests)
+1. Read Python source: rich/columns.py
+2. Read Python tests: tests/test_columns.py
+3. Create rich-ts/tests/columns.test.ts - port ALL tests
+4. Run tests (should fail): cd rich-ts && npm test
+5. Create rich-ts/src/columns.ts - implement until tests pass
+6. Run checks: npm run check (format + typecheck + lint + tests)
+7. Commit and push: git add -A && git commit -m "Port columns module - FINAL MODULE!" && git push
+8. Update rich-ts/phases/phase7/PORT_LOG_COLUMNS.md
+
+STEP 2: COMPREHENSIVE TESTING
+1. Run full test suite: npm test -- --run
+2. Document final test results
+3. Check for any remaining issues
+4. Run npm run check to verify everything passes
+
+STEP 3: CREATE FINAL SUMMARY
+Create rich-ts/PROJECT_COMPLETE.md documenting:
+- All 19 modules ported
+- Final test pass rate
+- Total LOC ported
+- Known issues (if any)
+- Performance notes
+- Browser compatibility notes
+- Next steps for production use
+
+STEP 4: UPDATE MASTER LOG
+Update rich-ts/PORT_LOG_MASTER.md:
+- Mark Phase 7 complete
+- Mark all 19 modules DONE
+- Update overall project status to COMPLETE
+
+THIS IS IT! The final module!
+
+DEV STANDARDS:
+- Use npm (not pnpm/bun)
+- TypeScript strict mode (no 'any' types)
+- Prettier handles formatting (single quotes, 100 char width)
+- ESLint for code quality only
+- 'npm run check' runs: format → typecheck → lint → test
+- Clear variable names, JSDoc for public APIs
+- Use nullish coalescing (??) and optional chaining (?.)
+
+GO FINISH THE PORT! 🚀
+
+============================================================
+
