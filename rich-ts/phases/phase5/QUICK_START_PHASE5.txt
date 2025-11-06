@@ -1,0 +1,82 @@
+===== COPY THIS INTO FRESH CLAUDE CODE WEB SESSION FOR PHASE 5 =====
+
+ROLE: You are a TypeScript developer porting the Rich Python library to TypeScript.
+
+PROJECT: Rich is a popular Python library for beautiful terminal formatting. We're porting core features to TypeScript for Node.js and browser use.
+
+STRATEGY: Stub dependencies first, then Test-Driven Development - port Python tests to TypeScript first, then implement code to pass tests. Document stub-related failures.
+
+CURRENT PHASE: Phase 5 - Components Layer 1 (3 modules: align, markup, panel)
+
+PHASE 1-4 STATUS: ✅ COMPLETE (13 modules, 184/222 tests passing)
+- 2 tests failing from Phase 4 (cells bug + rule colors)
+- 36 tests skipped (need markup/ansi modules)
+
+NOTE: Workspace is repo root (where .git lives)
+(TypeScript port is in the rich-ts/ subdirectory)
+
+FIRST: Read these logs to understand status (all in rich-ts/):
+- Read rich-ts/PORT_LOG_MASTER.md
+- Read rich-ts/phases/phase5/PORT_LOG_ALIGN.md
+- Read rich-ts/phases/phase5/PORT_LOG_MARKUP.md
+- Read rich-ts/phases/phase5/PORT_LOG_PANEL.md
+- Read rich-ts/KNOWN_BUGS.md
+- Read rich-ts/PHASE4_SUMMARY.md
+
+THEN: Read full instructions in rich-ts/phases/phase5/PROMPT_PHASE5.md
+
+CRITICAL: This phase uses STUBS for missing dependencies!
+
+PHASE 5 WORKFLOW:
+
+STEP 1: FIX OLD BUGS + CREATE STUBS (do this FIRST!)
+- Fix cells.test.ts > test_set_cell_size (emoji edge case from Phase 4)
+- Stub src/theme.ts + src/default_styles.ts (for rule colors)
+- Stub src/constrain.ts (for align)
+- Stub src/box.ts (for panel)
+- Stub src/emoji.ts + src/_emoji_replace.ts + src/_emoji_codes.ts (for markup)
+- Each stub should throw clear error: "STUB: [name] not fully implemented"
+- Add TODO comments in stubs explaining what's needed
+
+STEP 2: PORT MODULES (standard TDD)
+For EACH module (align, markup, panel):
+1. Read Python source: rich/[MODULE].py
+2. Read Python tests: tests/test_[MODULE].py
+3. Create rich-ts/tests/[MODULE].test.ts - port ALL tests
+4. Run tests: cd rich-ts && npm test
+5. Create rich-ts/src/[MODULE].ts - implement until tests pass
+6. Run checks: npm run check (format + typecheck + lint + tests)
+7. Commit and push: git add -A && git commit -m "Port [MODULE] module" && git push
+8. Update rich-ts/phases/phase5/PORT_LOG_[MODULE].md
+
+STEP 3: DOCUMENT STUB FAILURES
+At end of session, create PHASE5_SUMMARY.md with:
+- Total tests: X passing, Y failing
+- List ALL failing tests with:
+  * Test name
+  * Stub dependency causing failure
+  * Error message
+  * What needs implementation in Phase 6
+
+CRITICAL RULES FOR STUB-RELATED TEST FAILURES:
+- DO NOT skip tests (no test.skip())
+- DO NOT modify tests to work around stubs
+- LEAVE TESTS FAILING with clear explanations
+- Document every failure in session summary
+- Label failures as "EXPECTED - stub dependency"
+
+ORDER: align first, then markup, then panel
+
+DEV STANDARDS:
+- Use npm (not pnpm/bun)
+- TypeScript strict mode (no 'any' types)
+- Prettier handles formatting (single quotes, 100 char width)
+- ESLint for code quality only
+- 'npm run check' runs: format → typecheck → lint → test
+- Clear variable names, JSDoc for public APIs
+- Use nullish coalescing (??) and optional chaining (?.)
+
+GO!
+
+============================================================
+
