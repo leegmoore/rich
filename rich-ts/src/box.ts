@@ -1,195 +1,301 @@
 /**
- * STUB: Box drawing characters
- * TODO: Full implementation in Phase 6 with all box styles
+ * Box - Defines characters to render boxes
+ * Based on rich/box.py
  */
+import type { ConsoleOptions } from './console.js';
+import { loopLast } from './_loop.js';
 
+/**
+ * Defines characters to render boxes.
+ *
+ * ┌─┬┐ top
+ * │ ││ head
+ * ├─┼┤ head_row
+ * │ ││ mid
+ * ├─┼┤ row
+ * ├─┼┤ foot_row
+ * │ ││ foot
+ * └─┴┘ bottom
+ */
 export class Box {
-  // STUB: Minimal box with ASCII characters
-  // TODO Phase 6: Implement all box properties and methods
-  top_left = '+';
-  top = '-';
-  top_divider = '+';
-  top_right = '+';
-  head_left = '|';
-  head_vertical = '|';
-  head_right = '|';
-  head_row_left = '+';
-  head_row_horizontal = '-';
-  head_row_cross = '+';
-  head_row_right = '+';
-  mid_left = '|';
-  mid_vertical = '|';
-  mid_right = '|';
-  row_left = '+';
-  row_horizontal = '-';
-  row_cross = '+';
-  row_right = '+';
-  foot_row_left = '+';
-  foot_row_horizontal = '-';
-  foot_row_cross = '+';
-  foot_row_right = '+';
-  foot_left = '|';
-  foot_vertical = '|';
-  foot_right = '|';
-  bottom_left = '+';
-  bottom = '-';
-  bottom_divider = '+';
-  bottom_right = '+';
-  ascii = true;
+  private _box: string;
+  ascii: boolean;
 
-  constructor(_box?: string, _options?: { ascii?: boolean }) {
-    // STUB: Ignores box string, uses ASCII
-    // TODO Phase 6: Parse box string into properties
-  }
+  // top
+  topLeft: string;
+  top: string;
+  topDivider: string;
+  topRight: string;
 
-  /**
-   * Get the top of the box.
-   */
-  getTop(widths: number[]): string {
-    // STUB: Simple ASCII top line
-    const parts = [this.top_left];
-    for (let i = 0; i < widths.length; i++) {
-      parts.push(this.top.repeat(widths[i]!));
-      if (i < widths.length - 1) {
-        parts.push(this.top_divider);
-      }
-    }
-    parts.push(this.top_right);
-    return parts.join('');
-  }
+  // head
+  headLeft: string;
+  headVertical: string;
+  headRight: string;
+
+  // head_row
+  headRowLeft: string;
+  headRowHorizontal: string;
+  headRowCross: string;
+  headRowRight: string;
+
+  // mid
+  midLeft: string;
+  midVertical: string;
+  midRight: string;
+
+  // row
+  rowLeft: string;
+  rowHorizontal: string;
+  rowCross: string;
+  rowRight: string;
+
+  // foot_row
+  footRowLeft: string;
+  footRowHorizontal: string;
+  footRowCross: string;
+  footRowRight: string;
+
+  // foot
+  footLeft: string;
+  footVertical: string;
+  footRight: string;
+
+  // bottom
+  bottomLeft: string;
+  bottom: string;
+  bottomDivider: string;
+  bottomRight: string;
 
   /**
-   * Get a row of the box.
+   * Create a Box.
+   *
+   * @param box - Characters making up box (8 lines, 4 chars per line).
+   * @param ascii - True if this box uses ascii characters only.
    */
-  getRow(widths: number[], level: 'head' | 'row' | 'foot' = 'row'): string {
-    // STUB: Simple ASCII row separator
-    const left =
-      level === 'head' ? this.head_row_left : level === 'foot' ? this.foot_row_left : this.row_left;
-    const horizontal =
-      level === 'head'
-        ? this.head_row_horizontal
-        : level === 'foot'
-          ? this.foot_row_horizontal
-          : this.row_horizontal;
-    const cross =
-      level === 'head'
-        ? this.head_row_cross
-        : level === 'foot'
-          ? this.foot_row_cross
-          : this.row_cross;
-    const right =
-      level === 'head'
-        ? this.head_row_right
-        : level === 'foot'
-          ? this.foot_row_right
-          : this.row_right;
+  constructor(box: string, ascii: boolean = false) {
+    this._box = box;
+    this.ascii = ascii;
 
-    const parts = [left];
-    for (let i = 0; i < widths.length; i++) {
-      parts.push(horizontal.repeat(widths[i]!));
-      if (i < widths.length - 1) {
-        parts.push(cross);
-      }
+    const lines = box.split('\n').filter((line) => line.length > 0);
+    if (lines.length !== 8) {
+      throw new Error(`Box string must have 8 lines, got ${lines.length}`);
     }
-    parts.push(right);
-    return parts.join('');
+
+    const [line1, line2, line3, line4, line5, line6, line7, line8] = lines;
+
+    // top
+    [this.topLeft, this.top, this.topDivider, this.topRight] = Array.from(line1);
+
+    // head
+    [this.headLeft, , this.headVertical, this.headRight] = Array.from(line2);
+
+    // head_row
+    [this.headRowLeft, this.headRowHorizontal, this.headRowCross, this.headRowRight] =
+      Array.from(line3);
+
+    // mid
+    [this.midLeft, , this.midVertical, this.midRight] = Array.from(line4);
+
+    // row
+    [this.rowLeft, this.rowHorizontal, this.rowCross, this.rowRight] = Array.from(line5);
+
+    // foot_row
+    [this.footRowLeft, this.footRowHorizontal, this.footRowCross, this.footRowRight] =
+      Array.from(line6);
+
+    // foot
+    [this.footLeft, , this.footVertical, this.footRight] = Array.from(line7);
+
+    // bottom
+    [this.bottomLeft, this.bottom, this.bottomDivider, this.bottomRight] = Array.from(line8);
   }
 
-  /**
-   * Get the bottom of the box.
-   */
-  getBottom(widths: number[]): string {
-    // STUB: Simple ASCII bottom line
-    const parts = [this.bottom_left];
-    for (let i = 0; i < widths.length; i++) {
-      parts.push(this.bottom.repeat(widths[i]!));
-      if (i < widths.length - 1) {
-        parts.push(this.bottom_divider);
-      }
-    }
-    parts.push(this.bottom_right);
-    return parts.join('');
+  toString(): string {
+    return this._box;
   }
 
   /**
    * Substitute this box for another if it won't render due to platform issues.
    *
-   * STUB: Just returns self for now. Phase 6 will handle platform-specific substitutions.
+   * @param options - Console options used in rendering.
+   * @param safe - Substitute this for another Box if there are known problems displaying on the platform.
+   * @returns A different Box or the same Box.
    */
-  substitute(_options: unknown, _safe = true): Box {
-    // STUB: No substitution logic - just return self
-    return this;
+  substitute(options: ConsoleOptions, safe: boolean = true): Box {
+    let box: Box = this;
+    if (options.legacyWindows && safe) {
+      box = LEGACY_WINDOWS_SUBSTITUTIONS.get(box) ?? box;
+    }
+    if (options.asciiOnly && !box.ascii) {
+      box = ASCII;
+    }
+    return box;
   }
 
-  // CamelCase getters for convenience
-  get topLeft(): string {
-    return this.top_left;
+  /**
+   * If this box uses special characters for the borders of the header,
+   * return the equivalent box that does not.
+   *
+   * @returns The most similar Box that doesn't use header-specific box characters.
+   */
+  getPlainHeadedBox(): Box {
+    return PLAIN_HEADED_SUBSTITUTIONS.get(this) ?? this;
   }
-  get topDivider(): string {
-    return this.top_divider;
+
+  /**
+   * Get the top of a simple box.
+   *
+   * @param widths - Widths of columns.
+   * @returns A string of box characters.
+   */
+  getTop(widths: Iterable<number>): string {
+    const parts: string[] = [];
+    parts.push(this.topLeft);
+    for (const [last, width] of loopLast(widths)) {
+      parts.push(this.top.repeat(width));
+      if (!last) {
+        parts.push(this.topDivider);
+      }
+    }
+    parts.push(this.topRight);
+    return parts.join('');
   }
-  get topRight(): string {
-    return this.top_right;
+
+  /**
+   * Get a row separator of a box.
+   *
+   * @param widths - Widths of columns.
+   * @param level - Type of row ('head', 'row', 'foot', 'mid').
+   * @param edge - Include left and right edges.
+   * @returns A string of box characters.
+   */
+  getRow(
+    widths: Iterable<number>,
+    level: 'head' | 'row' | 'foot' | 'mid' = 'row',
+    edge: boolean = true
+  ): string {
+    let left: string;
+    let horizontal: string;
+    let cross: string;
+    let right: string;
+
+    if (level === 'head') {
+      left = this.headRowLeft;
+      horizontal = this.headRowHorizontal;
+      cross = this.headRowCross;
+      right = this.headRowRight;
+    } else if (level === 'row') {
+      left = this.rowLeft;
+      horizontal = this.rowHorizontal;
+      cross = this.rowCross;
+      right = this.rowRight;
+    } else if (level === 'mid') {
+      left = this.midLeft;
+      horizontal = ' ';
+      cross = this.midVertical;
+      right = this.midRight;
+    } else if (level === 'foot') {
+      left = this.footRowLeft;
+      horizontal = this.footRowHorizontal;
+      cross = this.footRowCross;
+      right = this.footRowRight;
+    } else {
+      throw new Error("level must be 'head', 'row', 'foot', or 'mid'");
+    }
+
+    const parts: string[] = [];
+    if (edge) {
+      parts.push(left);
+    }
+    for (const [last, width] of loopLast(widths)) {
+      parts.push(horizontal.repeat(width));
+      if (!last) {
+        parts.push(cross);
+      }
+    }
+    if (edge) {
+      parts.push(right);
+    }
+    return parts.join('');
   }
-  get midLeft(): string {
-    return this.mid_left;
-  }
-  get midRight(): string {
-    return this.mid_right;
-  }
-  get bottomLeft(): string {
-    return this.bottom_left;
-  }
-  get bottomDivider(): string {
-    return this.bottom_divider;
-  }
-  get bottomRight(): string {
-    return this.bottom_right;
+
+  /**
+   * Get the bottom of a simple box.
+   *
+   * @param widths - Widths of columns.
+   * @returns A string of box characters.
+   */
+  getBottom(widths: Iterable<number>): string {
+    const parts: string[] = [];
+    parts.push(this.bottomLeft);
+    for (const [last, width] of loopLast(widths)) {
+      parts.push(this.bottom.repeat(width));
+      if (!last) {
+        parts.push(this.bottomDivider);
+      }
+    }
+    parts.push(this.bottomRight);
+    return parts.join('');
   }
 }
 
-// Box constants with proper characters
-// TODO Phase 6: Add more box styles (HEAVY, DOUBLE, etc.)
+// Box styles
+export const ASCII = new Box('+--+\n| ||\n|-+|\n| ||\n|-+|\n|-+|\n| ||\n+--+\n', true);
 
-// Create ROUNDED box with Unicode characters
-const ROUNDED_BOX = new Box();
-ROUNDED_BOX.top_left = '╭';
-ROUNDED_BOX.top = '─';
-ROUNDED_BOX.top_divider = '┬';
-ROUNDED_BOX.top_right = '╮';
-ROUNDED_BOX.head_left = '│';
-ROUNDED_BOX.head_vertical = '│';
-ROUNDED_BOX.head_right = '│';
-ROUNDED_BOX.head_row_left = '├';
-ROUNDED_BOX.head_row_horizontal = '─';
-ROUNDED_BOX.head_row_cross = '┼';
-ROUNDED_BOX.head_row_right = '┤';
-ROUNDED_BOX.mid_left = '│';
-ROUNDED_BOX.mid_vertical = '│';
-ROUNDED_BOX.mid_right = '│';
-ROUNDED_BOX.row_left = '├';
-ROUNDED_BOX.row_horizontal = '─';
-ROUNDED_BOX.row_cross = '┼';
-ROUNDED_BOX.row_right = '┤';
-ROUNDED_BOX.foot_row_left = '├';
-ROUNDED_BOX.foot_row_horizontal = '─';
-ROUNDED_BOX.foot_row_cross = '┼';
-ROUNDED_BOX.foot_row_right = '┤';
-ROUNDED_BOX.foot_left = '│';
-ROUNDED_BOX.foot_vertical = '│';
-ROUNDED_BOX.foot_right = '│';
-ROUNDED_BOX.bottom_left = '╰';
-ROUNDED_BOX.bottom = '─';
-ROUNDED_BOX.bottom_divider = '┴';
-ROUNDED_BOX.bottom_right = '╯';
-ROUNDED_BOX.ascii = false;
+export const ASCII2 = new Box('+-++\n| ||\n+-++\n| ||\n+-++\n+-++\n| ||\n+-++\n', true);
 
-export const ROUNDED = ROUNDED_BOX;
+export const ASCII_DOUBLE_HEAD = new Box(
+  '+-++\n| ||\n+=++\n| ||\n+-++\n+-++\n| ||\n+-++\n',
+  true
+);
 
-// STUB: Other box styles (TODO Phase 6)
-export const HEAVY = new Box();
-export const DOUBLE = new Box();
-export const SQUARE = new Box();
-export const MINIMAL = new Box();
-export const SIMPLE = new Box();
-export const HORIZONTALS = new Box();
+export const SQUARE = new Box('┌─┬┐\n│ ││\n├─┼┤\n│ ││\n├─┼┤\n├─┼┤\n│ ││\n└─┴┘\n');
+
+export const SQUARE_DOUBLE_HEAD = new Box('┌─┬┐\n│ ││\n╞═╪╡\n│ ││\n├─┼┤\n├─┼┤\n│ ││\n└─┴┘\n');
+
+export const MINIMAL = new Box('  ╷ \n  │ \n╶─┼╴\n  │ \n╶─┼╴\n╶─┼╴\n  │ \n  ╵ \n');
+
+export const MINIMAL_HEAVY_HEAD = new Box('  ╷ \n  │ \n╺━┿╸\n  │ \n╶─┼╴\n╶─┼╴\n  │ \n  ╵ \n');
+
+export const MINIMAL_DOUBLE_HEAD = new Box('  ╷ \n  │ \n ═╪ \n  │ \n ─┼ \n ─┼ \n  │ \n  ╵ \n');
+
+export const SIMPLE = new Box('    \n    \n ── \n    \n    \n ── \n    \n    \n');
+
+export const SIMPLE_HEAD = new Box('    \n    \n ── \n    \n    \n    \n    \n    \n');
+
+export const SIMPLE_HEAVY = new Box('    \n    \n ━━ \n    \n    \n ━━ \n    \n    \n');
+
+export const HORIZONTALS = new Box(' ── \n    \n ── \n    \n ── \n ── \n    \n ── \n');
+
+export const ROUNDED = new Box('╭─┬╮\n│ ││\n├─┼┤\n│ ││\n├─┼┤\n├─┼┤\n│ ││\n╰─┴╯\n');
+
+export const HEAVY = new Box('┏━┳┓\n┃ ┃┃\n┣━╋┫\n┃ ┃┃\n┣━╋┫\n┣━╋┫\n┃ ┃┃\n┗━┻┛\n');
+
+export const HEAVY_EDGE = new Box('┏━┯┓\n┃ │┃\n┠─┼┨\n┃ │┃\n┠─┼┨\n┠─┼┨\n┃ │┃\n┗━┷┛\n');
+
+export const HEAVY_HEAD = new Box('┏━┳┓\n┃ ┃┃\n┡━╇┩\n│ ││\n├─┼┤\n├─┼┤\n│ ││\n└─┴┘\n');
+
+export const DOUBLE = new Box('╔═╦╗\n║ ║║\n╠═╬╣\n║ ║║\n╠═╬╣\n╠═╬╣\n║ ║║\n╚═╩╝\n');
+
+export const DOUBLE_EDGE = new Box('╔═╤╗\n║ │║\n╟─┼╢\n║ │║\n╟─┼╢\n╟─┼╢\n║ │║\n╚═╧╝\n');
+
+export const MARKDOWN = new Box('    \n| ||\n|-||\n| ||\n|-||\n|-||\n| ||\n    \n', true);
+
+// Map Boxes that don't render with raster fonts on to equivalent that do
+const LEGACY_WINDOWS_SUBSTITUTIONS = new Map<Box, Box>([
+  [ROUNDED, SQUARE],
+  [MINIMAL_HEAVY_HEAD, MINIMAL],
+  [SIMPLE_HEAVY, SIMPLE],
+  [HEAVY, SQUARE],
+  [HEAVY_EDGE, SQUARE],
+  [HEAVY_HEAD, SQUARE],
+]);
+
+// Map headed boxes to their headerless equivalents
+const PLAIN_HEADED_SUBSTITUTIONS = new Map<Box, Box>([
+  [HEAVY_HEAD, SQUARE],
+  [SQUARE_DOUBLE_HEAD, SQUARE],
+  [MINIMAL_DOUBLE_HEAD, MINIMAL],
+  [MINIMAL_HEAVY_HEAD, MINIMAL],
+  [ASCII_DOUBLE_HEAD, ASCII2],
+]);

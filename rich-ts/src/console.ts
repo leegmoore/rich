@@ -96,6 +96,13 @@ export class ConsoleOptions {
   }
 
   /**
+   * Check if we're on legacy Windows.
+   */
+  get legacyWindows(): boolean {
+    return this.legacy_windows;
+  }
+
+  /**
    * Create a copy of options with updated width.
    */
   updateWidth(width: number): ConsoleOptions {
