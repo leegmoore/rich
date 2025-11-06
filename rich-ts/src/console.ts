@@ -5,7 +5,7 @@
  * Many advanced features are stubbed with TODOs for future implementation.
  */
 
-// TODO: import { Measurement } from './measure';
+import { Measurement } from './measure.js';
 import { Segment } from './segment';
 import { Style } from './style';
 import { Text } from './text';
@@ -137,15 +137,35 @@ export class ConsoleOptions {
       minWidth?: number;
       maxHeight?: number;
       height?: number;
+      width?: number;
+      highlight?: boolean;
     } = {}
   ): ConsoleOptions {
     return new ConsoleOptions({
-      maxWidth: options.maxWidth ?? this.maxWidth,
+      maxWidth: options.width ?? options.maxWidth ?? this.maxWidth,
       minWidth: options.minWidth ?? this.minWidth,
       isTerminal: this.isTerminal,
       encoding: this.encoding,
       maxHeight: options.maxHeight ?? this.maxHeight,
       height: options.height ?? this.height,
+      legacy_windows: this.legacy_windows,
+      markup: this.markup,
+      highlight: options.highlight ?? this.highlight,
+      theme: this.theme,
+    });
+  }
+
+  /**
+   * Update the width and height, and return a copy.
+   */
+  updateDimensions(width: number, height: number): ConsoleOptions {
+    return new ConsoleOptions({
+      maxWidth: width,
+      minWidth: this.minWidth,
+      isTerminal: this.isTerminal,
+      encoding: this.encoding,
+      maxHeight: height,
+      height: height,
       legacy_windows: this.legacy_windows,
       markup: this.markup,
       highlight: this.highlight,
@@ -467,14 +487,15 @@ export class Console {
     const renderOptions = options ?? this.options;
     let segments: Segment[];
 
-    // Handle string renderables
+    // Handle string renderables - convert to Text first
     if (typeof renderable === 'string') {
-      const text = this.renderStr(renderable);
-      segments = text.render(this, '');
-    } else if (renderable instanceof Text) {
-      segments = renderable.render(this, '');
-    } else if (renderable && typeof renderable === 'object' && '__richConsole__' in renderable) {
-      // Handle objects with __richConsole__ protocol
+      renderable = this.renderStr(renderable);
+    }
+
+    // Handle Text and objects with __richConsole__ protocol
+    // Text has __richConsole__ which wraps text to width
+    if (renderable && typeof renderable === 'object' && '__richConsole__' in renderable) {
+      // Handle objects with __richConsole__ protocol (including Text)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const richConsole = (renderable as any).__richConsole__;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
@@ -530,6 +551,18 @@ export class Console {
     this.print(rule);
   }
 
+  /**
+   * Measure a renderable.
+   *
+   * @param renderable - An object that may be rendered with Rich.
+   * @param options - Console options, or undefined to use default options.
+   * @returns Measurement object containing range of character widths required to render the object.
+   */
+  measure(renderable: RenderableType, options?: ConsoleOptions): Measurement {
+    const measureOptions = options ?? this.options;
+    return Measurement.get(this, measureOptions, renderable);
+  }
+
   // TODO: Implement remaining Console methods:
   // - log()
   // - status()
@@ -539,7 +572,6 @@ export class Console {
   // - save_html()
   // - save_svg()
   // - save_text()
-  // - measure()
   // - push_theme()
   // - pop_theme()
   // - use_theme()

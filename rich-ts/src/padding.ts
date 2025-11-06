@@ -109,7 +109,7 @@ export class Padding {
    * Rich console rendering protocol.
    */
   *__richConsole__(console: Console, options: ConsoleOptions): RenderResult {
-    const style = console.getStyle(this.style);
+    const style = this.style === 'none' ? Style.null() : console.getStyle(this.style);
     const width = this.expand
       ? options.maxWidth
       : Math.min(
@@ -122,7 +122,9 @@ export class Padding {
       renderOptions = renderOptions.updateHeight(renderOptions.height - this.top - this.bottom);
     }
 
-    const lines = console.renderLines(this.renderable, renderOptions, style, true);
+    // Only pass style if it's not null
+    const renderStyle = style === Style.null() ? undefined : style;
+    const lines = console.renderLines(this.renderable, renderOptions, renderStyle, true);
 
     const left = this.left ? new Segment(' '.repeat(this.left), style) : undefined;
     const right = this.right

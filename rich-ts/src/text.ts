@@ -912,8 +912,9 @@ export class Text {
     const text = this.plain;
 
     if (this._spans.length === 0) {
-      // Use the Text's style if it has one
-      segments.push(new Segment(text, this.style));
+      // Use the Text's style if it has one (but convert empty string to undefined)
+      const segmentStyle = this.style === '' ? undefined : this.style;
+      segments.push(new Segment(text, segmentStyle as Style | undefined));
       if (end) {
         segments.push(new Segment(end));
       }

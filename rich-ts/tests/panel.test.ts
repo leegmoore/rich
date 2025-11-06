@@ -43,17 +43,17 @@ describe('Panel', () => {
   it('test_console_width', () => {
     const console = new Console({ width: 50, legacy_windows: false });
     const panel = new Panel('Hello, World', undefined, { expand: false });
-    const [minWidth, maxWidth] = panel.__richMeasure__(console, console.options);
-    expect(minWidth).toBe(16);
-    expect(maxWidth).toBe(16);
+    const measurement = panel.__richMeasure__(console, console.options);
+    expect(measurement.minimum).toBe(16);
+    expect(measurement.maximum).toBe(16);
   });
 
   it('test_fixed_width', () => {
     const console = new Console({ width: 50, legacy_windows: false });
     const panel = new Panel('Hello World', undefined, { width: 20 });
-    const [minWidth, maxWidth] = panel.__richMeasure__(console, console.options);
-    expect(minWidth).toBe(20);
-    expect(maxWidth).toBe(20);
+    const measurement = panel.__richMeasure__(console, console.options);
+    expect(measurement.minimum).toBe(20);
+    expect(measurement.maximum).toBe(20);
   });
 
   it('test_render_size', () => {
@@ -61,11 +61,13 @@ describe('Panel', () => {
     const options = console.options.updateDimensions(80, 4);
     const lines = console.renderLines(new Panel('foo', undefined, { title: 'Hello' }), options);
 
+    // Create a null style for comparison (will have _ansi set during rendering)
+    const nullStyle = new Style();
     const expected = [
       [
-        new Segment('╭─', new Style()),
+        new Segment('╭─', nullStyle),
         new Segment('────────────────────────────────── Hello ───────────────────────────────────'),
-        new Segment('─╮', new Style()),
+        new Segment('─╮', nullStyle),
       ],
       [
         new Segment('│', new Style()),
