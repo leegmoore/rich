@@ -122,9 +122,9 @@ export class Padding {
       renderOptions = renderOptions.updateHeight(renderOptions.height - this.top - this.bottom);
     }
 
-    // Only pass style if it's not null
-    const renderStyle = style === Style.null() ? undefined : style;
-    const lines = console.renderLines(this.renderable, renderOptions, renderStyle, true);
+    // Pass style to renderLines so padding segments get Style objects
+    // (adjustLineLength will create padding segments with this style)
+    const lines = console.renderLines(this.renderable, renderOptions, style, true);
 
     const left = this.left ? new Segment(' '.repeat(this.left), style) : undefined;
     const right = this.right

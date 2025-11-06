@@ -204,9 +204,8 @@ export class Panel {
       height: childHeight,
       highlight: this.highlight,
     });
-    // Only pass style if it's not a null style
-    const renderStyle = style === Style.null() ? undefined : style;
-    let lines = console.renderLines(renderable, childOptions, renderStyle);
+    // Pass style to renderLines so padding segments get Style objects
+    let lines = console.renderLines(renderable, childOptions, style);
 
     // Pad lines to childHeight if specified
     if (childHeight !== undefined && lines.length < childHeight) {

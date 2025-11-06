@@ -504,14 +504,18 @@ export class Console {
       throw new Error(`Cannot render object of type ${typeof renderable}`);
     }
 
-    // Apply style if provided
-    if (style) {
+    // Apply style if provided (but only if it's not a null style)
+    // Null styles are only used for padding segments, not content
+    const shouldApplyStyle = style && !style._null;
+    if (shouldApplyStyle) {
       segments = Array.from(Segment.applyStyle(segments, style));
     }
 
     // Split into lines and crop to width
+    // Pass style even if null - it's used for padding segments in adjustLineLength
+    const paddingStyle = style || undefined;
     const lines = Array.from(
-      Segment.splitAndCropLines(segments, renderOptions.maxWidth, style, pad, false)
+      Segment.splitAndCropLines(segments, renderOptions.maxWidth, paddingStyle, pad, false)
     );
 
     return lines;

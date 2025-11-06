@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ColorSystem } from '../src/color.js';
 import { Console } from '../src/console.js';
 import { Panel } from '../src/panel.js';
 import { Segment } from '../src/segment.js';
@@ -61,39 +62,45 @@ describe('Panel', () => {
     const options = console.options.updateDimensions(80, 4);
     const lines = console.renderLines(new Panel('foo', undefined, { title: 'Hello' }), options);
 
-    // Create a null style for comparison (will have _ansi set during rendering)
-    const nullStyle = new Style();
+    // Create Style objects and populate their _ansi cache to match rendered styles
+    const createStyle = () => {
+      const s = new Style();
+      // Trigger _ansi cache by rendering a non-empty string
+      s.render('x', ColorSystem.TRUECOLOR);
+      return s;
+    };
+
     const expected = [
       [
-        new Segment('╭─', nullStyle),
+        new Segment('╭─', createStyle()),
         new Segment('────────────────────────────────── Hello ───────────────────────────────────'),
-        new Segment('─╮', nullStyle),
+        new Segment('─╮', createStyle()),
       ],
       [
-        new Segment('│', new Style()),
-        new Segment(' ', new Style()),
+        new Segment('│', createStyle()),
+        new Segment(' ', createStyle()),
         new Segment('foo'),
         new Segment(
           '                                                                         ',
-          new Style()
+          createStyle()
         ),
-        new Segment(' ', new Style()),
-        new Segment('│', new Style()),
+        new Segment(' ', createStyle()),
+        new Segment('│', createStyle()),
       ],
       [
-        new Segment('│', new Style()),
-        new Segment(' ', new Style()),
+        new Segment('│', createStyle()),
+        new Segment(' ', createStyle()),
         new Segment(
           '                                                                            ',
-          new Style()
+          createStyle()
         ),
-        new Segment(' ', new Style()),
-        new Segment('│', new Style()),
+        new Segment(' ', createStyle()),
+        new Segment('│', createStyle()),
       ],
       [
         new Segment(
           '╰──────────────────────────────────────────────────────────────────────────────╯',
-          new Style()
+          createStyle()
         ),
       ],
     ];
