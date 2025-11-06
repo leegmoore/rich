@@ -668,4 +668,87 @@ export class SegmentLines {
       }
     }
   }
+
+  /**
+   * Split a sequence of segments into a list of lines.
+   */
+  static *splitLines(segments: Iterable<Segment>): Iterable<Segment[]> {
+    let line: Segment[] = [];
+
+    for (const segment of segments) {
+      if (segment.text.includes('\n') && !segment.control) {
+        const { text, style } = segment;
+        let remaining = text;
+
+        while (remaining) {
+          const newlineIndex = remaining.indexOf('\n');
+          if (newlineIndex === -1) {
+            // No more newlines
+            if (remaining) {
+              line.push(new Segment(remaining, style));
+            }
+            break;
+          }
+
+          const beforeNewline = remaining.substring(0, newlineIndex);
+          if (beforeNewline) {
+            line.push(new Segment(beforeNewline, style));
+          }
+
+          // Yield the line
+          yield line;
+          line = [];
+
+          // Continue with text after newline
+          remaining = remaining.substring(newlineIndex + 1);
+        }
+      } else {
+        line.push(segment);
+      }
+    }
+
+    if (line.length > 0) {
+      yield line;
+    }
+  }
+
+  /**
+   * Get the shape (enclosing rectangle) of a list of lines.
+   * Returns [width, height] in characters.
+   */
+  static getShape(lines: Segment[][]): [number, number] {
+    if (lines.length === 0) {
+      return [0, 0];
+    }
+    const maxWidth = Math.max(...lines.map((line) => Segment.getLineLength(line)));
+    return [maxWidth, lines.length];
+  }
+
+  /**
+   * Set the shape of a list of lines (enclosing rectangle).
+   */
+  static setShape(
+    lines: Segment[][],
+    width: number,
+    height?: number,
+    style?: Style,
+    newLines: boolean = false
+  ): Segment[][] {
+    const targetHeight = height ?? lines.length;
+    const blank = newLines
+      ? [new Segment(' '.repeat(width) + '\n', style)]
+      : [new Segment(' '.repeat(width), style)];
+
+    const shapedLines = lines.slice(0, targetHeight);
+    for (let i = 0; i < shapedLines.length; i++) {
+      shapedLines[i] = Array.from(Segment.adjustLineLength(shapedLines[i]!, width, style));
+    }
+
+    // Pad with blank lines if needed
+    while (shapedLines.length < targetHeight) {
+      shapedLines.push(blank);
+    }
+
+    return shapedLines;
+  }
 }

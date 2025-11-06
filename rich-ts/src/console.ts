@@ -288,8 +288,8 @@ export class Console {
    * Render any renderable object to segments.
    * TODO: Full implementation with all renderable types.
    */
-  render(renderable: unknown, _options?: ConsoleOptions): Segment[] {
-    // TODO: Use options for rendering configuration
+  render(renderable: unknown, options?: ConsoleOptions): Segment[] {
+    const renderOptions = options ?? this.options;
 
     // Handle Text instances
     if (renderable instanceof Text) {
@@ -302,13 +302,20 @@ export class Console {
       return text.render(this, '');
     }
 
+    // Handle objects with __richConsole__ protocol
+    if (renderable && typeof renderable === 'object' && '__richConsole__' in renderable) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      const richConsole = (renderable as any).__richConsole__;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+      const segments = Array.from(richConsole.call(renderable, this, renderOptions));
+      return segments as Segment[];
+    }
+
     // TODO: Handle other renderable types
     // - Segment
     // - Style
     // - Control codes
     // - Pretty objects
-    // - Tables
-    // - Panels
     // - etc.
 
     throw new Error(`Cannot render object of type ${typeof renderable}`);
@@ -318,10 +325,13 @@ export class Console {
    * Print to the console.
    * TODO: Full implementation with all print options.
    */
-  print(renderable: unknown): void {
+  print(renderable: unknown, options?: { height?: number }): void {
     // TODO: Implement full print functionality with all options
     // For now, support basic string and renderable output
     let output: string;
+
+    // Update console options if height is provided
+    const renderOptions = options?.height !== undefined ? this.options.update({ height: options.height }) : this.options;
 
     if (typeof renderable === 'string') {
       output = renderable + '\n';
@@ -330,7 +340,7 @@ export class Console {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const richConsole = (renderable as any).__richConsole__;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-      const items = Array.from(richConsole.call(renderable, this, this.options));
+      const items = Array.from(richConsole.call(renderable, this, renderOptions));
       // Items can be Segments or Text instances
       output = items
         .map((item) => {
