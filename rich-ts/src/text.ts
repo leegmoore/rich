@@ -498,8 +498,20 @@ export class Text {
    * Construct a text instance by combining a sequence of strings with optional styles.
    */
   static assemble(
-    parts: Array<string | Text | [string, StyleType]>,
-    options: {
+    ...args: Array<
+      string | Text | [string, StyleType] | {
+        style?: string | Style;
+        justify?: JustifyMethod;
+        overflow?: OverflowMethod;
+        noWrap?: boolean;
+        end?: string;
+        tabSize?: number;
+        meta?: Record<string, any>;
+      }
+    >
+  ): Text {
+    // Extract options from last argument if it's an options object
+    let options: {
       style?: string | Style;
       justify?: JustifyMethod;
       overflow?: OverflowMethod;
@@ -507,8 +519,21 @@ export class Text {
       end?: string;
       tabSize?: number;
       meta?: Record<string, any>;
-    } = {}
-  ): Text {
+    } = {};
+    let parts = args;
+
+    const lastArg = args[args.length - 1];
+    if (
+      lastArg &&
+      typeof lastArg === 'object' &&
+      !Array.isArray(lastArg) &&
+      !(lastArg instanceof Text) &&
+      ('style' in lastArg || 'justify' in lastArg || 'overflow' in lastArg || 'noWrap' in lastArg || 'end' in lastArg || 'tabSize' in lastArg || 'meta' in lastArg)
+    ) {
+      options = lastArg;
+      parts = args.slice(0, -1);
+    }
+
     const text = new Text('', options.style || '', {
       justify: options.justify,
       overflow: options.overflow,
@@ -520,7 +545,7 @@ export class Text {
     for (const part of parts) {
       if (typeof part === 'string' || part instanceof Text) {
         text.append(part);
-      } else {
+      } else if (Array.isArray(part)) {
         text.append(part[0], part[1]);
       }
     }

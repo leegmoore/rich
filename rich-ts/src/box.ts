@@ -98,11 +98,83 @@ export class Box {
     parts.push(this.bottom_right);
     return parts.join('');
   }
+
+  /**
+   * Substitute this box for another if it won't render due to platform issues.
+   *
+   * STUB: Just returns self for now. Phase 6 will handle platform-specific substitutions.
+   */
+  substitute(_options: unknown, _safe = true): Box {
+    // STUB: No substitution logic - just return self
+    return this;
+  }
+
+  // CamelCase getters for convenience
+  get topLeft(): string {
+    return this.top_left;
+  }
+  get topDivider(): string {
+    return this.top_divider;
+  }
+  get topRight(): string {
+    return this.top_right;
+  }
+  get midLeft(): string {
+    return this.mid_left;
+  }
+  get midRight(): string {
+    return this.mid_right;
+  }
+  get bottomLeft(): string {
+    return this.bottom_left;
+  }
+  get bottomDivider(): string {
+    return this.bottom_divider;
+  }
+  get bottomRight(): string {
+    return this.bottom_right;
+  }
 }
 
-// STUB: Minimal box constants
-// TODO Phase 6: Add all box styles (HEAVY, DOUBLE, etc.) with Unicode characters
-export const ROUNDED = new Box();
+// Box constants with proper characters
+// TODO Phase 6: Add more box styles (HEAVY, DOUBLE, etc.)
+
+// Create ROUNDED box with Unicode characters
+const ROUNDED_BOX = new Box();
+ROUNDED_BOX.top_left = '╭';
+ROUNDED_BOX.top = '─';
+ROUNDED_BOX.top_divider = '┬';
+ROUNDED_BOX.top_right = '╮';
+ROUNDED_BOX.head_left = '│';
+ROUNDED_BOX.head_vertical = '│';
+ROUNDED_BOX.head_right = '│';
+ROUNDED_BOX.head_row_left = '├';
+ROUNDED_BOX.head_row_horizontal = '─';
+ROUNDED_BOX.head_row_cross = '┼';
+ROUNDED_BOX.head_row_right = '┤';
+ROUNDED_BOX.mid_left = '│';
+ROUNDED_BOX.mid_vertical = '│';
+ROUNDED_BOX.mid_right = '│';
+ROUNDED_BOX.row_left = '├';
+ROUNDED_BOX.row_horizontal = '─';
+ROUNDED_BOX.row_cross = '┼';
+ROUNDED_BOX.row_right = '┤';
+ROUNDED_BOX.foot_row_left = '├';
+ROUNDED_BOX.foot_row_horizontal = '─';
+ROUNDED_BOX.foot_row_cross = '┼';
+ROUNDED_BOX.foot_row_right = '┤';
+ROUNDED_BOX.foot_left = '│';
+ROUNDED_BOX.foot_vertical = '│';
+ROUNDED_BOX.foot_right = '│';
+ROUNDED_BOX.bottom_left = '╰';
+ROUNDED_BOX.bottom = '─';
+ROUNDED_BOX.bottom_divider = '┴';
+ROUNDED_BOX.bottom_right = '╯';
+ROUNDED_BOX.ascii = false;
+
+export const ROUNDED = ROUNDED_BOX;
+
+// STUB: Other box styles (TODO Phase 6)
 export const HEAVY = new Box();
 export const DOUBLE = new Box();
 export const SQUARE = new Box();
