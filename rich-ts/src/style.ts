@@ -583,7 +583,8 @@ export class Style {
       sgr.push(...this._bgcolor.downgrade(colorSystem).getAnsiCodes(false));
     }
 
-    this._ansi = sgr.join(';');
+    // Keep _ansi undefined for null styles (empty SGR array) to maintain consistency
+    this._ansi = sgr.length === 0 ? undefined : sgr.join(';');
     return this._ansi;
   }
 
