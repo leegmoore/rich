@@ -24,6 +24,7 @@ import { stripControlCodes } from './control';
 import { Measurement } from './measure';
 import { Segment } from './segment';
 import { Style, StyleType } from './style';
+import * as markup from './markup.js';
 
 import type { Console, ConsoleOptions, JustifyMethod, OverflowMethod } from './console';
 export type AlignMethod = 'left' | 'center' | 'right';
@@ -444,9 +445,8 @@ export class Text {
       end?: string;
     } = {}
   ): Text {
-    // Import render dynamically to avoid circular dependency
-    const { render } = require('./markup.js') as typeof import('./markup.js');
-    const result = render(
+    // Use markup.render() to process markup tags
+    const result = markup.render(
       text,
       options.style ?? '',
       options.emoji ?? true,

@@ -255,13 +255,19 @@ export class Console {
       highlighter?: unknown;
     } = {}
   ): Text {
-    // For now, just create a Text instance without markup processing
-    // TODO: Implement full markup rendering
-    if (options.markup) {
-      // TODO: Use markup.render() when available
-      return new Text(text, options.style);
+    const markup = options.markup ?? this.options.markup;
+    const emoji = options.emoji ?? true;
+
+    if (markup) {
+      // Use Text.fromMarkup() which handles the markup rendering
+      // Set end='' to avoid adding newlines when rendering multiple args
+      const result = Text.fromMarkup(text, { style: options.style, emoji });
+      result.end = '';
+      return result;
     }
-    return new Text(text, options.style);
+    const result = new Text(text, options.style);
+    result.end = '';
+    return result;
   }
 
   /**
@@ -320,24 +326,72 @@ export class Console {
    * Print to the console.
    * TODO: Full implementation with all print options.
    */
-  print(renderable: unknown, options?: { height?: number }): void {
-    // TODO: Implement full print functionality with all options
-    // For now, support basic string and renderable output
-    let output: string;
+  print(...args: unknown[]): void {
+    // Handle multiple arguments - join with spaces
+    if (args.length === 0) {
+      this._printSingle('\n');
+      return;
+    }
 
+    // If last arg is an options object with height, extract it
+    let options: { height?: number } | undefined;
+    let renderables = args;
+
+    if (args.length > 1 &&
+        typeof args[args.length - 1] === 'object' &&
+        args[args.length - 1] !== null &&
+        !('__richConsole__' in args[args.length - 1]!) &&
+        'height' in args[args.length - 1]!) {
+      options = args[args.length - 1] as { height?: number };
+      renderables = args.slice(0, -1);
+    }
+
+    if (renderables.length === 1) {
+      this._printSingle(renderables[0], options);
+    } else {
+      // Multiple args - render each and join with spaces
+      const outputs: string[] = [];
+      for (const renderable of renderables) {
+        const output = this._renderToString(renderable, options);
+        outputs.push(output);
+      }
+      const finalOutput = outputs.join(' ') + '\n';
+
+      if (this.capturingOutput) {
+        this.captureBuffer.push(finalOutput);
+      } else {
+        process.stdout.write(finalOutput);
+      }
+    }
+  }
+
+  private _printSingle(renderable: unknown, options?: { height?: number }): void {
+    const output = this._renderToString(renderable, options) + '\n';
+    if (this.capturingOutput) {
+      this.captureBuffer.push(output);
+    } else {
+      process.stdout.write(output);
+    }
+  }
+
+  private _renderToString(renderable: unknown, options?: { height?: number }): string {
     // Update console options if height is provided
     const renderOptions = options?.height !== undefined ? this.options.update({ height: options.height }) : this.options;
 
     if (typeof renderable === 'string') {
-      output = renderable + '\n';
-    } else if (renderable && typeof renderable === 'object' && '__richConsole__' in renderable) {
+      // Convert string to Text via renderStr() to handle markup processing
+      const text = this.renderStr(renderable);
+      renderable = text;
+    }
+
+    if (renderable && typeof renderable === 'object' && '__richConsole__' in renderable) {
       // Handle objects with __richConsole__ protocol (like Padding, Rule, etc.)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const richConsole = (renderable as any).__richConsole__;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
       const items = Array.from(richConsole.call(renderable, this, renderOptions));
       // Items can be Segments or Text instances
-      output = items
+      return items
         .map((item) => {
           if (item instanceof Text) {
             // Render Text to segments and get their text/styles
@@ -351,16 +405,10 @@ export class Console {
         })
         .join('');
     } else if (renderable instanceof Text) {
-      const segments = renderable.render(this, '\n');
-      output = this._renderSegments(segments);
+      const segments = renderable.render(this, '');
+      return this._renderSegments(segments);
     } else {
-      output = String(renderable) + '\n';
-    }
-
-    if (this.capturingOutput) {
-      this.captureBuffer.push(output);
-    } else {
-      process.stdout.write(output);
+      return String(renderable);
     }
   }
 
