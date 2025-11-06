@@ -328,7 +328,9 @@ export class Text {
     if (!(other instanceof Text)) {
       return false;
     }
-    return this.plain === other.plain && JSON.stringify(this._spans) === JSON.stringify(other._spans);
+    return (
+      this.plain === other.plain && JSON.stringify(this._spans) === JSON.stringify(other._spans)
+    );
   }
 
   contains(other: string | Text): boolean {
@@ -358,8 +360,14 @@ export class Text {
       return getTextAt(slice);
     } else {
       const plainLength = this.plain.length;
-      const start = slice.start !== undefined ? (slice.start < 0 ? plainLength + slice.start : slice.start) : 0;
-      const stop = slice.stop !== undefined ? (slice.stop < 0 ? plainLength + slice.stop : slice.stop) : plainLength;
+      const start =
+        slice.start !== undefined ? (slice.start < 0 ? plainLength + slice.start : slice.start) : 0;
+      const stop =
+        slice.stop !== undefined
+          ? slice.stop < 0
+            ? plainLength + slice.stop
+            : slice.stop
+          : plainLength;
       const step = slice.step ?? 1;
 
       if (step === 1) {
@@ -393,7 +401,11 @@ export class Text {
     const plain = this.plain;
     const markupSpans: Array<[number, boolean, string | Style]> = [
       [0, false, this.style],
-      ...this._spans.map((span): [number, boolean, string | Style] => [span.start, false, span.style]),
+      ...this._spans.map((span): [number, boolean, string | Style] => [
+        span.start,
+        false,
+        span.style,
+      ]),
       ...this._spans.map((span): [number, boolean, string | Style] => [span.end, true, span.style]),
       [plain.length, true, this.style],
     ];
@@ -667,7 +679,9 @@ export class Text {
     };
 
     let style = getStyle(this.style);
-    for (const [start, end, spanStyle] of this._spans.map(s => [s.start, s.end, s.style] as const)) {
+    for (const [start, end, spanStyle] of this._spans.map(
+      (s) => [s.start, s.end, s.style] as const
+    )) {
       if (end > offset && offset >= start) {
         style = style.add(getStyle(spanStyle));
       }
@@ -827,15 +841,12 @@ export class Text {
     const lines = text.split('\n');
 
     // Maximum is the longest line
-    const maxTextWidth = lines.length > 0
-      ? Math.max(...lines.map(line => cellLen(line)))
-      : 0;
+    const maxTextWidth = lines.length > 0 ? Math.max(...lines.map((line) => cellLen(line))) : 0;
 
     // Minimum is the longest word (split by whitespace)
-    const words = text.split(/\s+/).filter(word => word.length > 0);
-    const minTextWidth = words.length > 0
-      ? Math.max(...words.map(word => cellLen(word)))
-      : maxTextWidth;
+    const words = text.split(/\s+/).filter((word) => word.length > 0);
+    const minTextWidth =
+      words.length > 0 ? Math.max(...words.map((word) => cellLen(word))) : maxTextWidth;
 
     return new Measurement(minTextWidth, maxTextWidth);
   }
@@ -874,7 +885,11 @@ export class Text {
 
     const spans: Array<[number, boolean, number]> = [
       [0, false, 0],
-      ...enumeratedSpans.map(([index, span]): [number, boolean, number] => [span.start, false, index]),
+      ...enumeratedSpans.map(([index, span]): [number, boolean, number] => [
+        span.start,
+        false,
+        index,
+      ]),
       ...enumeratedSpans.map(([index, span]): [number, boolean, number] => [span.end, true, index]),
       [text.length, true, 0],
     ];
@@ -888,7 +903,10 @@ export class Text {
     const styleCache = new Map<string, Style>();
 
     const getCurrentStyle = (): Style => {
-      const styles = stack.slice().sort().map(id => styleMap[id]!);
+      const styles = stack
+        .slice()
+        .sort()
+        .map((id) => styleMap[id]!);
       const key = JSON.stringify(styles);
       const cached = styleCache.get(key);
       if (cached !== undefined) {
@@ -983,7 +1001,8 @@ export class Text {
 
         for (const part of parts._lines) {
           if (part.plain.endsWith('\t')) {
-            part._text[part._text.length - 1] = part._text[part._text.length - 1]!.slice(0, -1) + ' ';
+            part._text[part._text.length - 1] =
+              part._text[part._text.length - 1]!.slice(0, -1) + ' ';
             cellPosition += part.cellLen;
             const tabRemainder = cellPosition % actualTabSize;
             if (tabRemainder) {
@@ -1060,7 +1079,9 @@ export class Text {
     if (count) {
       const padCharacters = character.repeat(count);
       this.plain = `${padCharacters}${this.plain}${padCharacters}`;
-      this._spans = this._spans.map((span) => new Span(span.start + count, span.end + count, span.style));
+      this._spans = this._spans.map(
+        (span) => new Span(span.start + count, span.end + count, span.style)
+      );
     }
   }
 
@@ -1073,7 +1094,9 @@ export class Text {
     }
     if (count) {
       this.plain = `${character.repeat(count)}${this.plain}`;
-      this._spans = this._spans.map((span) => new Span(span.start + count, span.end + count, span.style));
+      this._spans = this._spans.map(
+        (span) => new Span(span.start + count, span.end + count, span.style)
+      );
     }
   }
 
@@ -1141,7 +1164,11 @@ export class Text {
           this._spans.push(new Span(textLength, textLength + text.length, textStyle));
         }
         this._text.push(plainText);
-        this._spans.push(...textSpans.map((span) => new Span(span.start + textLength, span.end + textLength, span.style)));
+        this._spans.push(
+          ...textSpans.map(
+            (span) => new Span(span.start + textLength, span.end + textLength, span.style)
+          )
+        );
         this._length += text.length;
       }
     }
@@ -1164,7 +1191,11 @@ export class Text {
       this._spans.push(new Span(textLength, textLength + textLen, textStyle));
     }
     this._text.push(plainText);
-    this._spans.push(...textSpans.map((span) => new Span(span.start + textLength, span.end + textLength, span.style)));
+    this._spans.push(
+      ...textSpans.map(
+        (span) => new Span(span.start + textLength, span.end + textLength, span.style)
+      )
+    );
     this._length += textLen;
     return this;
   }
@@ -1236,7 +1267,9 @@ export class Text {
       }
 
       const lines = new Lines(
-        Array.from(this.divide(Array.from(flattenSpans()))).filter((line) => line.plain !== separator)
+        Array.from(this.divide(Array.from(flattenSpans()))).filter(
+          (line) => line.plain !== separator
+        )
       );
 
       if (!allowBlank && text.endsWith(separator)) {

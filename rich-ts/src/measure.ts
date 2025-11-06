@@ -59,7 +59,7 @@ export class Measurement {
     const normalizedWidth = Math.max(0, width);
     return new Measurement(
       Math.max(this.minimum, normalizedWidth),
-      Math.max(this.maximum, normalizedWidth),
+      Math.max(this.maximum, normalizedWidth)
     );
   }
 
@@ -126,7 +126,7 @@ export class Measurement {
     // Not a renderable type
     throw new NotRenderableError(
       `Unable to get render width for ${String(renderable)}; ` +
-        'a str, Segment, or object with __rich_console__ method is required',
+        'a str, Segment, or object with __rich_console__ method is required'
     );
   }
 }
@@ -142,7 +142,7 @@ export class Measurement {
 export function measureRenderables(
   console: Console,
   options: ConsoleOptions,
-  renderables: unknown,
+  renderables: unknown
 ): Measurement {
   // Handle empty or non-iterable renderables
   if (!renderables) {
@@ -161,7 +161,7 @@ export function measureRenderables(
     }
 
     const measurements = renderables.map((renderable) =>
-      Measurement.get(console, options, renderable),
+      Measurement.get(console, options, renderable)
     );
 
     const minimum = Math.max(...measurements.map((m) => m.minimum));
