@@ -154,11 +154,10 @@ export function* columnCells(column: Column): Generator<RenderableType> {
   yield* column._cells;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-this-alias
 /**
  * A console renderable to draw a table.
  */
-export class Table {
+export class Table { // eslint-disable-line @typescript-eslint/no-this-alias
   public columns: Column[] = [];
   public rows: Row[] = [];
   public title?: TextType;
