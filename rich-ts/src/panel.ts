@@ -95,7 +95,9 @@ export class Panel {
       const titleText =
         typeof this.title === 'string'
           ? Text.fromMarkup(this.title)
-          : this.title.copy ? this.title.copy() : this.title;
+          : this.title.copy
+            ? this.title.copy()
+            : this.title;
       titleText.end = '';
       titleText.plain = titleText.plain.replace(/\n/g, ' ');
       titleText.noWrap = true;
@@ -111,7 +113,9 @@ export class Panel {
       const subtitleText =
         typeof this.subtitle === 'string'
           ? Text.fromMarkup(this.subtitle)
-          : this.subtitle.copy ? this.subtitle.copy() : this.subtitle;
+          : this.subtitle.copy
+            ? this.subtitle.copy()
+            : this.subtitle;
       subtitleText.end = '';
       subtitleText.plain = subtitleText.plain.replace(/\n/g, ' ');
       subtitleText.noWrap = true;
@@ -131,12 +135,9 @@ export class Panel {
     const style = this.style === 'none' ? Style.null() : console.getStyle(this.style);
     const borderStyle = style.add(console.getStyle(this.borderStyle));
     const width =
-      this.width === undefined
-        ? options.maxWidth
-        : Math.min(options.maxWidth, this.width);
+      this.width === undefined ? options.maxWidth : Math.min(options.maxWidth, this.width);
 
-    const safeBox =
-      this.safeBox === undefined ? console.options.safeBox ?? false : this.safeBox;
+    const safeBox = this.safeBox ?? console.options.safeBox ?? false;
     const box = this.box.substitute(options, safeBox);
 
     const alignText = (
@@ -192,10 +193,7 @@ export class Panel {
     }
 
     if (titleText) {
-      childWidth = Math.min(
-        options.maxWidth - 2,
-        Math.max(childWidth, titleText.cellLen + 2)
-      );
+      childWidth = Math.min(options.maxWidth - 2, Math.max(childWidth, titleText.cellLen + 2));
     }
 
     const panelWidth = childWidth + 2;
@@ -205,7 +203,7 @@ export class Panel {
       highlight: this.highlight,
     });
     // Pass style to renderLines so padding segments get Style objects
-    let lines = console.renderLines(renderable, childOptions, style);
+    const lines = console.renderLines(renderable, childOptions, style);
 
     // Pad lines to childHeight if specified
     if (childHeight !== undefined && lines.length < childHeight) {
@@ -246,7 +244,7 @@ export class Panel {
       // Render title to segments and merge into a single text string with ANSI codes
       const titleSegments = alignedTitle.render(console, '');
       const titleStr = titleSegments
-        .map(seg => {
+        .map((seg) => {
           if (seg.style && !seg.style.isNull) {
             return seg.style.render(seg.text, ColorSystem.TRUECOLOR);
           }
@@ -286,7 +284,7 @@ export class Panel {
       // Render subtitle to segments and merge into a single text string with ANSI codes
       const subtitleSegments = alignedSubtitle.render(console, '');
       const subtitleTextStr = subtitleSegments
-        .map(seg => {
+        .map((seg) => {
           if (seg.style && !seg.style.isNull) {
             return seg.style.render(seg.text, ColorSystem.TRUECOLOR);
           }

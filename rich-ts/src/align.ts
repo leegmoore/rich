@@ -85,7 +85,10 @@ export class Align {
     const align = this.align;
     const width = Measurement.get(console, options, this.renderable).maximum;
     const constrainedWidth = this.width === undefined ? width : Math.min(width, this.width);
-    const rendered = console.render(new Constrain(this.renderable, constrainedWidth), options.update({ height: undefined }));
+    const rendered = console.render(
+      new Constrain(this.renderable, constrainedWidth),
+      options.update({ height: undefined })
+    );
 
     const lines = Array.from(Segment.splitLines(rendered));
     const [renderedWidth, renderedHeight] = Segment.getShape(lines);
@@ -107,7 +110,8 @@ export class Align {
         }
       } else if (align === 'left') {
         // Pad on the right
-        const pad = excessSpace > 0 && shouldPad ? new Segment(' '.repeat(excessSpace), style) : undefined;
+        const pad =
+          excessSpace > 0 && shouldPad ? new Segment(' '.repeat(excessSpace), style) : undefined;
         for (const line of shapedLines) {
           yield* line;
           if (pad) {
@@ -119,7 +123,10 @@ export class Align {
         // Pad left and right
         const left = Math.floor(excessSpace / 2);
         const padLeft = left > 0 ? new Segment(' '.repeat(left), style) : undefined;
-        const padRight = shouldPad && excessSpace - left > 0 ? new Segment(' '.repeat(excessSpace - left), style) : undefined;
+        const padRight =
+          shouldPad && excessSpace - left > 0
+            ? new Segment(' '.repeat(excessSpace - left), style)
+            : undefined;
         for (const line of shapedLines) {
           if (padLeft) {
             yield padLeft;
@@ -214,7 +221,12 @@ export class VerticalCenter {
 
   *__richConsole__(console: Console, options: ConsoleOptions): RenderResult {
     const style = this.style !== undefined ? console.getStyle(this.style) : undefined;
-    const lines = console.renderLines(this.renderable, options.update({ height: undefined }), undefined, false);
+    const lines = console.renderLines(
+      this.renderable,
+      options.update({ height: undefined }),
+      undefined,
+      false
+    );
     const [width, _height] = Segment.getShape(lines);
     const newLine = Segment.line();
     const height = options.height ?? options.maxHeight;

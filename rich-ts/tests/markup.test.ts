@@ -58,7 +58,12 @@ describe('markup', () => {
   it('test_render_escape', () => {
     const console = new Console({ width: 80, colorSystem: null });
     console.beginCapture();
-    console.print(escape(String.raw`[red]`), escape(String.raw`\[red]`), escape(String.raw`\\[red]`), escape(String.raw`\\\[red]`));
+    console.print(
+      escape(String.raw`[red]`),
+      escape(String.raw`\[red]`),
+      escape(String.raw`\\[red]`),
+      escape(String.raw`\\\[red]`)
+    );
     const result = console.endCapture();
     const expected = String.raw`[red] \[red] \\[red] \\\[red]` + '\n';
     expect(result).toBe(expected);
@@ -109,19 +114,13 @@ describe('markup', () => {
   it('test_render_combine', () => {
     const result = render('[green]X[blue]Y[/blue]Z[/green]');
     expect(result.toString()).toBe('XYZ');
-    expect(result.spans).toEqual([
-      new Span(0, 3, 'green'),
-      new Span(1, 2, 'blue'),
-    ]);
+    expect(result.spans).toEqual([new Span(0, 3, 'green'), new Span(1, 2, 'blue')]);
   });
 
   it('test_render_overlap', () => {
     const result = render('[green]X[bold]Y[/green]Z[/bold]');
     expect(result.toString()).toBe('XYZ');
-    expect(result.spans).toEqual([
-      new Span(0, 2, 'green'),
-      new Span(1, 3, 'bold'),
-    ]);
+    expect(result.spans).toEqual([new Span(0, 2, 'green'), new Span(1, 3, 'bold')]);
   });
 
   it('test_adjoint', () => {

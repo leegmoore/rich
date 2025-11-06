@@ -455,6 +455,13 @@ export class Style {
   }
 
   /**
+   * Check if this is a null style (has no styling)
+   */
+  get isNull(): boolean {
+    return this._null;
+  }
+
+  /**
    * Get a copy of the style with color removed
    */
   get withoutColor(): Style {
@@ -537,7 +544,7 @@ export class Style {
   /**
    * Generate ANSI codes for this style
    */
-  _makeAnsiCodes(colorSystem: ColorSystem): string {
+  _makeAnsiCodes(colorSystem: ColorSystem): string | undefined {
     if (this._ansi !== undefined) {
       return this._ansi;
     }
@@ -576,7 +583,8 @@ export class Style {
       sgr.push(...this._bgcolor.downgrade(colorSystem).getAnsiCodes(false));
     }
 
-    this._ansi = sgr.join(';');
+    // Keep _ansi undefined for null styles (empty SGR array) to maintain consistency
+    this._ansi = sgr.length === 0 ? undefined : sgr.join(';');
     return this._ansi;
   }
 
