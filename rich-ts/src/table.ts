@@ -157,7 +157,8 @@ export function* columnCells(column: Column): Generator<RenderableType> {
 /**
  * A console renderable to draw a table.
  */
-export class Table { // eslint-disable-line @typescript-eslint/no-this-alias
+export class Table {
+  // eslint-disable-line @typescript-eslint/no-this-alias
   public columns: Column[] = [];
   public rows: Row[] = [];
   public title?: TextType;
@@ -447,7 +448,12 @@ export class Table { // eslint-disable-line @typescript-eslint/no-this-alias
     // Pad with empty cells if needed
     const columns = this.columns;
     if (cellRenderables.length < columns.length) {
-      cellRenderables.push(...(Array(columns.length - cellRenderables.length).fill(undefined) as (RenderableType | undefined)[]));
+      cellRenderables.push(
+        ...(Array(columns.length - cellRenderables.length).fill(undefined) as (
+          | RenderableType
+          | undefined
+        )[])
+      );
     }
 
     for (let index = 0; index < cellRenderables.length; index++) {
@@ -515,7 +521,7 @@ export class Table { // eslint-disable-line @typescript-eslint/no-this-alias
 
     const minimumWidth = measurements.reduce((sum, m) => sum + m.minimum, 0) + extraWidth;
     const maximumWidth =
-      this.width ?? (measurements.reduce((sum, m) => sum + m.maximum, 0) + extraWidth);
+      this.width ?? measurements.reduce((sum, m) => sum + m.maximum, 0) + extraWidth;
 
     let measurement = new Measurement(minimumWidth, maximumWidth);
     measurement = measurement.clamp(this.minWidth);
@@ -677,7 +683,9 @@ export class Table { // eslint-disable-line @typescript-eslint/no-this-alias
           break;
         }
 
-        const maxReduce = Array(widths.length).fill(Math.min(excessWidth, columnDifference)) as number[];
+        const maxReduce = Array(widths.length).fill(
+          Math.min(excessWidth, columnDifference)
+        ) as number[];
         widths = ratioReduce(excessWidth, ratios, maxReduce, widths);
 
         totalWidth = widths.reduce((sum, w) => sum + w, 0);

@@ -156,9 +156,7 @@ export class Box {
   substitute(options: ConsoleOptions, safe: boolean = true): Box {
     // Apply legacy Windows substitutions if needed
     const afterLegacySubstitution =
-      options.legacyWindows && safe
-        ? LEGACY_WINDOWS_SUBSTITUTIONS.get(this) ?? this
-        : this;
+      options.legacyWindows && safe ? (LEGACY_WINDOWS_SUBSTITUTIONS.get(this) ?? this) : this;
 
     // Apply ASCII substitution if needed
     if (options.asciiOnly && !afterLegacySubstitution.ascii) {
