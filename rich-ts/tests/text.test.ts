@@ -776,13 +776,13 @@ describe('Text', () => {
   });
 
   it('test_assemble', () => {
-    const text = Text.assemble(['foo', ['bar', 'bold']]);
+    const text = Text.assemble('foo', ['bar', 'bold']);
     expect(String(text)).toBe('foobar');
     expect(text.spans).toEqual([new Span(3, 6, 'bold')]);
   });
 
   it('test_assemble_meta', () => {
-    const text = Text.assemble(['foo', ['bar', 'bold']], { meta: { foo: 'bar' } });
+    const text = Text.assemble('foo', ['bar', 'bold'], { meta: { foo: 'bar' } });
     expect(String(text)).toBe('foobar');
 
     const spans = text.spans;

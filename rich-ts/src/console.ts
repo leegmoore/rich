@@ -21,13 +21,13 @@ export type JustifyMethod = 'default' | 'left' | 'center' | 'right' | 'full';
 export type OverflowMethod = 'fold' | 'crop' | 'ellipsis' | 'ignore';
 
 /** Type for objects that can be rendered to the console */
+/** Type for render results (generators of Segments or Text instances) */
+export type RenderResult = Generator<Segment | Text, void, unknown>;
+
 export type RenderableType =
   | string
   | Text
-  | { __richConsole__: (console: Console, options: ConsoleOptions) => Generator<Segment> };
-
-/** Type for render results (generators of Segments or Text instances) */
-export type RenderResult = Generator<Segment | Text, void, unknown>;
+  | { __richConsole__: (console: Console, options: ConsoleOptions) => RenderResult };
 
 /**
  * Size of the terminal.
@@ -58,6 +58,7 @@ export class ConsoleOptions {
   readonly markup: boolean;
   readonly highlight: boolean;
   readonly theme: Theme;
+  readonly safeBox?: boolean;
 
   constructor(
     options: {
@@ -71,6 +72,7 @@ export class ConsoleOptions {
       markup?: boolean;
       highlight?: boolean;
       theme?: Theme;
+      safeBox?: boolean;
     } = {}
   ) {
     this.maxWidth = options.maxWidth ?? 80;
@@ -83,6 +85,7 @@ export class ConsoleOptions {
     this.markup = options.markup ?? true;
     this.highlight = options.highlight ?? true;
     this.theme = options.theme ?? DEFAULT;
+    this.safeBox = options.safeBox;
   }
 
   /**
@@ -357,11 +360,14 @@ export class Console {
     let options: { height?: number } | undefined;
     let renderables = args;
 
-    if (args.length > 1 &&
-        typeof args[args.length - 1] === 'object' &&
-        args[args.length - 1] !== null &&
-        !('__richConsole__' in args[args.length - 1]!) &&
-        'height' in args[args.length - 1]!) {
+    const lastArg = args[args.length - 1];
+    if (
+      args.length > 1 &&
+      typeof lastArg === 'object' &&
+      lastArg !== null &&
+      !('__richConsole__' in (lastArg as Record<string, unknown>)) &&
+      'height' in (lastArg as Record<string, unknown>)
+    ) {
       options = args[args.length - 1] as { height?: number };
       renderables = args.slice(0, -1);
     }
@@ -400,7 +406,10 @@ export class Console {
 
   private _renderToString(renderable: unknown, options?: { height?: number }): string {
     // Update console options if height is provided
-    const renderOptions = options?.height !== undefined ? this.options.update({ height: options.height }) : this.options;
+    const renderOptions =
+      options?.height !== undefined
+        ? this.options.update({ height: options.height })
+        : this.options;
 
     if (typeof renderable === 'string') {
       // Convert string to Text via renderStr() to handle markup processing
@@ -442,15 +451,25 @@ export class Console {
    */
   private _renderSegment(segment: Segment): string {
     // Don't render ANSI codes if not a terminal or colorSystem is null/none
-    if (!this.isTerminal || this.colorSystem === null || this.colorSystem === 'none' || !segment.style) {
+    if (
+      !this.isTerminal ||
+      this.colorSystem === null ||
+      this.colorSystem === 'none' ||
+      !segment.style
+    ) {
       return segment.text;
     }
     // Convert string colorSystem to enum
-    const colorSystemEnum = this.colorSystem === 'truecolor' ? ColorSystem.TRUECOLOR :
-                             this.colorSystem === '256' ? ColorSystem.EIGHT_BIT :
-                             this.colorSystem === 'standard' ? ColorSystem.STANDARD :
-                             this.colorSystem === 'windows' ? ColorSystem.WINDOWS :
-                             ColorSystem.TRUECOLOR;
+    const colorSystemEnum =
+      this.colorSystem === 'truecolor'
+        ? ColorSystem.TRUECOLOR
+        : this.colorSystem === '256'
+          ? ColorSystem.EIGHT_BIT
+          : this.colorSystem === 'standard'
+            ? ColorSystem.STANDARD
+            : this.colorSystem === 'windows'
+              ? ColorSystem.WINDOWS
+              : ColorSystem.TRUECOLOR;
     // Render with ANSI codes
     return segment.style.render(segment.text, colorSystemEnum);
   }
@@ -506,7 +525,7 @@ export class Console {
 
     // Apply style if provided (but only if it's not a null style)
     // Null styles are only used for padding segments, not content
-    const shouldApplyStyle = style && !style._null;
+    const shouldApplyStyle = style && !style.isNull;
     if (shouldApplyStyle) {
       segments = Array.from(Segment.applyStyle(segments, style));
     }

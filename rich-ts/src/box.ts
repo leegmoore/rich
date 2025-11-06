@@ -63,14 +63,26 @@ export class Box {
    */
   getRow(widths: number[], level: 'head' | 'row' | 'foot' = 'row'): string {
     // STUB: Simple ASCII row separator
-    const left = level === 'head' ? this.head_row_left :
-                 level === 'foot' ? this.foot_row_left : this.row_left;
-    const horizontal = level === 'head' ? this.head_row_horizontal :
-                       level === 'foot' ? this.foot_row_horizontal : this.row_horizontal;
-    const cross = level === 'head' ? this.head_row_cross :
-                  level === 'foot' ? this.foot_row_cross : this.row_cross;
-    const right = level === 'head' ? this.head_row_right :
-                  level === 'foot' ? this.foot_row_right : this.row_right;
+    const left =
+      level === 'head' ? this.head_row_left : level === 'foot' ? this.foot_row_left : this.row_left;
+    const horizontal =
+      level === 'head'
+        ? this.head_row_horizontal
+        : level === 'foot'
+          ? this.foot_row_horizontal
+          : this.row_horizontal;
+    const cross =
+      level === 'head'
+        ? this.head_row_cross
+        : level === 'foot'
+          ? this.foot_row_cross
+          : this.row_cross;
+    const right =
+      level === 'head'
+        ? this.head_row_right
+        : level === 'foot'
+          ? this.foot_row_right
+          : this.row_right;
 
     const parts = [left];
     for (let i = 0; i < widths.length; i++) {

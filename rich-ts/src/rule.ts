@@ -82,8 +82,8 @@ export class Rule {
     const ruleStyle = console.getStyle(this.style);
 
     // Use ASCII dash if asciiOnly and characters contain non-ASCII
-    // eslint-disable-next-line no-control-regex
     const characters =
+      // eslint-disable-next-line no-control-regex
       options.asciiOnly && !this.characters.match(/^[\x00-\x7F]*$/) ? '-' : this.characters;
 
     const charsLen = cellLen(characters);

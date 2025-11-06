@@ -27,7 +27,7 @@ const expected = [
 ];
 
 function render(panel: Panel, width = 50): string {
-  const console = new Console({ width: 50, legacy_windows: false });
+  const console = new Console({ width, legacy_windows: false });
   console.beginCapture();
   console.print(panel);
   return console.endCapture();

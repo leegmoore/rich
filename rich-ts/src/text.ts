@@ -395,7 +395,7 @@ export class Text {
     // For now, use a simplified escape that only escapes opening brackets of markup-like patterns
     const escape = (text: string): string => {
       // Only escape [ that looks like it starts a markup tag (followed by a-z, #, /, or @)
-      return text.replace(/\[([a-z#\/@])/gi, '\\[$1');
+      return text.replace(/\[([a-z#/@])/gi, '\\[$1');
     };
 
     const output: string[] = [];
@@ -499,15 +499,18 @@ export class Text {
    */
   static assemble(
     ...args: Array<
-      string | Text | [string, StyleType] | {
-        style?: string | Style;
-        justify?: JustifyMethod;
-        overflow?: OverflowMethod;
-        noWrap?: boolean;
-        end?: string;
-        tabSize?: number;
-        meta?: Record<string, any>;
-      }
+      | string
+      | Text
+      | [string, StyleType]
+      | {
+          style?: string | Style;
+          justify?: JustifyMethod;
+          overflow?: OverflowMethod;
+          noWrap?: boolean;
+          end?: string;
+          tabSize?: number;
+          meta?: Record<string, any>;
+        }
     >
   ): Text {
     // Extract options from last argument if it's an options object
@@ -528,7 +531,13 @@ export class Text {
       typeof lastArg === 'object' &&
       !Array.isArray(lastArg) &&
       !(lastArg instanceof Text) &&
-      ('style' in lastArg || 'justify' in lastArg || 'overflow' in lastArg || 'noWrap' in lastArg || 'end' in lastArg || 'tabSize' in lastArg || 'meta' in lastArg)
+      ('style' in lastArg ||
+        'justify' in lastArg ||
+        'overflow' in lastArg ||
+        'noWrap' in lastArg ||
+        'end' in lastArg ||
+        'tabSize' in lastArg ||
+        'meta' in lastArg)
     ) {
       options = lastArg;
       parts = args.slice(0, -1);
@@ -868,16 +877,12 @@ export class Text {
     const overflow = this.overflow ?? DEFAULT_OVERFLOW;
     const noWrap = this.noWrap ?? false;
 
-    const lines = this.wrap(
-      console,
-      options.maxWidth,
-      {
-        justify,
-        overflow,
-        tabSize,
-        noWrap,
-      }
-    );
+    const lines = this.wrap(console, options.maxWidth, {
+      justify,
+      overflow,
+      tabSize,
+      noWrap,
+    });
 
     const allLines = new Text('\n').join(lines);
     yield* allLines.render(console, this.end);
@@ -924,6 +929,7 @@ export class Text {
     // Use console.getStyle to resolve string styles (theme lookups and parsing)
     const getStyle = (_style: string | Style): Style => {
       if (typeof _style === 'string') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         return _console.getStyle(_style);
       }
       return _style;

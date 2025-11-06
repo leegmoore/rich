@@ -455,6 +455,13 @@ export class Style {
   }
 
   /**
+   * Check if this is a null style (has no styling)
+   */
+  get isNull(): boolean {
+    return this._null;
+  }
+
+  /**
    * Get a copy of the style with color removed
    */
   get withoutColor(): Style {

@@ -28,8 +28,8 @@ describe('Rule', () => {
   });
 
   it('test_rule_error', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
     expect(() =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
       new Console({ width: 16, legacy_windows: false }).rule('foo', { align: 'foo' as any })
     ).toThrow('invalid value for align');
   });

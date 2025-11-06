@@ -39,7 +39,7 @@ export class Tag {
 export function escape(markup: string): string {
   const escapeRegex = /(\\*)(\[[a-z#/@][^\[]*?])/g;
 
-  function escapeBackslashes(match: string, backslashes: string, text: string): string {
+  function escapeBackslashes(_match: string, backslashes: string, text: string): string {
     return `${backslashes}${backslashes}\\${text}`;
   }
 
@@ -90,6 +90,10 @@ export function* _parse(markup: string): Generator<[number, string | null, Tag |
     }
 
     // Parse tag
+    if (!tagText) {
+      position = end;
+      continue;
+    }
     const equalsIndex = tagText.indexOf('=');
     let name: string, parameters: string | null;
     if (equalsIndex === -1) {
@@ -166,9 +170,7 @@ export function render(
         } else {
           // Implicit close [/]
           if (styleStack.length === 0) {
-            throw new MarkupError(
-              `closing tag '[/]' at position ${position} has nothing to close`
-            );
+            throw new MarkupError(`closing tag '[/]' at position ${position} has nothing to close`);
           }
           [start, openTag] = styleStack.pop()!;
         }
@@ -184,8 +186,8 @@ export function render(
 
             let paramsStr: string;
             if (handlerMatch) {
-              [, handlerName = '', ] = handlerMatch;
-              let matchParameters = handlerMatch[2];
+              [, handlerName = ''] = handlerMatch;
+              const matchParameters = handlerMatch[2];
               paramsStr = matchParameters === undefined ? '()' : matchParameters;
             } else {
               // Regex didn't match - try to parse parameters directly
@@ -210,20 +212,17 @@ export function render(
 
               metaParams = JSON.parse(jsonStr);
             } catch (error) {
-              throw new MarkupError(
-                `error parsing '${paramsStr}'; ${(error as Error).message}`
-              );
+              throw new MarkupError(`error parsing '${paramsStr}'; ${(error as Error).message}`);
             }
 
             if (handlerName) {
-              metaParams = [
-                handlerName,
-                Array.isArray(metaParams) ? metaParams : [metaParams],
-              ];
+              metaParams = [handlerName, Array.isArray(metaParams) ? metaParams : [metaParams]];
             }
           }
 
-          spans.push(new Span(start, text.length, new Style({ meta: { [openTag.name]: metaParams } })));
+          spans.push(
+            new Span(start, text.length, new Style({ meta: { [openTag.name]: metaParams } }))
+          );
         } else {
           spans.push(new Span(start, text.length, openTag.toString()));
         }
