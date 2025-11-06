@@ -432,21 +432,31 @@ export class Text {
 
   /**
    * Create Text instance from markup.
-   * TODO: Requires markup module.
    */
   static fromMarkup(
-    _text: string,
-    _options: {
+    text: string,
+    options: {
       style?: string | Style;
       emoji?: boolean;
-      emojiVariant?: any; // TODO: EmojiVariant type
+      emojiVariant?: 'text' | 'emoji';
       justify?: JustifyMethod;
       overflow?: OverflowMethod;
       end?: string;
     } = {}
   ): Text {
-    // TODO: Import render from markup module
-    throw new Error('fromMarkup requires markup module - not yet ported');
+    // Import render dynamically to avoid circular dependency
+    const { render } = require('./markup.js') as typeof import('./markup.js');
+    const result = render(
+      text,
+      options.style ?? '',
+      options.emoji ?? true,
+      options.emojiVariant
+    );
+    // Apply other options
+    if (options.justify !== undefined) result.justify = options.justify;
+    if (options.overflow !== undefined) result.overflow = options.overflow;
+    if (options.end !== undefined) result.end = options.end;
+    return result;
   }
 
   /**
