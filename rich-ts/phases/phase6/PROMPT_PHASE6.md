@@ -76,7 +76,73 @@ I'm continuing the Rich TypeScript port. This is **Phase 6: Replace Stubs + Comp
 
 ## 🎯 PHASE 6 WORKFLOW
 
-### PART 1: REPLACE ALL STUBS (Do this FIRST!)
+### PART 0: FIX PHASE 5 ISSUES (Do this FIRST!)
+
+Phase 5 was merged with TypeScript compilation errors and test regressions. Fix these before proceeding.
+
+#### Fix TypeScript Compilation Errors (13 errors)
+
+**1. Add Style.isNull() public method**
+```typescript
+// In src/style.ts, add public method:
+public isNull(): boolean {
+  return this._null;
+}
+```
+**Impact:** Fixes console.ts:524, panel.ts:248, panel.ts:288
+
+**2. Fix console.ts type guards (lines 364-365)**
+```typescript
+// Before (broken):
+!('__richConsole__' in args[args.length - 1]!) &&
+'height' in args[args.length - 1]!
+
+// After (fixed):
+typeof args[args.length - 1] === 'object' &&
+args[args.length - 1] !== null &&
+!('__richConsole__' in args[args.length - 1]) &&
+'height' in args[args.length - 1]
+```
+
+**3. Fix markup.ts issues**
+- Line 42: Remove unused `match` variable
+- Lines 93,96,99,100: Add null checks for `tagText`
+
+**4. Add missing properties to ConsoleOptions**
+```typescript
+// In src/console.ts ConsoleOptions interface:
+safeBox?: boolean;
+```
+
+**5. Fix panel.ts type issues**
+```typescript
+// Add Padding to RenderableType union (wherever defined):
+type RenderableType = string | Text | Padding | ...;
+```
+
+#### Fix Test Regressions (2 failures)
+
+**6. Fix Text.assemble() - Broken for tuples**
+- **Tests failing:** text.test.ts > test_assemble, test_assemble_meta
+- **Issue:** `Text.assemble(['foo', ['bar', 'bold']])` returns 'foo' instead of 'foobar'
+- **Debug:** Check Text.assemble() implementation - tuples not being processed
+
+#### Verify Fixes
+```bash
+cd rich-ts
+npm run check  # Must pass: format, typecheck, lint, tests
+```
+
+After all fixes, commit:
+```bash
+git add -A
+git commit -m "Fix Phase 5 compilation errors and test regressions"
+git push
+```
+
+---
+
+### PART 1: REPLACE ALL STUBS
 
 #### 1. Replace theme + default_styles + themes
 

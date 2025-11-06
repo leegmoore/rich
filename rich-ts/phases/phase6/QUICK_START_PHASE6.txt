@@ -27,7 +27,23 @@ CRITICAL: This phase REPLACES stubs before porting new modules!
 
 PHASE 6 WORKFLOW:
 
-STEP 1: REPLACE ALL STUBS (do this FIRST!)
+STEP 0: FIX PHASE 5 ISSUES (do this FIRST!)
+
+**TypeScript Compilation Errors (13 errors):**
+1. console.ts:364-365 - Fix type guards for 'in' operator
+2. console.ts:524 - Add Style.isNull() public method (accessing private _null)
+3. markup.ts:42,93,96,99,100 - Remove unused var, add null checks
+4. panel.ts:140 - Add safeBox to ConsoleOptions interface
+5. panel.ts:188,206 - Add Padding to RenderableType union
+6. panel.ts:248,288 - Use Style.isNull() method
+
+**Test Regressions (2 failures):**
+7. text.test.ts > test_assemble - Text.assemble() broken for tuples
+8. text.test.ts > test_assemble_meta - Same issue
+
+After fixes, verify: npm run check passes (format, typecheck, lint, test)
+
+STEP 1: REPLACE ALL STUBS
 
 1. **theme + default_styles + themes** (~313 LOC, ~53 tests)
    - Port tests/test_theme.py → tests/theme.test.ts
