@@ -10,6 +10,8 @@ import { Segment } from './segment';
 import { Style } from './style';
 import { Text } from './text';
 import { Rule } from './rule.js';
+import { Theme } from './theme.js';
+import { DEFAULT } from './themes.js';
 
 /** Justify methods for text alignment */
 export type JustifyMethod = 'default' | 'left' | 'center' | 'right' | 'full';
@@ -54,6 +56,7 @@ export class ConsoleOptions {
   readonly legacy_windows: boolean;
   readonly markup: boolean;
   readonly highlight: boolean;
+  readonly theme: Theme;
 
   constructor(
     options: {
@@ -66,6 +69,7 @@ export class ConsoleOptions {
       legacy_windows?: boolean;
       markup?: boolean;
       highlight?: boolean;
+      theme?: Theme;
     } = {}
   ) {
     this.maxWidth = options.maxWidth ?? 80;
@@ -77,6 +81,7 @@ export class ConsoleOptions {
     this.legacy_windows = options.legacy_windows ?? false;
     this.markup = options.markup ?? true;
     this.highlight = options.highlight ?? true;
+    this.theme = options.theme ?? DEFAULT;
   }
 
   /**
@@ -100,6 +105,7 @@ export class ConsoleOptions {
       legacy_windows: this.legacy_windows,
       markup: this.markup,
       highlight: this.highlight,
+      theme: this.theme,
     });
   }
 
@@ -117,6 +123,7 @@ export class ConsoleOptions {
       legacy_windows: this.legacy_windows,
       markup: this.markup,
       highlight: this.highlight,
+      theme: this.theme,
     });
   }
 
@@ -141,6 +148,7 @@ export class ConsoleOptions {
       legacy_windows: this.legacy_windows,
       markup: this.markup,
       highlight: this.highlight,
+      theme: this.theme,
     });
   }
 }
@@ -158,12 +166,12 @@ export class Console {
   readonly legacy_windows: boolean;
   readonly isTerminal: boolean;
   readonly colorSystem: string | null;
+  readonly theme: Theme;
   private captureBuffer: string[];
   private capturingOutput: boolean;
 
   // TODO: Add full set of Console properties when needed:
   // - file: TextIO
-  // - theme: Theme
   // - highlighter: HighlighterType
   // - tab_size: number
   // - record: boolean
@@ -183,7 +191,7 @@ export class Console {
       colorSystem?: 'auto' | 'standard' | '256' | 'truecolor' | 'windows' | 'none' | null;
       legacy_windows?: boolean;
       file?: unknown; // TODO: proper IO type
-      theme?: unknown; // TODO: Theme type
+      theme?: Theme;
       stderr?: boolean;
       markup?: boolean;
       highlight?: boolean;
@@ -205,7 +213,10 @@ export class Console {
     this.height = options.height ?? 25;
     this.legacy_windows = options.legacy_windows ?? false;
     this.isTerminal = options.force_terminal ?? false;
-    this.colorSystem = options.colorSystem ?? options.color_system ?? 'truecolor';
+    // Handle colorSystem explicitly to allow null values
+    this.colorSystem = 'colorSystem' in options ? options.colorSystem :
+                       ('color_system' in options ? options.color_system : 'truecolor');
+    this.theme = options.theme ?? DEFAULT;
     this.captureBuffer = [];
     this.capturingOutput = false;
 
@@ -218,6 +229,7 @@ export class Console {
       legacy_windows: this.legacy_windows,
       markup: options.markup ?? true,
       highlight: options.highlight ?? true,
+      theme: this.theme,
     });
   }
 
@@ -248,13 +260,20 @@ export class Console {
 
   /**
    * Get a Style instance for a style definition.
-   * TODO: Implement full style resolution with themes.
+   * Looks up style names in the theme or parses style strings.
    */
   getStyle(styleDefinition: string | Style, defaultStyle?: Style): Style {
     if (typeof styleDefinition === 'string') {
-      // TODO: Parse style string and apply theme
-      // For now, just return a null style
-      return defaultStyle ?? Style.null();
+      // Check if it's a theme style name
+      if (this.theme.styles[styleDefinition]) {
+        return this.theme.styles[styleDefinition];
+      }
+      // Otherwise parse as style definition
+      try {
+        return Style.parse(styleDefinition);
+      } catch {
+        return defaultStyle ?? Style.null();
+      }
     }
     return styleDefinition;
   }
@@ -310,18 +329,19 @@ export class Console {
       output = items
         .map((item) => {
           if (item instanceof Text) {
-            // Render Text to segments and get their text, using the Text's end property
+            // Render Text to segments and get their text/styles
             const segments = item.render(this, item.end);
-            return segments.map((seg) => seg.text).join('');
+            return this._renderSegments(segments);
           } else if (item instanceof Segment) {
-            return item.text;
+            return this._renderSegment(item);
           } else {
             return String(item);
           }
         })
         .join('');
     } else if (renderable instanceof Text) {
-      output = renderable.plain + '\n';
+      const segments = renderable.render(this, '\n');
+      output = this._renderSegments(segments);
     } else {
       output = String(renderable) + '\n';
     }
@@ -331,6 +351,25 @@ export class Console {
     } else {
       process.stdout.write(output);
     }
+  }
+
+  /**
+   * Render a segment to a string with ANSI codes if terminal supports it.
+   */
+  private _renderSegment(segment: Segment): string {
+    // Don't render ANSI codes if not a terminal or colorSystem is null/none
+    if (!this.isTerminal || this.colorSystem === null || this.colorSystem === 'none' || !segment.style) {
+      return segment.text;
+    }
+    // Render with ANSI codes
+    return segment.style.render(segment.text, this.colorSystem as 'truecolor' | undefined);
+  }
+
+  /**
+   * Render an array of segments to a string.
+   */
+  private _renderSegments(segments: Segment[]): string {
+    return segments.map((seg) => this._renderSegment(seg)).join('');
   }
 
   /**

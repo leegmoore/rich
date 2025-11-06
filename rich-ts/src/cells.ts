@@ -161,7 +161,7 @@ export function setCellSize(text: string, total: number): string {
   // Special case: if the first character is wider than total, we can't fit any characters
   // Return spaces to fill the requested size
   if (chars.length > 0) {
-    const firstCharWidth = getCharacterCellSize(chars[0]);
+    const firstCharWidth = getCharacterCellSize(chars[0]!);
     if (firstCharWidth > total) {
       return ' '.repeat(total);
     }
