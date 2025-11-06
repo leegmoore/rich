@@ -1,6 +1,6 @@
 /**
- * STUB: Emoji renderable
- * TODO: Full implementation in Phase 6
+ * Emoji - A single emoji character
+ * Based on rich/emoji.py
  */
 import type { Console, ConsoleOptions, RenderResult } from './console.js';
 import { Segment } from './segment.js';
@@ -10,6 +10,9 @@ import { _emoji_replace } from './_emoji_replace.js';
 
 export type EmojiVariant = 'emoji' | 'text';
 
+/**
+ * Exception raised when an emoji doesn't exist.
+ */
 export class NoEmoji extends Error {
   constructor(message: string) {
     super(message);
@@ -17,12 +20,28 @@ export class NoEmoji extends Error {
   }
 }
 
+/**
+ * A single emoji character.
+ */
 export class Emoji {
+  static VARIANTS: Record<string, string> = {
+    text: '\uFE0E',
+    emoji: '\uFE0F',
+  };
+
   name: string;
   style: StyleType;
   variant?: EmojiVariant;
   private _char: string;
 
+  /**
+   * Create an Emoji.
+   *
+   * @param name - Name of emoji.
+   * @param style - Optional style. Defaults to 'none'.
+   * @param variant - Optional variant (emoji or text).
+   * @throws {NoEmoji} If the emoji doesn't exist.
+   */
   constructor(name: string, style: StyleType = 'none', variant?: EmojiVariant) {
     this.name = name;
     this.style = style;
@@ -33,10 +52,19 @@ export class Emoji {
       throw new NoEmoji(`No emoji called '${name}'`);
     }
     this._char = emoji;
-    // STUB: Variant support not implemented
-    // TODO Phase 6: Add variant suffix (\uFE0E or \uFE0F)
+
+    // Add variant suffix if specified
+    if (variant) {
+      this._char += Emoji.VARIANTS[variant] ?? '';
+    }
   }
 
+  /**
+   * Replace emoji markup with corresponding unicode characters.
+   *
+   * @param text - A string with emojis codes, e.g. "Hello :smiley:!"
+   * @returns A string with emoji codes replaces with actual emoji.
+   */
   static replace(text: string): string {
     return _emoji_replace(text);
   }
@@ -45,10 +73,7 @@ export class Emoji {
     return this._char;
   }
 
-  *__richConsole__(_console: Console, _options: ConsoleOptions): RenderResult {
-    // STUB: Basic rendering without style lookup
-    // TODO Phase 6: Use console.getStyle() for style resolution
-    const style = typeof this.style === 'string' ? Style.parse(this.style) : this.style;
-    yield new Segment(this._char, style);
+  *__richConsole__(console: Console, _options: ConsoleOptions): RenderResult {
+    yield new Segment(this._char, console.getStyle(this.style));
   }
 }

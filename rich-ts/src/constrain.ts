@@ -1,22 +1,29 @@
 /**
- * STUB: Constrain - limit renderable width
- * TODO: Full implementation in Phase 6
+ * Constrain - Limit renderable width
+ * Based on rich/constrain.py
  */
 import type { Console, ConsoleOptions, RenderableType, RenderResult } from './console.js';
 import { Measurement } from './measure.js';
 
+/**
+ * Constrain the width of a renderable to a given number of characters.
+ */
 export class Constrain {
   renderable: RenderableType;
   width: number | undefined;
 
+  /**
+   * Create a Constrain instance.
+   *
+   * @param renderable - A renderable object.
+   * @param width - The maximum width (in characters) to render. Defaults to undefined (no constraint).
+   */
   constructor(renderable: RenderableType, width?: number) {
     this.renderable = renderable;
     this.width = width;
   }
 
   *__richConsole__(console: Console, options: ConsoleOptions): RenderResult {
-    // STUB: Functional but minimal implementation
-    // TODO Phase 6: Add more sophisticated width handling if needed
     if (this.width === undefined) {
       const segments = console.render(this.renderable, options);
       yield* segments;
@@ -29,8 +36,6 @@ export class Constrain {
   }
 
   __richMeasure__(console: Console, options: ConsoleOptions): Measurement {
-    // STUB: Functional but minimal implementation
-    // TODO Phase 6: Add more sophisticated measurement if needed
     if (this.width !== undefined) {
       options = options.updateWidth(this.width);
     }
