@@ -9,7 +9,7 @@ import { Console } from '../src/console';
 function render(renderable: Emoji): string {
   const console = new Console({ file: { write: () => {} }, width: 80 });
   const segments = Array.from(renderable.__richConsole__(console, console.options));
-  return segments.map((s) => s.text).join('');
+  return segments.map((s) => s.text as string).join('');
 }
 
 describe('emoji', () => {

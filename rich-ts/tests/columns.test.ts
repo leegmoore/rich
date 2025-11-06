@@ -61,6 +61,7 @@ describe('Columns', () => {
   it('test_render', () => {
     const expected =
       '────────────────────────────────────────────── empty ───────────────────────────────────────────────\n' +
+      '\n' +
       '───────────────────────────────────────────── optimal ──────────────────────────────────────────────\n' +
       'Ursus americanus           American buffalo       Bison bison            American crow          \n' +
       'Corvus brachyrhynchos      American marten        Martes americana       American racer         \n' +
@@ -92,16 +93,16 @@ describe('Columns', () => {
       'Tachyglossus aculeatus                Scolopax minor                    American crow               \n' +
       'Anteater, giant                       Anaconda (unidentified)           Corvus brachyrhynchos       \n' +
       'Myrmecophaga tridactyla               Eunectes sp.                      American marten             \n' +
-      '                                      Andean goose                      Martes americana            \n' +
+      'Andean goose                          Martes americana                                              \n' +
       '─────────────────────────────────────────── fixed width ────────────────────────────────────────────\n' +
       'Anteater,         Eunectes sp.     Coluber          Corvus           Ursus americanus \n' +
-      'australian spiny                   constrictor      brachyrhynchos                    \n' +
+      'australian spiny  constrictor      brachyrhynchos   \n' +
       'Tachyglossus      Andean goose     American         American marten  American buffalo \n' +
-      'aculeatus                          woodcock                                           \n' +
+      'aculeatus         woodcock         \n' +
       'Anteater, giant   Chloephaga       Scolopax minor   Martes americana Bison bison      \n' +
-      '                  melanoptera                                                         \n' +
+      'melanoptera      \n' +
       'Myrmecophaga      Ant              Anaconda         American racer   American crow    \n' +
-      'tridactyla                         (unidentified)                                     \n' +
+      'tridactyla        (unidentified)   \n' +
       '\n';
     expect(render()).toBe(expected);
   });

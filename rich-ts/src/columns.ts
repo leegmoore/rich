@@ -76,7 +76,7 @@ export class Columns {
       return;
     }
 
-    const [_top, right, _bottom, left] = Padding.unpack(this.padding);
+    const [, right, , left] = Padding.unpack(this.padding);
     const widthPadding = Math.max(left, right);
     const maxWidth = options.maxWidth;
     const widths: Map<number, number> = new Map();
@@ -105,7 +105,7 @@ export class Columns {
 
         const columnLengths: number[] = Array(columnCount).fill(
           Math.floor(itemCount / columnCount)
-        );
+        ) as number[];
         for (let colNo = 0; colNo < itemCount % columnCount; colNo++) {
           columnLengths[colNo]! += 1;
         }
@@ -113,7 +113,7 @@ export class Columns {
         const rowCount = Math.ceil(itemCount / columnCount);
         const cells: number[][] = Array(rowCount)
           .fill(0)
-          .map(() => Array(columnCount).fill(-1));
+          .map(() => Array(columnCount).fill(-1) as number[]);
 
         let row = 0;
         let col = 0;

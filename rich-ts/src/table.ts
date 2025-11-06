@@ -3,6 +3,8 @@
  * Based on rich/table.py
  */
 
+/* eslint-disable @typescript-eslint/no-this-alias */
+
 import type {
   Console,
   ConsoleOptions,
@@ -152,6 +154,7 @@ export function* columnCells(column: Column): Generator<RenderableType> {
   yield* column._cells;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-this-alias
 /**
  * A console renderable to draw a table.
  */
@@ -240,13 +243,13 @@ export class Table {
     this.caption = options.caption as TextType | undefined;
     this.width = options.width as number | undefined;
     this.minWidth = options.minWidth as number | undefined;
-    this.box = (
-      options.box !== undefined && options.box !== null
-        ? options.box
-        : options.box === null
+    // Special handling: null means no box, undefined means default box
+    this.box =
+      options.box !== undefined
+        ? options.box === null
           ? undefined
-          : box.HEAVY_HEAD
-    ) as box.Box | undefined;
+          : (options.box as box.Box)
+        : box.HEAVY_HEAD;
     this.safeBox = options.safeBox as boolean | undefined;
     this._padding = Padding.unpack((options.padding ?? [0, 1]) as PaddingDimensions);
     this.padEdge = (options.padEdge ?? true) as boolean;
@@ -266,7 +269,7 @@ export class Table {
     this.titleJustify = (options.titleJustify ?? 'center') as JustifyMethod;
     this.captionJustify = (options.captionJustify ?? 'center') as JustifyMethod;
     this.highlight = (options.highlight ?? false) as boolean;
-    this.rowStyles = Array.isArray(options.rowStyles) ? options.rowStyles : [];
+    this.rowStyles = (Array.isArray(options.rowStyles) ? options.rowStyles : []) as StyleType[];
 
     // Add headers
     for (const header of headers) {
@@ -405,7 +408,7 @@ export class Table {
       maxWidth: options.maxWidth,
       ratio: options.ratio,
       noWrap: options.noWrap ?? false,
-      highlight: options.highlight !== undefined ? options.highlight : this.highlight,
+      highlight: options.highlight ?? this.highlight,
     });
     this.columns.push(column);
   }
@@ -445,7 +448,7 @@ export class Table {
     // Pad with empty cells if needed
     const columns = this.columns;
     if (cellRenderables.length < columns.length) {
-      cellRenderables.push(...Array(columns.length - cellRenderables.length).fill(undefined));
+      cellRenderables.push(...(Array(columns.length - cellRenderables.length).fill(undefined) as (RenderableType | undefined)[]));
     }
 
     for (let index = 0; index < cellRenderables.length; index++) {
@@ -513,9 +516,7 @@ export class Table {
 
     const minimumWidth = measurements.reduce((sum, m) => sum + m.minimum, 0) + extraWidth;
     const maximumWidth =
-      this.width !== undefined
-        ? this.width
-        : measurements.reduce((sum, m) => sum + m.maximum, 0) + extraWidth;
+      this.width ?? (measurements.reduce((sum, m) => sum + m.maximum, 0) + extraWidth);
 
     let measurement = new Measurement(minimumWidth, maximumWidth);
     measurement = measurement.clamp(this.minWidth);
@@ -593,19 +594,19 @@ export class Table {
     const maxWidth = options.maxWidth;
     const columns = this.columns;
     const widthRanges = columns.map((column) => this._measureColumn(console, options, column));
-    let widths = widthRanges.map((range) => range.maximum || 1);
-    const getPaddingWidth = this._getPaddingWidth.bind(this);
+    let widths = widthRanges.map((range) => range.maximum ?? 1);
+    const getPaddingWidth = (columnIndex: number) => this._getPaddingWidth(columnIndex);
     const extraWidth = this._extraWidth;
 
     if (this.expand) {
-      const ratios = columns.filter(isFlexibleColumn).map((col) => col.ratio || 0);
+      const ratios = columns.filter(isFlexibleColumn).map((col) => col.ratio ?? 0);
       if (ratios.some((r) => r > 0)) {
         const fixedWidths = widthRanges.map((range, i) =>
           isFlexibleColumn(columns[i]!) ? 0 : range.maximum
         );
         const flexMinimum = columns
           .filter(isFlexibleColumn)
-          .map((column) => (column.width || 1) + getPaddingWidth(column._index));
+          .map((column) => (column.width ?? 1) + getPaddingWidth(column._index));
         const flexibleWidth = maxWidth - fixedWidths.reduce((sum, w) => sum + w, 0);
         const flexWidths = ratioDistribute(flexibleWidth, ratios, flexMinimum);
         const iterFlexWidths = flexWidths[Symbol.iterator]();
@@ -630,14 +631,14 @@ export class Table {
       // Last resort, reduce columns evenly
       if (tableWidth > maxWidth) {
         const excessWidth = tableWidth - maxWidth;
-        widths = ratioReduce(excessWidth, Array(widths.length).fill(1), widths, widths);
+        widths = ratioReduce(excessWidth, Array(widths.length).fill(1) as number[], widths, widths);
         tableWidth = widths.reduce((sum, w) => sum + w, 0);
       }
 
       const updatedWidthRanges = widths.map((width, i) =>
         this._measureColumn(console, options.updateWidth(width), columns[i]!)
       );
-      widths = updatedWidthRanges.map((range) => range.maximum || 0);
+      widths = updatedWidthRanges.map((range) => range.maximum ?? 0);
     }
 
     if (
@@ -677,7 +678,7 @@ export class Table {
           break;
         }
 
-        const maxReduce = Array(widths.length).fill(Math.min(excessWidth, columnDifference));
+        const maxReduce = Array(widths.length).fill(Math.min(excessWidth, columnDifference)) as number[];
         widths = ratioReduce(excessWidth, ratios, maxReduce, widths);
 
         totalWidth = widths.reduce((sum, w) => sum + w, 0);
@@ -741,20 +742,20 @@ export class Table {
     };
 
     const rawCells: Array<[StyleType, RenderableType]> = [];
-    const getStyle = console.getStyle.bind(console);
+    const getStyle = (style: StyleType) => console.getStyle(style);
 
     if (this.showHeader) {
-      const headerStyle = getStyle(this.headerStyle || '').add(getStyle(column.headerStyle));
+      const headerStyle = getStyle(this.headerStyle ?? '').add(getStyle(column.headerStyle));
       rawCells.push([headerStyle, column.header]);
     }
 
-    const cellStyle = getStyle(column.style || '');
+    const cellStyle = getStyle(column.style ?? '');
     for (const cell of columnCells(column)) {
       rawCells.push([cellStyle, cell]);
     }
 
     if (this.showFooter) {
-      const footerStyle = getStyle(this.footerStyle || '').add(getStyle(column.footerStyle));
+      const footerStyle = getStyle(this.footerStyle ?? '').add(getStyle(column.footerStyle));
       rawCells.push([footerStyle, column.footer]);
     }
 
@@ -763,7 +764,7 @@ export class Table {
         const vertical =
           (renderable && typeof renderable === 'object' && 'vertical' in renderable
             ? (renderable as { vertical?: VerticalAlignMethod }).vertical
-            : undefined) || column.vertical;
+            : undefined) ?? column.vertical;
         yield {
           style,
           renderable: new Padding(renderable, getPadding(first, last)),
@@ -775,7 +776,7 @@ export class Table {
         const vertical =
           (renderable && typeof renderable === 'object' && 'vertical' in renderable
             ? (renderable as { vertical?: VerticalAlignMethod }).vertical
-            : undefined) || column.vertical;
+            : undefined) ?? column.vertical;
         yield {
           style,
           renderable,
@@ -842,8 +843,8 @@ export class Table {
    * Render the table.
    */
   private *_render(console: Console, options: ConsoleOptions, widths: number[]): RenderResult {
-    const tableStyle = console.getStyle(this.style || '');
-    const borderStyle = tableStyle.add(console.getStyle(this.borderStyle || ''));
+    const tableStyle = console.getStyle(this.style ?? '');
+    const borderStyle = tableStyle.add(console.getStyle(this.borderStyle ?? ''));
 
     const _columnCells = this.columns.map((column, index) =>
       Array.from(this._getCells(console, index, column))
@@ -893,8 +894,8 @@ export class Table {
         yield newLine;
       }
 
-      const getRowStyle = this.getRowStyle.bind(this);
-      const getStyle = console.getStyle.bind(console);
+      const getRowStyle = (console: Console, index: number) => this.getRowStyle(console, index);
+      const getStyle = (style: StyleType) => console.getStyle(style);
 
       for (const [index, [first, last, rowCell]] of Array.from(loopFirstLast(rowCells)).entries()) {
         const headerRow = first && showHeader;
@@ -1022,8 +1023,8 @@ export class Table {
       }
     } else {
       // No box
-      const getRowStyle = this.getRowStyle.bind(this);
-      const getStyle = console.getStyle.bind(console);
+      const getRowStyle = (console: Console, index: number) => this.getRowStyle(console, index);
+      const getStyle = (style: StyleType) => console.getStyle(style);
 
       for (const [index, [first, last, rowCell]] of Array.from(loopFirstLast(rowCells)).entries()) {
         const headerRow = first && showHeader;

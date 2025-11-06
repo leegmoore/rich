@@ -23,7 +23,7 @@ export function ratioDistribute(total: number, ratios: number[], minimums?: numb
 
   let totalRemaining = total;
   const distributedTotal: number[] = [];
-  const mins = minimums ?? Array(ratios.length).fill(0);
+  const mins = minimums ?? (Array(ratios.length).fill(0) as number[]);
 
   let currentTotalRatio = totalRatio;
   for (let i = 0; i < adjustedRatios.length; i++) {

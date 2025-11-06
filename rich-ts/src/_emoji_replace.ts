@@ -4,7 +4,7 @@
  */
 import { EMOJI } from './_emoji_codes.js';
 
-const EMOJI_REGEX = /(:(\S*?)(?:(?:\-)(emoji|text))?:)/g;
+const EMOJI_REGEX = /(:(\S*?)(?:(?:-)(emoji|text))?:)/g;
 
 /**
  * Replace emoji code in text.
