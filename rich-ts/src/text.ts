@@ -24,6 +24,7 @@ import { stripControlCodes } from './control';
 import { Measurement } from './measure';
 import { Segment } from './segment';
 import { Style, StyleType } from './style';
+import * as markup from './markup.js';
 
 import type { Console, ConsoleOptions, JustifyMethod, OverflowMethod } from './console';
 export type AlignMethod = 'left' | 'center' | 'right';
@@ -432,21 +433,30 @@ export class Text {
 
   /**
    * Create Text instance from markup.
-   * TODO: Requires markup module.
    */
   static fromMarkup(
-    _text: string,
-    _options: {
+    text: string,
+    options: {
       style?: string | Style;
       emoji?: boolean;
-      emojiVariant?: any; // TODO: EmojiVariant type
+      emojiVariant?: 'text' | 'emoji';
       justify?: JustifyMethod;
       overflow?: OverflowMethod;
       end?: string;
     } = {}
   ): Text {
-    // TODO: Import render from markup module
-    throw new Error('fromMarkup requires markup module - not yet ported');
+    // Use markup.render() to process markup tags
+    const result = markup.render(
+      text,
+      options.style ?? '',
+      options.emoji ?? true,
+      options.emojiVariant
+    );
+    // Apply other options
+    if (options.justify !== undefined) result.justify = options.justify;
+    if (options.overflow !== undefined) result.overflow = options.overflow;
+    if (options.end !== undefined) result.end = options.end;
+    return result;
   }
 
   /**
@@ -488,8 +498,20 @@ export class Text {
    * Construct a text instance by combining a sequence of strings with optional styles.
    */
   static assemble(
-    parts: Array<string | Text | [string, StyleType]>,
-    options: {
+    ...args: Array<
+      string | Text | [string, StyleType] | {
+        style?: string | Style;
+        justify?: JustifyMethod;
+        overflow?: OverflowMethod;
+        noWrap?: boolean;
+        end?: string;
+        tabSize?: number;
+        meta?: Record<string, any>;
+      }
+    >
+  ): Text {
+    // Extract options from last argument if it's an options object
+    let options: {
       style?: string | Style;
       justify?: JustifyMethod;
       overflow?: OverflowMethod;
@@ -497,8 +519,21 @@ export class Text {
       end?: string;
       tabSize?: number;
       meta?: Record<string, any>;
-    } = {}
-  ): Text {
+    } = {};
+    let parts = args;
+
+    const lastArg = args[args.length - 1];
+    if (
+      lastArg &&
+      typeof lastArg === 'object' &&
+      !Array.isArray(lastArg) &&
+      !(lastArg instanceof Text) &&
+      ('style' in lastArg || 'justify' in lastArg || 'overflow' in lastArg || 'noWrap' in lastArg || 'end' in lastArg || 'tabSize' in lastArg || 'meta' in lastArg)
+    ) {
+      options = lastArg;
+      parts = args.slice(0, -1);
+    }
+
     const text = new Text('', options.style || '', {
       justify: options.justify,
       overflow: options.overflow,
@@ -510,7 +545,7 @@ export class Text {
     for (const part of parts) {
       if (typeof part === 'string' || part instanceof Text) {
         text.append(part);
-      } else {
+      } else if (Array.isArray(part)) {
         text.append(part[0], part[1]);
       }
     }
@@ -825,12 +860,28 @@ export class Text {
   }
 
   /**
-   * Console render method.
-   * TODO: Requires Console and ConsoleOptions types.
+   * Console render method - wraps text to console width.
    */
-  // __richConsole__(console: Console, options: ConsoleOptions): Iterable<Segment> {
-  //   // TODO: Implement when console module is ported
-  // }
+  *__richConsole__(console: Console, options: ConsoleOptions): Iterable<Segment> {
+    const tabSize = this.tabSize ?? 8;
+    const justify = this.justify ?? DEFAULT_JUSTIFY;
+    const overflow = this.overflow ?? DEFAULT_OVERFLOW;
+    const noWrap = this.noWrap ?? false;
+
+    const lines = this.wrap(
+      console,
+      options.maxWidth,
+      {
+        justify,
+        overflow,
+        tabSize,
+        noWrap,
+      }
+    );
+
+    const allLines = new Text('\n').join(lines);
+    yield* allLines.render(console, this.end);
+  }
 
   /**
    * Rich measure method - returns the minimum and maximum widths of the text.
@@ -861,17 +912,19 @@ export class Text {
     const text = this.plain;
 
     if (this._spans.length === 0) {
-      segments.push(new Segment(text));
+      // Use the Text's style if it has one (but convert empty string to undefined)
+      const segmentStyle = this.style === '' ? undefined : this.style;
+      segments.push(new Segment(text, segmentStyle as Style | undefined));
       if (end) {
         segments.push(new Segment(end));
       }
       return segments;
     }
 
-    // Simple implementation - full implementation requires console.getStyle
+    // Use console.getStyle to resolve string styles (theme lookups and parsing)
     const getStyle = (_style: string | Style): Style => {
       if (typeof _style === 'string') {
-        return Style.null();
+        return _console.getStyle(_style);
       }
       return _style;
     };

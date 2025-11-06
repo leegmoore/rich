@@ -78,6 +78,9 @@ export class Rule {
   *__richConsole__(console: Console, options: ConsoleOptions): RenderResult {
     const width = options.maxWidth;
 
+    // Resolve style through console (enables theme lookups)
+    const ruleStyle = console.getStyle(this.style);
+
     // Use ASCII dash if asciiOnly and characters contain non-ASCII
     // eslint-disable-next-line no-control-regex
     const characters =
@@ -86,7 +89,7 @@ export class Rule {
     const charsLen = cellLen(characters);
 
     if (!this.title || (typeof this.title === 'string' && this.title.length === 0)) {
-      yield this._ruleLine(charsLen, width);
+      yield this._ruleLine(charsLen, width, ruleStyle);
       return;
     }
 
@@ -104,7 +107,7 @@ export class Rule {
     const requiredSpace = this.align === 'center' ? 4 : 2;
     const truncateWidth = Math.max(0, width - requiredSpace);
     if (truncateWidth === 0) {
-      yield this._ruleLine(charsLen, width);
+      yield this._ruleLine(charsLen, width, ruleStyle);
       return;
     }
 
@@ -118,17 +121,17 @@ export class Rule {
       const rightLength = width - cellLen(left.plain) - cellLen(titleText.plain);
       const right = new Text(characters.repeat(Math.floor(sideWidth / charsLen) + 1));
       right.truncate(rightLength);
-      ruleText.append(left.plain + ' ', this.style);
+      ruleText.append(left.plain + ' ', ruleStyle);
       ruleText.append(titleText);
-      ruleText.append(' ' + right.plain, this.style);
+      ruleText.append(' ' + right.plain, ruleStyle);
     } else if (this.align === 'left') {
       titleText.truncate(truncateWidth, { overflow: 'ellipsis' });
       ruleText.append(titleText);
       ruleText.append(' ');
-      ruleText.append(characters.repeat(width - ruleText.cellLen), this.style);
+      ruleText.append(characters.repeat(width - ruleText.cellLen), ruleStyle);
     } else if (this.align === 'right') {
       titleText.truncate(truncateWidth, { overflow: 'ellipsis' });
-      ruleText.append(characters.repeat(width - titleText.cellLen - 1), this.style);
+      ruleText.append(characters.repeat(width - titleText.cellLen - 1), ruleStyle);
       ruleText.append(' ');
       ruleText.append(titleText);
     }
@@ -140,8 +143,8 @@ export class Rule {
   /**
    * Generate a plain rule line without title.
    */
-  private _ruleLine(charsLen: number, width: number): Text {
-    const ruleText = new Text(this.characters.repeat(Math.floor(width / charsLen) + 1), this.style);
+  private _ruleLine(charsLen: number, width: number, style: Style): Text {
+    const ruleText = new Text(this.characters.repeat(Math.floor(width / charsLen) + 1), style);
     ruleText.truncate(width);
     ruleText.plain = setCellSize(ruleText.plain, width);
     return ruleText;

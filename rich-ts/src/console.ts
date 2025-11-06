@@ -5,11 +5,14 @@
  * Many advanced features are stubbed with TODOs for future implementation.
  */
 
-// TODO: import { Measurement } from './measure';
+import { Measurement } from './measure.js';
 import { Segment } from './segment';
 import { Style } from './style';
 import { Text } from './text';
 import { Rule } from './rule.js';
+import { Theme } from './theme.js';
+import { DEFAULT } from './themes.js';
+import { ColorSystem } from './color.js';
 
 /** Justify methods for text alignment */
 export type JustifyMethod = 'default' | 'left' | 'center' | 'right' | 'full';
@@ -54,6 +57,7 @@ export class ConsoleOptions {
   readonly legacy_windows: boolean;
   readonly markup: boolean;
   readonly highlight: boolean;
+  readonly theme: Theme;
 
   constructor(
     options: {
@@ -66,6 +70,7 @@ export class ConsoleOptions {
       legacy_windows?: boolean;
       markup?: boolean;
       highlight?: boolean;
+      theme?: Theme;
     } = {}
   ) {
     this.maxWidth = options.maxWidth ?? 80;
@@ -77,6 +82,7 @@ export class ConsoleOptions {
     this.legacy_windows = options.legacy_windows ?? false;
     this.markup = options.markup ?? true;
     this.highlight = options.highlight ?? true;
+    this.theme = options.theme ?? DEFAULT;
   }
 
   /**
@@ -100,6 +106,7 @@ export class ConsoleOptions {
       legacy_windows: this.legacy_windows,
       markup: this.markup,
       highlight: this.highlight,
+      theme: this.theme,
     });
   }
 
@@ -117,6 +124,7 @@ export class ConsoleOptions {
       legacy_windows: this.legacy_windows,
       markup: this.markup,
       highlight: this.highlight,
+      theme: this.theme,
     });
   }
 
@@ -129,10 +137,12 @@ export class ConsoleOptions {
       minWidth?: number;
       maxHeight?: number;
       height?: number;
+      width?: number;
+      highlight?: boolean;
     } = {}
   ): ConsoleOptions {
     return new ConsoleOptions({
-      maxWidth: options.maxWidth ?? this.maxWidth,
+      maxWidth: options.width ?? options.maxWidth ?? this.maxWidth,
       minWidth: options.minWidth ?? this.minWidth,
       isTerminal: this.isTerminal,
       encoding: this.encoding,
@@ -140,7 +150,26 @@ export class ConsoleOptions {
       height: options.height ?? this.height,
       legacy_windows: this.legacy_windows,
       markup: this.markup,
+      highlight: options.highlight ?? this.highlight,
+      theme: this.theme,
+    });
+  }
+
+  /**
+   * Update the width and height, and return a copy.
+   */
+  updateDimensions(width: number, height: number): ConsoleOptions {
+    return new ConsoleOptions({
+      maxWidth: width,
+      minWidth: this.minWidth,
+      isTerminal: this.isTerminal,
+      encoding: this.encoding,
+      maxHeight: height,
+      height: height,
+      legacy_windows: this.legacy_windows,
+      markup: this.markup,
       highlight: this.highlight,
+      theme: this.theme,
     });
   }
 }
@@ -158,12 +187,12 @@ export class Console {
   readonly legacy_windows: boolean;
   readonly isTerminal: boolean;
   readonly colorSystem: string | null;
+  readonly theme: Theme;
   private captureBuffer: string[];
   private capturingOutput: boolean;
 
   // TODO: Add full set of Console properties when needed:
   // - file: TextIO
-  // - theme: Theme
   // - highlighter: HighlighterType
   // - tab_size: number
   // - record: boolean
@@ -183,7 +212,7 @@ export class Console {
       colorSystem?: 'auto' | 'standard' | '256' | 'truecolor' | 'windows' | 'none' | null;
       legacy_windows?: boolean;
       file?: unknown; // TODO: proper IO type
-      theme?: unknown; // TODO: Theme type
+      theme?: Theme;
       stderr?: boolean;
       markup?: boolean;
       highlight?: boolean;
@@ -205,7 +234,15 @@ export class Console {
     this.height = options.height ?? 25;
     this.legacy_windows = options.legacy_windows ?? false;
     this.isTerminal = options.force_terminal ?? false;
-    this.colorSystem = options.colorSystem ?? options.color_system ?? 'truecolor';
+    // Handle colorSystem explicitly to allow null values
+    if ('colorSystem' in options) {
+      this.colorSystem = options.colorSystem !== undefined ? options.colorSystem : 'truecolor';
+    } else if ('color_system' in options) {
+      this.colorSystem = options.color_system !== undefined ? options.color_system : 'truecolor';
+    } else {
+      this.colorSystem = 'truecolor';
+    }
+    this.theme = options.theme ?? DEFAULT;
     this.captureBuffer = [];
     this.capturingOutput = false;
 
@@ -218,6 +255,7 @@ export class Console {
       legacy_windows: this.legacy_windows,
       markup: options.markup ?? true,
       highlight: options.highlight ?? true,
+      theme: this.theme,
     });
   }
 
@@ -237,24 +275,37 @@ export class Console {
       highlighter?: unknown;
     } = {}
   ): Text {
-    // For now, just create a Text instance without markup processing
-    // TODO: Implement full markup rendering
-    if (options.markup) {
-      // TODO: Use markup.render() when available
-      return new Text(text, options.style);
+    const markup = options.markup ?? this.options.markup;
+    const emoji = options.emoji ?? true;
+
+    if (markup) {
+      // Use Text.fromMarkup() which handles the markup rendering
+      // Set end='' to avoid adding newlines when rendering multiple args
+      const result = Text.fromMarkup(text, { style: options.style, emoji });
+      result.end = '';
+      return result;
     }
-    return new Text(text, options.style);
+    const result = new Text(text, options.style);
+    result.end = '';
+    return result;
   }
 
   /**
    * Get a Style instance for a style definition.
-   * TODO: Implement full style resolution with themes.
+   * Looks up style names in the theme or parses style strings.
    */
   getStyle(styleDefinition: string | Style, defaultStyle?: Style): Style {
     if (typeof styleDefinition === 'string') {
-      // TODO: Parse style string and apply theme
-      // For now, just return a null style
-      return defaultStyle ?? Style.null();
+      // Check if it's a theme style name
+      if (this.theme.styles[styleDefinition]) {
+        return this.theme.styles[styleDefinition];
+      }
+      // Otherwise parse as style definition
+      try {
+        return Style.parse(styleDefinition);
+      } catch {
+        return defaultStyle ?? Style.null();
+      }
     }
     return styleDefinition;
   }
@@ -263,18 +314,22 @@ export class Console {
    * Render any renderable object to segments.
    * TODO: Full implementation with all renderable types.
    */
-  render(renderable: unknown, _options?: ConsoleOptions): Segment[] {
-    // TODO: Use options for rendering configuration
+  render(renderable: unknown, options?: ConsoleOptions): Segment[] {
+    const renderOptions = options ?? this.options;
 
-    // Handle Text instances
-    if (renderable instanceof Text) {
-      return renderable.render(this, '');
-    }
-
-    // Handle strings
+    // Handle strings - convert to Text which will use __richConsole__
     if (typeof renderable === 'string') {
       const text = this.renderStr(renderable);
-      return text.render(this, '');
+      renderable = text;
+    }
+
+    // Handle objects with __richConsole__ protocol (including Text)
+    if (renderable && typeof renderable === 'object' && '__richConsole__' in renderable) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      const richConsole = (renderable as any).__richConsole__;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+      const segments = Array.from(richConsole.call(renderable, this, renderOptions));
+      return segments as Segment[];
     }
 
     // TODO: Handle other renderable types
@@ -282,8 +337,6 @@ export class Console {
     // - Style
     // - Control codes
     // - Pretty objects
-    // - Tables
-    // - Panels
     // - etc.
 
     throw new Error(`Cannot render object of type ${typeof renderable}`);
@@ -293,44 +346,120 @@ export class Console {
    * Print to the console.
    * TODO: Full implementation with all print options.
    */
-  print(renderable: unknown): void {
-    // TODO: Implement full print functionality with all options
-    // For now, support basic string and renderable output
-    let output: string;
+  print(...args: unknown[]): void {
+    // Handle multiple arguments - join with spaces
+    if (args.length === 0) {
+      this._printSingle('\n');
+      return;
+    }
+
+    // If last arg is an options object with height, extract it
+    let options: { height?: number } | undefined;
+    let renderables = args;
+
+    if (args.length > 1 &&
+        typeof args[args.length - 1] === 'object' &&
+        args[args.length - 1] !== null &&
+        !('__richConsole__' in args[args.length - 1]!) &&
+        'height' in args[args.length - 1]!) {
+      options = args[args.length - 1] as { height?: number };
+      renderables = args.slice(0, -1);
+    }
+
+    if (renderables.length === 1) {
+      this._printSingle(renderables[0], options);
+    } else {
+      // Multiple args - render each and join with spaces
+      const outputs: string[] = [];
+      for (const renderable of renderables) {
+        const output = this._renderToString(renderable, options);
+        outputs.push(output);
+      }
+      const finalOutput = outputs.join(' ') + '\n';
+
+      if (this.capturingOutput) {
+        this.captureBuffer.push(finalOutput);
+      } else {
+        process.stdout.write(finalOutput);
+      }
+    }
+  }
+
+  private _printSingle(renderable: unknown, options?: { height?: number }): void {
+    let output = this._renderToString(renderable, options);
+    // Only add newline if output doesn't already end with one
+    if (!output.endsWith('\n')) {
+      output += '\n';
+    }
+    if (this.capturingOutput) {
+      this.captureBuffer.push(output);
+    } else {
+      process.stdout.write(output);
+    }
+  }
+
+  private _renderToString(renderable: unknown, options?: { height?: number }): string {
+    // Update console options if height is provided
+    const renderOptions = options?.height !== undefined ? this.options.update({ height: options.height }) : this.options;
 
     if (typeof renderable === 'string') {
-      output = renderable + '\n';
-    } else if (renderable && typeof renderable === 'object' && '__richConsole__' in renderable) {
+      // Convert string to Text via renderStr() to handle markup processing
+      const text = this.renderStr(renderable);
+      renderable = text;
+    }
+
+    if (renderable && typeof renderable === 'object' && '__richConsole__' in renderable) {
       // Handle objects with __richConsole__ protocol (like Padding, Rule, etc.)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const richConsole = (renderable as any).__richConsole__;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-      const items = Array.from(richConsole.call(renderable, this, this.options));
+      const items = Array.from(richConsole.call(renderable, this, renderOptions));
       // Items can be Segments or Text instances
-      output = items
+      return items
         .map((item) => {
           if (item instanceof Text) {
-            // Render Text to segments and get their text, using the Text's end property
-            const segments = item.render(this, item.end);
-            return segments.map((seg) => seg.text).join('');
+            // Render Text to segments WITHOUT the Text's end property
+            // The end will be added by print() itself
+            const segments = item.render(this, '');
+            return this._renderSegments(segments);
           } else if (item instanceof Segment) {
-            return item.text;
+            return this._renderSegment(item);
           } else {
             return String(item);
           }
         })
         .join('');
     } else if (renderable instanceof Text) {
-      output = renderable.plain + '\n';
+      const segments = renderable.render(this, '');
+      return this._renderSegments(segments);
     } else {
-      output = String(renderable) + '\n';
+      return String(renderable);
     }
+  }
 
-    if (this.capturingOutput) {
-      this.captureBuffer.push(output);
-    } else {
-      process.stdout.write(output);
+  /**
+   * Render a segment to a string with ANSI codes if terminal supports it.
+   */
+  private _renderSegment(segment: Segment): string {
+    // Don't render ANSI codes if not a terminal or colorSystem is null/none
+    if (!this.isTerminal || this.colorSystem === null || this.colorSystem === 'none' || !segment.style) {
+      return segment.text;
     }
+    // Convert string colorSystem to enum
+    const colorSystemEnum = this.colorSystem === 'truecolor' ? ColorSystem.TRUECOLOR :
+                             this.colorSystem === '256' ? ColorSystem.EIGHT_BIT :
+                             this.colorSystem === 'standard' ? ColorSystem.STANDARD :
+                             this.colorSystem === 'windows' ? ColorSystem.WINDOWS :
+                             ColorSystem.TRUECOLOR;
+    // Render with ANSI codes
+    return segment.style.render(segment.text, colorSystemEnum);
+  }
+
+  /**
+   * Render an array of segments to a string.
+   */
+  private _renderSegments(segments: Segment[]): string {
+    return segments.map((seg) => this._renderSegment(seg)).join('');
   }
 
   /**
@@ -358,14 +487,15 @@ export class Console {
     const renderOptions = options ?? this.options;
     let segments: Segment[];
 
-    // Handle string renderables
+    // Handle string renderables - convert to Text first
     if (typeof renderable === 'string') {
-      const text = this.renderStr(renderable);
-      segments = text.render(this, '');
-    } else if (renderable instanceof Text) {
-      segments = renderable.render(this, '');
-    } else if (renderable && typeof renderable === 'object' && '__richConsole__' in renderable) {
-      // Handle objects with __richConsole__ protocol
+      renderable = this.renderStr(renderable);
+    }
+
+    // Handle Text and objects with __richConsole__ protocol
+    // Text has __richConsole__ which wraps text to width
+    if (renderable && typeof renderable === 'object' && '__richConsole__' in renderable) {
+      // Handle objects with __richConsole__ protocol (including Text)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const richConsole = (renderable as any).__richConsole__;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
@@ -374,14 +504,18 @@ export class Console {
       throw new Error(`Cannot render object of type ${typeof renderable}`);
     }
 
-    // Apply style if provided
-    if (style) {
+    // Apply style if provided (but only if it's not a null style)
+    // Null styles are only used for padding segments, not content
+    const shouldApplyStyle = style && !style._null;
+    if (shouldApplyStyle) {
       segments = Array.from(Segment.applyStyle(segments, style));
     }
 
     // Split into lines and crop to width
+    // Pass style even if null - it's used for padding segments in adjustLineLength
+    const paddingStyle = style || undefined;
     const lines = Array.from(
-      Segment.splitAndCropLines(segments, renderOptions.maxWidth, style, pad, false)
+      Segment.splitAndCropLines(segments, renderOptions.maxWidth, paddingStyle, pad, false)
     );
 
     return lines;
@@ -421,6 +555,18 @@ export class Console {
     this.print(rule);
   }
 
+  /**
+   * Measure a renderable.
+   *
+   * @param renderable - An object that may be rendered with Rich.
+   * @param options - Console options, or undefined to use default options.
+   * @returns Measurement object containing range of character widths required to render the object.
+   */
+  measure(renderable: RenderableType, options?: ConsoleOptions): Measurement {
+    const measureOptions = options ?? this.options;
+    return Measurement.get(this, measureOptions, renderable);
+  }
+
   // TODO: Implement remaining Console methods:
   // - log()
   // - status()
@@ -430,7 +576,6 @@ export class Console {
   // - save_html()
   // - save_svg()
   // - save_text()
-  // - measure()
   // - push_theme()
   // - pop_theme()
   // - use_theme()
