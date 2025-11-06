@@ -107,7 +107,7 @@ export class Rule {
     const requiredSpace = this.align === 'center' ? 4 : 2;
     const truncateWidth = Math.max(0, width - requiredSpace);
     if (truncateWidth === 0) {
-      yield this._ruleLine(charsLen, width);
+      yield this._ruleLine(charsLen, width, ruleStyle);
       return;
     }
 

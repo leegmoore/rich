@@ -12,6 +12,7 @@ import { Text } from './text';
 import { Rule } from './rule.js';
 import { Theme } from './theme.js';
 import { DEFAULT } from './themes.js';
+import { ColorSystem } from './color.js';
 
 /** Justify methods for text alignment */
 export type JustifyMethod = 'default' | 'left' | 'center' | 'right' | 'full';
@@ -214,8 +215,13 @@ export class Console {
     this.legacy_windows = options.legacy_windows ?? false;
     this.isTerminal = options.force_terminal ?? false;
     // Handle colorSystem explicitly to allow null values
-    this.colorSystem = 'colorSystem' in options ? options.colorSystem :
-                       ('color_system' in options ? options.color_system : 'truecolor');
+    if ('colorSystem' in options) {
+      this.colorSystem = options.colorSystem !== undefined ? options.colorSystem : 'truecolor';
+    } else if ('color_system' in options) {
+      this.colorSystem = options.color_system !== undefined ? options.color_system : 'truecolor';
+    } else {
+      this.colorSystem = 'truecolor';
+    }
     this.theme = options.theme ?? DEFAULT;
     this.captureBuffer = [];
     this.capturingOutput = false;
@@ -361,8 +367,14 @@ export class Console {
     if (!this.isTerminal || this.colorSystem === null || this.colorSystem === 'none' || !segment.style) {
       return segment.text;
     }
+    // Convert string colorSystem to enum
+    const colorSystemEnum = this.colorSystem === 'truecolor' ? ColorSystem.TRUECOLOR :
+                             this.colorSystem === '256' ? ColorSystem.EIGHT_BIT :
+                             this.colorSystem === 'standard' ? ColorSystem.STANDARD :
+                             this.colorSystem === 'windows' ? ColorSystem.WINDOWS :
+                             ColorSystem.TRUECOLOR;
     // Render with ANSI codes
-    return segment.style.render(segment.text, this.colorSystem as 'truecolor' | undefined);
+    return segment.style.render(segment.text, colorSystemEnum);
   }
 
   /**
