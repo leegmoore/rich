@@ -1,0 +1,100 @@
+===== COPY THIS INTO FRESH CLAUDE CODE WEB SESSION FOR PHASE 6 =====
+
+ROLE: You are a TypeScript developer porting the Rich Python library to TypeScript.
+
+PROJECT: Rich is a popular Python library for beautiful terminal formatting. We're porting core features to TypeScript for Node.js and browser use.
+
+STRATEGY: Replace Phase 5 stubs with real implementations, then port 2 large modules (table, progress).
+
+CURRENT PHASE: Phase 6 - Replace Stubs + Components Layer 2
+
+PHASE 1-5 STATUS: ✅ COMPLETE (16 modules, ~X tests passing, Y stub-related failures)
+
+NOTE: Workspace is repo root (where .git lives)
+(TypeScript port is in the rich-ts/ subdirectory)
+
+FIRST: Read these logs to understand status (all in rich-ts/):
+- Read rich-ts/PORT_LOG_MASTER.md
+- Read rich-ts/PHASE5_SUMMARY.md (stub-related failures from Phase 5)
+- Read rich-ts/phases/phase6/PORT_LOG_STUBS.md (what to replace)
+- Read rich-ts/phases/phase6/PORT_LOG_TABLE.md
+- Read rich-ts/phases/phase6/PORT_LOG_PROGRESS.md
+- Read rich-ts/KNOWN_BUGS.md
+
+THEN: Read full instructions in rich-ts/phases/phase6/PROMPT_PHASE6.md
+
+CRITICAL: This phase REPLACES stubs before porting new modules!
+
+PHASE 6 WORKFLOW:
+
+STEP 1: REPLACE ALL STUBS (do this FIRST!)
+
+1. **theme + default_styles + themes** (~313 LOC, ~53 tests)
+   - Port tests/test_theme.py → tests/theme.test.ts
+   - Replace stub src/default_styles.ts with full 60+ styles
+   - Replace stub src/theme.ts with full Theme class
+   - Update Console.getStyle() integration
+   - Verify: tests/rule.test.ts > test_rule should now PASS (green colors!)
+
+2. **constrain** (~37 LOC, ~13 tests)
+   - Port tests/test_constrain.py → tests/constrain.test.ts
+   - Replace stub src/constrain.ts with full implementation
+   - Verify: Phase 5 align tests should now PASS
+
+3. **box** (~474 LOC, ~105 tests)
+   - Port tests/test_box.py → tests/box.test.ts
+   - Replace stub src/box.ts with all box styles
+   - Verify: Phase 5 panel tests should now PASS
+
+4. **emoji + _emoji_replace + _emoji_codes** (~123 LOC + data, ~37 tests)
+   - Port tests/test_emoji.py → tests/emoji.test.ts
+   - Replace stub src/_emoji_codes.ts (copy emoji dict from Python)
+   - Replace stub src/_emoji_replace.ts with full implementation
+   - Replace stub src/emoji.ts with full Emoji class
+   - Verify: Phase 5 markup tests should now PASS
+
+After stubs replaced: Run full test suite, document results
+
+STEP 2: PORT TABLE MODULE (~824 LOC, ~65 tests)
+1. Read Python source: rich/table.py
+2. Read Python tests: tests/test_table.py
+3. Create rich-ts/tests/table.test.ts - port ALL tests
+4. Run tests (should fail): cd rich-ts && npm test
+5. Create rich-ts/src/table.ts - implement until tests pass
+6. Run checks: npm run check (format + typecheck + lint + tests)
+7. Commit and push: git add -A && git commit -m "Port table module" && git push
+8. Update rich-ts/phases/phase6/PORT_LOG_TABLE.md
+
+STEP 3: PORT PROGRESS MODULE (~1557 LOC, ~45 tests)
+1. Read Python source: rich/progress.py
+2. Read Python tests: tests/test_progress.py
+3. Create rich-ts/tests/progress.test.ts - port ALL tests
+4. Run tests (should fail): cd rich-ts && npm test
+5. Create rich-ts/src/progress.ts - implement until tests pass
+6. Run checks: npm run check
+7. Commit and push: git add -A && git commit -m "Port progress module" && git push
+8. Update rich-ts/phases/phase6/PORT_LOG_PROGRESS.md
+
+STEP 4: CREATE PHASE6_SUMMARY.md
+Document:
+- All stubs replaced (before/after test counts)
+- Table module status
+- Progress module status
+- Total test pass rate
+- Any remaining issues
+
+ORDER: Stubs first (all 4), then table, then progress
+
+DEV STANDARDS:
+- Use npm (not pnpm/bun)
+- TypeScript strict mode (no 'any' types)
+- Prettier handles formatting (single quotes, 100 char width)
+- ESLint for code quality only
+- 'npm run check' runs: format → typecheck → lint → test
+- Clear variable names, JSDoc for public APIs
+- Use nullish coalescing (??) and optional chaining (?.)
+
+GO!
+
+============================================================
+
