@@ -4,7 +4,7 @@
  */
 import type { Console, ConsoleOptions, RenderResult } from './console.js';
 import { Segment } from './segment.js';
-import { Style, StyleType } from './style.js';
+import { StyleType } from './style.js';
 import { EMOJI } from './_emoji_codes.js';
 import { _emoji_replace } from './_emoji_replace.js';
 

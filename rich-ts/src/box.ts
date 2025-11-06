@@ -84,30 +84,62 @@ export class Box {
     const [line1, line2, line3, line4, line5, line6, line7, line8] = lines;
 
     // top
-    [this.topLeft, this.top, this.topDivider, this.topRight] = Array.from(line1);
+    [this.topLeft, this.top, this.topDivider, this.topRight] = Array.from(line1!) as [
+      string,
+      string,
+      string,
+      string,
+    ];
 
     // head
-    [this.headLeft, , this.headVertical, this.headRight] = Array.from(line2);
+    [this.headLeft, , this.headVertical, this.headRight] = Array.from(line2!) as [
+      string,
+      string,
+      string,
+      string,
+    ];
 
     // head_row
-    [this.headRowLeft, this.headRowHorizontal, this.headRowCross, this.headRowRight] =
-      Array.from(line3);
+    [this.headRowLeft, this.headRowHorizontal, this.headRowCross, this.headRowRight] = Array.from(
+      line3!
+    ) as [string, string, string, string];
 
     // mid
-    [this.midLeft, , this.midVertical, this.midRight] = Array.from(line4);
+    [this.midLeft, , this.midVertical, this.midRight] = Array.from(line4!) as [
+      string,
+      string,
+      string,
+      string,
+    ];
 
     // row
-    [this.rowLeft, this.rowHorizontal, this.rowCross, this.rowRight] = Array.from(line5);
+    [this.rowLeft, this.rowHorizontal, this.rowCross, this.rowRight] = Array.from(line5!) as [
+      string,
+      string,
+      string,
+      string,
+    ];
 
     // foot_row
-    [this.footRowLeft, this.footRowHorizontal, this.footRowCross, this.footRowRight] =
-      Array.from(line6);
+    [this.footRowLeft, this.footRowHorizontal, this.footRowCross, this.footRowRight] = Array.from(
+      line6!
+    ) as [string, string, string, string];
 
     // foot
-    [this.footLeft, , this.footVertical, this.footRight] = Array.from(line7);
+    [this.footLeft, , this.footVertical, this.footRight] = Array.from(line7!) as [
+      string,
+      string,
+      string,
+      string,
+    ];
 
     // bottom
-    [this.bottomLeft, this.bottom, this.bottomDivider, this.bottomRight] = Array.from(line8);
+    [this.bottomLeft, this.bottom, this.bottomDivider, this.bottomRight] = Array.from(line8!) as [
+      string,
+      string,
+      string,
+      string,
+    ];
   }
 
   toString(): string {
@@ -122,14 +154,18 @@ export class Box {
    * @returns A different Box or the same Box.
    */
   substitute(options: ConsoleOptions, safe: boolean = true): Box {
-    let box: Box = this;
-    if (options.legacyWindows && safe) {
-      box = LEGACY_WINDOWS_SUBSTITUTIONS.get(box) ?? box;
+    // Apply legacy Windows substitutions if needed
+    const afterLegacySubstitution =
+      options.legacyWindows && safe
+        ? LEGACY_WINDOWS_SUBSTITUTIONS.get(this) ?? this
+        : this;
+
+    // Apply ASCII substitution if needed
+    if (options.asciiOnly && !afterLegacySubstitution.ascii) {
+      return ASCII;
     }
-    if (options.asciiOnly && !box.ascii) {
-      box = ASCII;
-    }
-    return box;
+
+    return afterLegacySubstitution;
   }
 
   /**
@@ -244,10 +280,7 @@ export const ASCII = new Box('+--+\n| ||\n|-+|\n| ||\n|-+|\n|-+|\n| ||\n+--+\n',
 
 export const ASCII2 = new Box('+-++\n| ||\n+-++\n| ||\n+-++\n+-++\n| ||\n+-++\n', true);
 
-export const ASCII_DOUBLE_HEAD = new Box(
-  '+-++\n| ||\n+=++\n| ||\n+-++\n+-++\n| ||\n+-++\n',
-  true
-);
+export const ASCII_DOUBLE_HEAD = new Box('+-++\n| ||\n+=++\n| ||\n+-++\n+-++\n| ||\n+-++\n', true);
 
 export const SQUARE = new Box('┌─┬┐\n│ ││\n├─┼┤\n│ ││\n├─┼┤\n├─┼┤\n│ ││\n└─┴┘\n');
 
