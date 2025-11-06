@@ -532,7 +532,7 @@ export class Console {
 
     // Split into lines and crop to width
     // Pass style even if null - it's used for padding segments in adjustLineLength
-    const paddingStyle = style || undefined;
+    const paddingStyle = style ?? undefined;
     const lines = Array.from(
       Segment.splitAndCropLines(segments, renderOptions.maxWidth, paddingStyle, pad, false)
     );

@@ -7,6 +7,7 @@ import { Style, StyleType } from './style.js';
 import { Span, Text } from './text.js';
 
 // Regex to match markup tags
+// eslint-disable-next-line no-useless-escape
 export const RE_TAGS = /((\\*)\[([a-z#/@][^\[]*?)])/g;
 
 // Regex to parse handler syntax
@@ -37,6 +38,7 @@ export class Tag {
  * Escapes text so it won't be interpreted as markup
  */
 export function escape(markup: string): string {
+  // eslint-disable-next-line no-useless-escape
   const escapeRegex = /(\\*)(\[[a-z#/@][^\[]*?])/g;
 
   function escapeBackslashes(_match: string, backslashes: string, text: string): string {
@@ -129,7 +131,7 @@ export function render(
   }
 
   const text = new Text('', style);
-  const normalize = Style.normalize;
+  const normalize = (name: string): string => Style.normalize(name);
 
   const styleStack: Array<[number, Tag]> = [];
   const spans: Span[] = [];
@@ -188,7 +190,7 @@ export function render(
             if (handlerMatch) {
               [, handlerName = ''] = handlerMatch;
               const matchParameters = handlerMatch[2];
-              paramsStr = matchParameters === undefined ? '()' : matchParameters;
+              paramsStr = matchParameters ?? '()';
             } else {
               // Regex didn't match - try to parse parameters directly
               paramsStr = parameters;

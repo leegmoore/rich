@@ -108,23 +108,19 @@ export class Measurement {
     // Handle Text instances
     if (renderable instanceof Text) {
       // Check if the renderable has __richMeasure__ method
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const richMeasure = (renderable as any).__richMeasure__;
       if (typeof richMeasure === 'function') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
         const renderWidth = richMeasure
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
           .call(renderable, console, options)
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
           .normalize()
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
           .withMaximum(maxWidth);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (renderWidth.maximum < 1) {
           return new Measurement(0, 0);
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
         return renderWidth.normalize();
+        /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
       }
       // Default: return full width for Text without __richMeasure__
       return new Measurement(0, maxWidth);
@@ -132,23 +128,19 @@ export class Measurement {
 
     // Handle objects with __richMeasure__ method
     if (renderable && typeof renderable === 'object' && '__richMeasure__' in renderable) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const richMeasure = (renderable as any).__richMeasure__;
       if (typeof richMeasure === 'function') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
         const renderWidth = richMeasure
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
           .call(renderable, console, options)
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
           .normalize()
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
           .withMaximum(maxWidth);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (renderWidth.maximum < 1) {
           return new Measurement(0, 0);
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
         return renderWidth.normalize();
+        /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
       }
     }
 

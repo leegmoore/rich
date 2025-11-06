@@ -227,7 +227,7 @@ export class VerticalCenter {
       undefined,
       false
     );
-    const [width, _height] = Segment.getShape(lines);
+    const [width] = Segment.getShape(lines);
     const newLine = Segment.line();
     const height = options.height ?? options.maxHeight;
     const topSpace = Math.floor((height - lines.length) / 2);
