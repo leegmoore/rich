@@ -291,18 +291,13 @@ export class Console {
   render(renderable: unknown, options?: ConsoleOptions): Segment[] {
     const renderOptions = options ?? this.options;
 
-    // Handle Text instances
-    if (renderable instanceof Text) {
-      return renderable.render(this, '');
-    }
-
-    // Handle strings
+    // Handle strings - convert to Text which will use __richConsole__
     if (typeof renderable === 'string') {
       const text = this.renderStr(renderable);
-      return text.render(this, '');
+      renderable = text;
     }
 
-    // Handle objects with __richConsole__ protocol
+    // Handle objects with __richConsole__ protocol (including Text)
     if (renderable && typeof renderable === 'object' && '__richConsole__' in renderable) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const richConsole = (renderable as any).__richConsole__;

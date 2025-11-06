@@ -123,6 +123,23 @@ export class Measurement {
       return new Measurement(0, maxWidth);
     }
 
+    // Handle objects with __richMeasure__ method
+    if (renderable && typeof renderable === 'object' && '__richMeasure__' in renderable) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const richMeasure = (renderable as any).__richMeasure__;
+      if (typeof richMeasure === 'function') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        const renderWidth = richMeasure
+          .call(renderable, console, options)
+          .normalize()
+          .withMaximum(maxWidth);
+        if (renderWidth.maximum < 1) {
+          return new Measurement(0, 0);
+        }
+        return renderWidth.normalize();
+      }
+    }
+
     // Not a renderable type
     throw new NotRenderableError(
       `Unable to get render width for ${String(renderable)}; ` +

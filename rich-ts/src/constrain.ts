@@ -15,21 +15,24 @@ export class Constrain {
   }
 
   *__richConsole__(console: Console, options: ConsoleOptions): RenderResult {
-    // STUB: Minimal implementation - just yields the renderable
-    // TODO Phase 6: Implement width constraining with update_width
+    // STUB: Functional but minimal implementation
+    // TODO Phase 6: Add more sophisticated width handling if needed
     if (this.width === undefined) {
       const segments = console.render(this.renderable, options);
       yield* segments;
       return;
     }
-    throw new Error('STUB: Constrain width limiting not implemented - Phase 6');
+    // Update options with constrained width
+    const childOptions = options.updateWidth(Math.min(this.width, options.maxWidth));
+    const segments = console.render(this.renderable, childOptions);
+    yield* segments;
   }
 
   __richMeasure__(console: Console, options: ConsoleOptions): Measurement {
-    // STUB: Minimal measurement
-    // TODO Phase 6: Implement proper width constraint measurement
+    // STUB: Functional but minimal implementation
+    // TODO Phase 6: Add more sophisticated measurement if needed
     if (this.width !== undefined) {
-      throw new Error('STUB: Constrain measurement not implemented - Phase 6');
+      options = options.updateWidth(this.width);
     }
     return Measurement.get(console, options, this.renderable);
   }

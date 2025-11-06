@@ -825,12 +825,28 @@ export class Text {
   }
 
   /**
-   * Console render method.
-   * TODO: Requires Console and ConsoleOptions types.
+   * Console render method - wraps text to console width.
    */
-  // __richConsole__(console: Console, options: ConsoleOptions): Iterable<Segment> {
-  //   // TODO: Implement when console module is ported
-  // }
+  *__richConsole__(console: Console, options: ConsoleOptions): Iterable<Segment> {
+    const tabSize = this.tabSize ?? 8;
+    const justify = this.justify ?? DEFAULT_JUSTIFY;
+    const overflow = this.overflow ?? DEFAULT_OVERFLOW;
+    const noWrap = this.noWrap ?? false;
+
+    const lines = this.wrap(
+      console,
+      options.maxWidth,
+      {
+        justify,
+        overflow,
+        tabSize,
+        noWrap,
+      }
+    );
+
+    const allLines = new Text('\n').join(lines);
+    yield* allLines.render(console, this.end);
+  }
 
   /**
    * Rich measure method - returns the minimum and maximum widths of the text.
