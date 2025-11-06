@@ -184,9 +184,11 @@ export class Segment {
       const inputSegments = resultSegments;
       resultSegments = (function* () {
         for (const segment of inputSegments) {
+          // Don't apply style to control segments OR newlines
+          const isNewline = segment.text === '\n';
           yield new Segment(
             segment.text,
-            segment.control ? undefined : apply(segment.style),
+            segment.control || isNewline ? undefined : apply(segment.style),
             segment.control
           );
         }

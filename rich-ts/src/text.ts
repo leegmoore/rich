@@ -887,17 +887,18 @@ export class Text {
     const text = this.plain;
 
     if (this._spans.length === 0) {
-      segments.push(new Segment(text));
+      // Use the Text's style if it has one
+      segments.push(new Segment(text, this.style));
       if (end) {
         segments.push(new Segment(end));
       }
       return segments;
     }
 
-    // Simple implementation - full implementation requires console.getStyle
+    // Use console.getStyle to resolve string styles (theme lookups and parsing)
     const getStyle = (_style: string | Style): Style => {
       if (typeof _style === 'string') {
-        return Style.null();
+        return _console.getStyle(_style);
       }
       return _style;
     };

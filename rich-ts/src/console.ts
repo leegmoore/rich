@@ -366,7 +366,11 @@ export class Console {
   }
 
   private _printSingle(renderable: unknown, options?: { height?: number }): void {
-    const output = this._renderToString(renderable, options) + '\n';
+    let output = this._renderToString(renderable, options);
+    // Only add newline if output doesn't already end with one
+    if (!output.endsWith('\n')) {
+      output += '\n';
+    }
     if (this.capturingOutput) {
       this.captureBuffer.push(output);
     } else {
@@ -394,8 +398,9 @@ export class Console {
       return items
         .map((item) => {
           if (item instanceof Text) {
-            // Render Text to segments and get their text/styles
-            const segments = item.render(this, item.end);
+            // Render Text to segments WITHOUT the Text's end property
+            // The end will be added by print() itself
+            const segments = item.render(this, '');
             return this._renderSegments(segments);
           } else if (item instanceof Segment) {
             return this._renderSegment(item);

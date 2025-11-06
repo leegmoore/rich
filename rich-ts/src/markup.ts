@@ -182,34 +182,44 @@ export function render(
             const parameters = openTag.parameters.trim();
             const handlerMatch = RE_HANDLER.exec(parameters);
 
+            let paramsStr: string;
             if (handlerMatch) {
               [, handlerName = '', ] = handlerMatch;
               let matchParameters = handlerMatch[2];
-              const paramsStr = matchParameters === undefined ? '()' : matchParameters;
+              paramsStr = matchParameters === undefined ? '()' : matchParameters;
+            } else {
+              // Regex didn't match - try to parse parameters directly
+              paramsStr = parameters;
+            }
 
-              try {
-                // Use JSON.parse for simple parameter parsing
-                // Convert Python tuple syntax to array syntax
-                const jsonStr = paramsStr
-                  .replace(/'/g, '"')
-                  .replace(/\(/g, '[')
-                  .replace(/\)/g, ']')
-                  .replace(/None/g, 'null')
-                  .replace(/True/g, 'true')
-                  .replace(/False/g, 'false');
-                metaParams = JSON.parse(jsonStr);
-              } catch (error) {
-                throw new MarkupError(
-                  `error parsing ${paramsStr} in ${openTag.parameters}; ${(error as Error).message}`
-                );
+            try {
+              // Use JSON.parse for simple parameter parsing
+              // Convert Python tuple syntax to array syntax
+              let jsonStr = paramsStr
+                .replace(/'/g, '"')
+                .replace(/\(/g, '[')
+                .replace(/\)/g, ']')
+                .replace(/None/g, 'null')
+                .replace(/True/g, 'true')
+                .replace(/False/g, 'false');
+
+              // If it's comma-separated values without brackets, wrap in array
+              if (!jsonStr.trim().startsWith('[') && jsonStr.includes(',')) {
+                jsonStr = `[${jsonStr}]`;
               }
 
-              if (handlerName) {
-                metaParams = [
-                  handlerName,
-                  Array.isArray(metaParams) ? metaParams : [metaParams],
-                ];
-              }
+              metaParams = JSON.parse(jsonStr);
+            } catch (error) {
+              throw new MarkupError(
+                `error parsing '${paramsStr}'; ${(error as Error).message}`
+              );
+            }
+
+            if (handlerName) {
+              metaParams = [
+                handlerName,
+                Array.isArray(metaParams) ? metaParams : [metaParams],
+              ];
             }
           }
 

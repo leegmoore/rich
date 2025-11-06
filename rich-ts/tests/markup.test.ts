@@ -6,24 +6,24 @@ import { Span, Text } from '../src/text.js';
 
 describe('markup', () => {
   it('test_re_no_match', () => {
-    expect(RE_TAGS.exec('[True]')).toBeNull();
-    expect(RE_TAGS.exec('[False]')).toBeNull();
-    expect(RE_TAGS.exec('[None]')).toBeNull();
-    expect(RE_TAGS.exec('[1]')).toBeNull();
-    expect(RE_TAGS.exec('[2]')).toBeNull();
-    expect(RE_TAGS.exec('[]')).toBeNull();
+    expect('[True]'.match(RE_TAGS)).toBeNull();
+    expect('[False]'.match(RE_TAGS)).toBeNull();
+    expect('[None]'.match(RE_TAGS)).toBeNull();
+    expect('[1]'.match(RE_TAGS)).toBeNull();
+    expect('[2]'.match(RE_TAGS)).toBeNull();
+    expect('[]'.match(RE_TAGS)).toBeNull();
   });
 
   it('test_re_match', () => {
-    expect(RE_TAGS.exec('[true]')).toBeTruthy();
-    expect(RE_TAGS.exec('[false]')).toBeTruthy();
-    expect(RE_TAGS.exec('[none]')).toBeTruthy();
-    expect(RE_TAGS.exec('[color(1)]')).toBeTruthy();
-    expect(RE_TAGS.exec('[#ff00ff]')).toBeTruthy();
-    expect(RE_TAGS.exec('[/]')).toBeTruthy();
-    expect(RE_TAGS.exec('[@]')).toBeTruthy();
-    expect(RE_TAGS.exec('[@foo]')).toBeTruthy();
-    expect(RE_TAGS.exec('[@foo=bar]')).toBeTruthy();
+    expect('[true]'.match(RE_TAGS)).toBeTruthy();
+    expect('[false]'.match(RE_TAGS)).toBeTruthy();
+    expect('[none]'.match(RE_TAGS)).toBeTruthy();
+    expect('[color(1)]'.match(RE_TAGS)).toBeTruthy();
+    expect('[#ff00ff]'.match(RE_TAGS)).toBeTruthy();
+    expect('[/]'.match(RE_TAGS)).toBeTruthy();
+    expect('[@]'.match(RE_TAGS)).toBeTruthy();
+    expect('[@foo]'.match(RE_TAGS)).toBeTruthy();
+    expect('[@foo=bar]'.match(RE_TAGS)).toBeTruthy();
   });
 
   it('test_escape', () => {
