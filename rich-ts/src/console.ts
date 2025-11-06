@@ -430,7 +430,7 @@ export class Console {
       const richConsole = (renderable as any).__richConsole__;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
       const items = Array.from(richConsole.call(renderable, this, renderOptions));
-      // Items can be Segments or Text instances
+      // Items can be Segments, Text instances, or other renderables (like Table from Columns)
       return items
         .map((item) => {
           if (item instanceof Text) {
@@ -440,6 +440,9 @@ export class Console {
             return this._renderSegments(segments);
           } else if (item instanceof Segment) {
             return this._renderSegment(item);
+          } else if (item && typeof item === 'object' && '__richConsole__' in item) {
+            // Recursively render objects with __richConsole__ (e.g., Table from Columns)
+            return this._renderToString(item, options);
           } else {
             return String(item);
           }
