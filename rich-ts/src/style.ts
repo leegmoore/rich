@@ -544,7 +544,7 @@ export class Style {
   /**
    * Generate ANSI codes for this style
    */
-  _makeAnsiCodes(colorSystem: ColorSystem): string {
+  _makeAnsiCodes(colorSystem: ColorSystem): string | undefined {
     if (this._ansi !== undefined) {
       return this._ansi;
     }
