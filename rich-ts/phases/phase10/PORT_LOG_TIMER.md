@@ -1,6 +1,6 @@
 # Module Port Log: _timer
 
-**Status:** NOT_STARTED  
+**Status:** COMPLETED  
 **Dependencies:** None (standalone)  
 **Python Source:** `rich/_timer.py` (~19 LOC)  
 **Python Tests:** `tests/test_timer.py` (if exists, or create minimal tests)
@@ -22,30 +22,33 @@ Performance timing utility.
 
 ## Test Port Progress
 
-**Total Tests:** ~5
+**Total Tests:** 5
 
-- [ ] test_timer_basic
-- [ ] test_timer_elapsed
-- [ ] test_timer_context_manager (if applicable)
-- [ ] test_timer_restart
-- [ ] test_timer_precision
+- [x] test_timer_basic
+- [x] test_timer_elapsed
+- [x] test_timer_context_manager (if applicable)
+- [x] test_timer_restart
+- [x] test_timer_precision
 
 ---
 
 ## Implementation Progress
 
-- [ ] Timer class
-- [ ] start() method
-- [ ] stop() method
-- [ ] elapsed property/getter
-- [ ] High-precision timing (performance.now() or Date.now())
-- [ ] All tests passing
+- [x] Timer class
+- [x] start() method
+- [x] stop() method
+- [x] elapsed property/getter
+- [x] High-precision timing (performance.now() or Date.now())
+- [x] All tests passing
 
 ---
 
 ## Design Decisions
 
-*No decisions yet - module not started*
+- Added dependency-injectable clock so tests and future callers can provide deterministic timing sources.
+- Exposed `timer()` helper that mirrors Rich's context manager semantics and logs via customizable reporter/formatter.
+- Implemented `time()` convenience wrapper to automatically measure synchronous or asynchronous callbacks.
+
 
 ---
 
@@ -73,5 +76,5 @@ Performance timing utility.
 
 ## Session Notes
 
-*No sessions yet*
-
+- 2025-11-07: Created Vitest suite (`tests/_timer.test.ts`) covering the five documented scenarios, confirmed initial failure.
+- Implemented `src/_timer.ts` with `Timer`, `timer()` handle, and `time()` helper; reran targeted tests plus `npm run check`.

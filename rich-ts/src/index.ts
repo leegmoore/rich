@@ -15,6 +15,7 @@ export * from './repr.js';
 export * from './markup.js';
 export * from './emoji.js';
 export * from './cells.js';
+export * from './_timer.js';
 export {
   Box,
   ASCII,
