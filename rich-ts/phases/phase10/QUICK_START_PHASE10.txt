@@ -1,0 +1,46 @@
+===== PHASE 10: FOUNDATION HELPERS - ALL PARALLEL =====
+
+ROLE: TypeScript developer porting Rich Python library
+
+CURRENT PHASE: Phase 10 - Foundation Helpers (5 small modules, ALL can run in PARALLEL!)
+
+PHASES 1-7 STATUS: ✅ COMPLETE (19 modules, 256/256 tests passing)
+
+NOTE: Workspace is repo root (/Users/leemoore/code/rich-port/rich/)
+TypeScript port is in rich-ts/ subdirectory
+
+FIRST: Read rich-ts/phases/REMAINING_MODULES.md to understand what's left
+
+TASK: Port 5 standalone helper modules using TDD:
+
+MODULES (pick ANY - no dependencies on each other!):
+1. _timer (19 LOC) - Timer utility for performance tracking
+2. region (10 LOC) - Region math (x, y, width, height)
+3. filesize (88 LOC) - File size formatting utilities
+4. abc (33 LOC) - Abstract base class helper
+5. pager (34 LOC) - Abstract pager base
+
+TOTAL: ~184 LOC across 5 modules
+
+ALL ARE STANDALONE - Pick any module, any order!
+
+WORKFLOW (standard TDD):
+1. Read Python source: rich/[MODULE].py
+2. Read Python tests: tests/test_[MODULE].py
+3. Create rich-ts/tests/[MODULE].test.ts - port ALL tests
+4. Run tests: cd rich-ts && npm test [MODULE] -- --run
+5. Create rich-ts/src/[MODULE].ts - implement
+6. npm run check (must pass!)
+7. git add -A && git commit -m "Port [MODULE]" && git push
+8. Create PORT_LOG in phases/phase10/PORT_LOG_[MODULE].md
+
+DEV STANDARDS:
+- npm (not pnpm/bun)
+- TypeScript strict mode (no 'any')
+- Prettier formatting (single quotes, 100 char width)
+- ESLint quality only
+- npm run check before commit
+- Clear names, JSDoc on public APIs
+
+GO!
+
