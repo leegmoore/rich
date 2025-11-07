@@ -1,0 +1,23 @@
+===== PHASE 11: PALETTE SYSTEM - SEQUENTIAL =====
+
+PHASE: 11 - Palette System (3 modules in order)
+DEPENDENCY: Phase 10 complete
+
+MODULES (port in THIS ORDER):
+1. palette (100 LOC) - Palette class for color quantization
+2. _palettes (309 LOC) - Standard palettes (256-color, Windows)
+3. terminal_theme (153 LOC) - Terminal theme with ANSI colors
+
+TOTAL: ~562 LOC
+
+WHY THIS ORDER: palette → _palettes → terminal_theme (dependencies chain)
+
+WORKFLOW:
+1. Port palette first
+2. Then _palettes (needs palette)
+3. Then terminal_theme (needs palette)
+
+Standard TDD: tests → implementation → npm run check → commit
+
+GO!
+
