@@ -10,6 +10,7 @@ export * from './color.js';
 export * from './segment.js';
 export * from './align.js';
 export * from './padding.js';
+export * from './region.js';
 export * from './control.js';
 export * from './repr.js';
 export * from './markup.js';
