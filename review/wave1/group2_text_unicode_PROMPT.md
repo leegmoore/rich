@@ -1,23 +1,31 @@
-===== CODE REVIEW PROMPT: TEXT & UNICODE PROCESSING =====
+===== CODE REVIEW PASS 1: TEXT & UNICODE PROCESSING =====
 
 **Review Group:** 2 - Text Processing & Unicode  
 **Wave:** 1 (can run in parallel with Groups 3 and 7)  
-**Output File:** `review/wave1/group2_text_unicode_OUTPUT.md`
+**Output File:** `review/wave1/group2_text_unicode_OUTPUT.md`  
+**Pass:** 1 of 2 (Foundation Quality)
 
 ---
 
-## 🎯 YOUR MISSION
+## 🎯 PASS 1 MISSION
 
-You are a senior TypeScript engineer reviewing ported Python code for correctness, type safety, and quality.
+You are a senior TypeScript engineer reviewing ported Python code.
 
-**Your Task:** Review 4 modules related to text processing and Unicode handling (~2,300 LOC)
+**This Pass Focuses On:**
+1. ✅ **Correctness** - Does the code do what it's supposed to do?
+2. ✅ **Code Quality** - Is it readable, maintainable, well-documented?
+3. ✅ **TypeScript Quality** - Are types strong, helpful, safe?
+4. ✅ **API Usability** - Is the public API intuitive and well-designed?
+
+**NOT in This Pass:** Performance, edge cases, hardening (that's Pass 2)
+
+**Your Task:** Review 4 modules related to text processing and Unicode (~2,300 LOC)
 
 **Focus Areas:**
-- Unicode character width calculations
-- Text wrapping algorithms
-- Span management (style ranges)
-- Edge cases: emoji, surrogate pairs, zero-width characters
-- Performance: caching, binary search optimization
+- Algorithm correctness vs Python source
+- Code clarity and documentation
+- Type safety and type design
+- Public API design
 
 ---
 
@@ -191,160 +199,171 @@ Verify all tests pass before starting review.
 
 ---
 
-## 🎯 REVIEW EXECUTION
+## 🎯 PASS 1 REVIEW DIMENSIONS
 
-### Step 1: Read Python Source (30 min)
-For each module, read the Python source to understand intent:
-```bash
-# From repo root:
-cat rich/cells.py
-cat rich/cell_widths.py
-cat rich/text.py
-cat rich/_wrap.py
-```
+### 1. Correctness (Primary Focus)
+**Question:** Does this code implement the Python behavior correctly?
 
-### Step 2: Read TypeScript Implementation (60 min)
-For each module, read the TypeScript carefully:
-```bash
-# From repo root:
-cat rich-ts/src/cells.ts
-cat rich-ts/src/cell_widths.ts
-cat rich-ts/src/text.ts
-cat rich-ts/src/_wrap.ts
-```
+**Check:**
+- [ ] Algorithm matches Python logic
+- [ ] Function signatures match Python API
+- [ ] Return values match expected types
+- [ ] Control flow handles all branches from Python
 
-### Step 3: Run Tests (10 min)
-```bash
-cd rich-ts
-npm test cells -- --run
-npm test text -- --run
-```
+**For Each Module:**
+- Read Python source side-by-side with TypeScript
+- Trace through key functions
+- Verify test coverage matches Python tests
 
-### Step 4: Check Types & Lint (10 min)
-```bash
-cd rich-ts
-npm run typecheck
-npm run lint | grep -E "cells|text|_wrap"
-```
-
-### Step 5: Document Findings (60 min)
-Write comprehensive review in `review/wave1/group2_text_unicode_OUTPUT.md`
-
-**Total Time:** 2.5-3 hours
+**Grade Impact:** 40% of module score
 
 ---
 
-## 📝 OUTPUT FORMAT
+### 2. Code Quality (Maintainability)
+**Question:** Can another developer understand and modify this code?
 
-Write your findings to: **`review/wave1/group2_text_unicode_OUTPUT.md`**
+**Check:**
+- [ ] Variable names are clear (no `txt`, `clr`, `seg` abbreviations)
+- [ ] Functions are focused (single responsibility)
+- [ ] Complex logic has explanatory comments
+- [ ] File structure is logical
+- [ ] No dead code or commented-out sections
 
-Use this structure:
+**Grade Impact:** 25% of module score
 
+---
+
+### 3. TypeScript Quality (Type Safety)
+**Question:** Do the types help or hurt? Are they safe?
+
+**Check:**
+- [ ] No `any` without explicit eslint-disable and justification
+- [ ] Public APIs have strong types
+- [ ] Return types are explicit
+- [ ] Generics used appropriately
+- [ ] Union types handled safely
+- [ ] No excessive type assertions (`as`)
+
+**Grade Impact:** 25% of module score
+
+---
+
+### 4. API Usability (Developer Experience)
+**Question:** Is this pleasant to use?
+
+**Check:**
+- [ ] Public methods have JSDoc with examples
+- [ ] Parameters are well-named and typed
+- [ ] Error messages are helpful
+- [ ] API is intuitive (follows conventions)
+- [ ] No surprising behavior
+
+**Grade Impact:** 10% of module score
+
+---
+
+## 📝 PASS 1 OUTPUT FORMAT
+
+Write to: **`review/wave1/group2_text_unicode_OUTPUT.md`**
+
+### Section 1: Executive Summary
 ```markdown
-# Code Review: Text & Unicode Processing
-
-**Reviewer:** [Your agent ID]
-**Date:** [Date]
-**Modules:** cells.ts, cell_widths.ts, text.ts, _wrap.ts
-**Total LOC:** ~2,300
-
----
-
-## Executive Summary
+## PASS 1: Foundation Quality Review
 
 **Overall Grade:** [A-F]
-**Issues Found:** [count] (Critical: X, High: Y, Medium: Z, Low: W)
-**Recommendation:** [Approve / Approve with changes / Major revisions needed]
+**Recommendation:** [Approve / Minor fixes / Needs work]
 
-**Key Findings:**
-- [3-5 bullet points of most important findings]
+**Quick Stats:**
+- Correctness: [Grade] - [1-2 sentence assessment]
+- Code Quality: [Grade] - [1-2 sentence assessment]
+- TypeScript Quality: [Grade] - [1-2 sentence assessment]
+- API Usability: [Grade] - [1-2 sentence assessment]
 
----
+**Top 3 Issues:**
+1. [Most important finding]
+2. [Second most important]
+3. [Third most important]
+```
 
-## Issues Found
+### Section 2: Issues by Severity
+```markdown
+## Issues Found (Pass 1)
 
-[Use format from REVIEW_CHECKLIST.md for each issue]
+### Critical Issues (Will Break)
+[Only include issues that will cause actual failures]
 
-### Critical Issues
-[List all critical issues with full details]
+### High Priority (Should Fix)
+[Issues that impact usability or correctness in edge cases]
 
-### High Priority Issues
-[List all high priority issues]
+### Medium Priority (Nice to Fix)
+[Code quality, clarity, type improvements]
 
-### Medium Priority Issues
-[List all medium priority issues]
+### Low Priority (Polish)
+[Naming, comments, minor refactoring]
+```
 
-### Low Priority Issues
-[List all low priority issues]
+### Section 3: Module Grades
+```markdown
+## Module-by-Module Assessment
 
----
+### cells.ts
+**Grade:** [A-F]
+- Correctness: [comment]
+- Code Quality: [comment]
+- TypeScript: [comment]
+- API: [comment]
+- **Key Issues:** [list 1-3]
 
-## Positive Findings
+### text.ts
+**Grade:** [A-F]
+[Same format]
 
-[List excellent patterns, clever solutions, well-implemented features]
+[etc...]
+```
 
----
+### Section 4: Recommendations
+```markdown
+## Pass 1 Recommendations
 
-## Module-by-Module Details
+### Must Fix Before Pass 2
+[Issues that would affect Pass 2 review]
 
-### cells.ts (Grade: [A-F])
-[Detailed findings]
-
-### cell_widths.ts (Grade: [A-F])
-[Detailed findings]
-
-### text.ts (Grade: [A-F])
-[Detailed findings]
-
-### _wrap.ts (Grade: [A-F])
-[Detailed findings]
-
----
-
-## Recommendations
-
-### Immediate Actions
-[Must-fix items]
-
-### Suggested Improvements
+### Should Consider
 [Nice-to-have improvements]
 
-### Future Considerations
-[Long-term suggestions]
-
----
-
-## Test Coverage Assessment
-
-[Comment on test quality and coverage]
-
----
-
-## Performance Notes
-
-[Any performance concerns or optimizations]
+### Strengths to Preserve
+[What's working really well]
 ```
 
 ---
 
-## ⚠️ IMPORTANT NOTES
+## ⏱️ PASS 1 TIMELINE
 
-1. **Be Thorough:** This is the Unicode/text foundation - errors here affect everything
-2. **Check Algorithm Correctness:** Compare to Python source carefully
-3. **Test Edge Cases:** Unicode is full of surprises
-4. **Note Performance:** Text rendering is hot path
-5. **text.ts is Huge:** This is 1,616 LOC - take your time
+1. **Read Python source** (30 min) - Understand intent
+2. **Review for correctness** (60 min) - Compare implementations
+3. **Review code quality** (30 min) - Readability, clarity
+4. **Review types & API** (30 min) - Type safety, usability
+5. **Run tests** (10 min) - Verify behavior
+6. **Document findings** (30 min) - Write output
+
+**Total: 3 hours for Pass 1**
 
 ---
 
-## 🚀 READY TO START?
+## 🚀 READY TO START PASS 1?
 
-1. Read context files (PROJECT_OVERVIEW.md, REVIEW_CHECKLIST.md)
-2. Read Python source for all 4 modules
-3. Review TypeScript implementations
-4. Run tests
-5. Document findings in OUTPUT file
-6. Grade each module and provide overall assessment
+**Remember:** This pass is about FOUNDATION QUALITY
+- Is the code correct?
+- Is it well-written?
+- Are types safe?
+- Is the API good?
+
+**NOT about:** Performance, edge cases, hardening (that's Pass 2!)
+
+1. Read context files
+2. Review each module against the 4 dimensions
+3. Document in OUTPUT file
+4. **STOP** - Wait for Pass 2 prompt
 
 **GO!** 🔍
 

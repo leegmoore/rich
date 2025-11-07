@@ -6,50 +6,76 @@
 
 ---
 
-## 🚀 Quick Start - How to Execute Reviews
+## 🚀 Quick Start - Two-Pass Review Strategy
+
+**Each agent does TWO passes on their assigned modules:**
+- **Pass 1:** Foundation Quality (Correctness, Code Quality, Types, API)
+- **Pass 2:** Production Hardening (Performance, Edge Cases, Reliability)
+
+**Context stays open between passes!**
+
+---
+
+## 📋 Execution Flow
 
 ### Step 1: Review General Materials (You - 5 minutes)
 Read these files in `review/` root:
 - `PROJECT_OVERVIEW.md` - Context about the port
 - `REVIEW_CHECKLIST.md` - What agents should check
 
-### Step 2: Launch Wave 1 (3 agents in parallel)
+### Step 2: Launch Wave 1 - PASS 1 (3 agents in parallel)
 These groups have minimal dependencies - can run simultaneously:
 
-| Agent | Group | Files | Command |
-|-------|-------|-------|---------|
-| **Agent A** | Text & Unicode | 4 modules (~2,300 LOC) | Copy `wave1/group2_text_unicode_PROMPT.md` |
-| **Agent B** | Rendering Engine | 3 modules (~1,600 LOC) | Copy `wave1/group3_rendering_PROMPT.md` |
-| **Agent C** | Utilities | 7 modules (~500 LOC) | Copy `wave1/group7_utilities_PROMPT.md` |
+| Agent | Group | Modules | Pass 1 Prompt |
+|-------|-------|---------|---------------|
+| **Agent A** | Text & Unicode | 4 modules (~2,300 LOC) | `wave1/group2_text_unicode_PROMPT.md` |
+| **Agent B** | Rendering Engine | 3 modules (~1,600 LOC) | `wave1/group3_rendering_PROMPT.md` |
+| **Agent C** | Utilities | 7 modules (~500 LOC) | `wave1/group7_utilities_PROMPT.md` |
 
+**Focus:** Correctness, Code Quality, TypeScript Quality, API Usability  
+**Time:** 2-4 hours per agent  
 **Output:** Each agent writes to their `*_OUTPUT.md` file
 
-### Step 3: Wait for Wave 1 Completion
-All 3 agents must finish before Wave 2 (dependencies)
+### Step 3: Launch Wave 1 - PASS 2 (same 3 agents)
+**Keep context open! After Pass 1 completes, give Pass 2 prompt to same agent**
 
-### Step 4: Launch Wave 2 (3 agents in parallel)
-After Wave 1 complete:
+| Agent | Pass 2 Prompt |
+|-------|---------------|
+| **Agent A** | `wave1/group2_text_unicode_PASS2.md` |
+| **Agent B** | `wave1/group3_rendering_PASS2.md` |
+| **Agent C** | `wave1/group7_utilities_PASS2.md` |
 
-| Agent | Group | Files | Command |
-|-------|-------|-------|---------|
-| **Agent D** | Colors & Styles | 5 modules (~2,000 LOC) | Copy `wave2/group1_colors_PROMPT.md` |
-| **Agent E** | Layout Components | 6 modules (~1,150 LOC) | Copy `wave2/group4_layouts_PROMPT.md` |
-| **Agent F** | Box & Visual | 3 modules (~650 LOC) | Copy `wave2/group5_boxes_PROMPT.md` |
+**Focus:** Performance, Hardening, Edge Cases, Reliability  
+**Time:** 2-3 hours per agent  
+**Output:** APPEND to same `*_OUTPUT.md` file
 
-**Output:** Each agent writes to their `*_OUTPUT.md` file
+### Step 4: Wait for Wave 1 Both Passes Complete
+All 3 agents must finish BOTH passes before Wave 2
 
-### Step 5: Wait for Wave 2 Completion
+### Step 5: Launch Wave 2 - PASS 1 (3 agents in parallel)
+After Wave 1 complete (both passes):
 
-### Step 6: Launch Wave 3 (1 agent)
+| Agent | Group | Modules | Pass 1 Prompt |
+|-------|-------|---------|---------------|
+| **Agent D** | Colors & Styles | 5 modules (~2,000 LOC) | `wave2/group1_colors_PROMPT.md` |
+| **Agent E** | Layout Components | 6 modules (~1,150 LOC) | `wave2/group4_layouts_PROMPT.md` |
+| **Agent F** | Box & Visual | 3 modules (~650 LOC) | `wave2/group5_boxes_PROMPT.md` |
+
+### Step 6: Launch Wave 2 - PASS 2 (same 3 agents)
+| Agent | Pass 2 Prompt |
+|-------|---------------|
+| **Agent D** | `wave2/group1_colors_PASS2.md` |
+| **Agent E** | `wave2/group4_layouts_PASS2.md` |
+| **Agent F** | `wave2/group5_boxes_PASS2.md` |
+
+### Step 7: Launch Wave 3 - PASS 1 & PASS 2 (1 agent)
 After Wave 2 complete:
 
-| Agent | Group | Files | Command |
-|-------|-------|-------|---------|
-| **Agent G** | Markup & Emoji | 4 modules (~4,000 LOC) | Copy `wave3/group6_markup_PROMPT.md` |
+| Agent | Pass 1 Prompt | Pass 2 Prompt |
+|-------|---------------|---------------|
+| **Agent G** | `wave3/group6_markup_PROMPT.md` | `wave3/group6_markup_PASS2.md` |
 
-**Output:** Agent writes to `group6_markup_OUTPUT.md`
-
-### Step 7: Consolidate Results
+### Step 8: Consolidate Results
 After all waves complete:
 1. Review all 7 `*_OUTPUT.md` files
 2. Prioritize issues (Critical → High → Medium → Low)
