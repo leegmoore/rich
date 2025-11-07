@@ -1,9 +1,9 @@
 # Module Port Log: filesize
 
-**Status:** NOT_STARTED  
+**Status:** COMPLETED  
 **Dependencies:** None (standalone)  
 **Python Source:** `rich/filesize.py` (~88 LOC)  
-**Python Tests:** `tests/test_filesize.py` (~10 tests)
+**Python Tests:** `tests/test_filesize.py`
 
 ---
 
@@ -14,76 +14,54 @@ File size formatting utilities.
 
 **Key Features:**
 - Format bytes to human-readable strings
-- Support for decimal units (KB, MB, GB) and binary units (KiB, MiB, GiB)
-- Precision control
-- Unit selection (auto or manual)
+- Decimal unit support (KB, MB, GB)
+- Precision control and custom separators
+- Unit selection helper for binary sizes
 - Used by progress bars for file download/upload display
 
 ---
 
 ## Test Port Progress
 
-**Total Tests:** ~10
+**Total Tests:** 3 (parity with upstream Python coverage)
 
-- [ ] test_decimal_units
-- [ ] test_binary_units
-- [ ] test_precision
-- [ ] test_small_files
-- [ ] test_large_files
-- [ ] test_zero_bytes
-- [ ] test_negative_bytes (error case)
-- [ ] test_unit_selection
-- [ ] test_formatting_options
-- [ ] Other filesize tests
+- [x] test_decimal_units
+- [x] test_precision
+- [x] test_unit_selection
 
 ---
 
 ## Implementation Progress
 
-- [ ] formatFilesize() function or Filesize class
-- [ ] Decimal unit support (1000-based)
-- [ ] Binary unit support (1024-based)
-- [ ] Precision parameter
-- [ ] Unit arrays (bytes, KB, MB, GB, TB, etc.)
-- [ ] Edge case handling (0, negative, very large)
-- [ ] All tests passing
+- [x] decimal() formatter (powers of 1000)
+- [x] Precision parameter + grouping formatter
+- [x] Unit arrays (kB, MB, GB, ...)
+- [x] pickUnitAndSuffix helper (binary-safe)
+- [x] Edge case handling (0 bytes, 1 byte, invalid input)
+- [x] Vitest suite passing
 
 ---
 
 ## Design Decisions
 
-*No decisions yet - module not started*
-
-**Considerations:**
-- Function vs Class? (Likely function: `formatFilesize(bytes, options)`)
-- Default to decimal or binary? (Check Python default)
-- Precision default? (Check Python - likely 1 or 2)
+- Matched Python API surface: exported `decimal()` and `pickUnitAndSuffix()`.
+- Implemented deterministic number formatting via `Intl.NumberFormat` cached per precision.
+- Added runtime guards for negative/invalid sizes and customizable separator/precision options.
 
 ---
 
 ## Blockers
 
-**NONE** - This module is completely standalone
+None.
 
 ---
 
 ## Next Steps
 
-1. Read Python source: `rich/filesize.py`
-2. Read Python tests: `tests/test_filesize.py`
-3. Create `rich-ts/tests/filesize.test.ts`
-4. Port all tests to TypeScript/Vitest
-5. Run tests from rich-ts/: `npm test filesize -- --run` (should fail)
-6. Create `rich-ts/src/filesize.ts`
-7. Implement formatFilesize() or Filesize class
-8. Continue until all tests pass
-9. Run `npm run check`
-10. Commit and push
-11. Update this log
+Done for this module.
 
 ---
 
 ## Session Notes
 
-*No sessions yet*
-
+- 2025-11-07: Ported `tests/test_filesize.py` → `tests/filesize.test.ts`, implemented `src/filesize.ts`, wired exports, and ran `npm test filesize -- --run` plus `npm run check`.
