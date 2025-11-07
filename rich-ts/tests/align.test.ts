@@ -3,6 +3,9 @@ import { Align, VerticalCenter } from '../src/align.js';
 import { Console } from '../src/console.js';
 import { Measurement } from '../src/measure.js';
 
+const createConsole = (options: ConstructorParameters<typeof Console>[0] = {}) =>
+  new Console({ force_terminal: false, ...options });
+
 describe('Align', () => {
   it('test_bad_align_legal', () => {
     // Legal
@@ -29,7 +32,7 @@ describe('Align', () => {
   });
 
   it('test_align_left', () => {
-    const console = new Console({ width: 10 });
+    const console = createConsole({ width: 10 });
     console.beginCapture();
     console.print(new Align('foo', 'left'));
     const result = console.endCapture();
@@ -37,7 +40,7 @@ describe('Align', () => {
   });
 
   it('test_align_center', () => {
-    const console = new Console({ width: 10 });
+    const console = createConsole({ width: 10 });
     console.beginCapture();
     console.print(new Align('foo', 'center'));
     const result = console.endCapture();
@@ -45,7 +48,7 @@ describe('Align', () => {
   });
 
   it('test_align_right', () => {
-    const console = new Console({ width: 10 });
+    const console = createConsole({ width: 10 });
     console.beginCapture();
     console.print(new Align('foo', 'right'));
     const result = console.endCapture();
@@ -53,7 +56,7 @@ describe('Align', () => {
   });
 
   it('test_align_top', () => {
-    const console = new Console({ width: 10 });
+    const console = createConsole({ width: 10 });
     console.beginCapture();
     console.print(new Align('foo', 'left', { vertical: 'top' }), { height: 5 });
     const result = console.endCapture();
@@ -62,7 +65,7 @@ describe('Align', () => {
   });
 
   it('test_align_middle', () => {
-    const console = new Console({ width: 10 });
+    const console = createConsole({ width: 10 });
     console.beginCapture();
     console.print(new Align('foo', 'left', { vertical: 'middle' }), { height: 5 });
     const result = console.endCapture();
@@ -71,7 +74,7 @@ describe('Align', () => {
   });
 
   it('test_align_bottom', () => {
-    const console = new Console({ width: 10 });
+    const console = createConsole({ width: 10 });
     console.beginCapture();
     console.print(new Align('foo', 'left', { vertical: 'bottom' }), { height: 5 });
     const result = console.endCapture();
@@ -80,7 +83,7 @@ describe('Align', () => {
   });
 
   it('test_align_center_middle', () => {
-    const console = new Console({ width: 10 });
+    const console = createConsole({ width: 10 });
     console.beginCapture();
     console.print(new Align('foo\nbar', 'center', { vertical: 'middle' }), { height: 5 });
     const result = console.endCapture();
@@ -89,7 +92,7 @@ describe('Align', () => {
   });
 
   it('test_align_fit', () => {
-    const console = new Console({ width: 10 });
+    const console = createConsole({ width: 10 });
     console.beginCapture();
     console.print(new Align('foobarbaze', 'center'));
     const result = console.endCapture();
@@ -109,14 +112,14 @@ describe('Align', () => {
   });
 
   it('test_measure', () => {
-    const console = new Console({ width: 20 });
+    const console = createConsole({ width: 20 });
     const measurement = Measurement.get(console, console.options, new Align('foo bar', 'left'));
     expect(measurement.minimum).toBe(3);
     expect(measurement.maximum).toBe(7);
   });
 
   it('test_align_no_pad', () => {
-    const console = new Console({ width: 10 });
+    const console = createConsole({ width: 10 });
     console.beginCapture();
     console.print(new Align('foo', 'center', { pad: false }));
     console.print(new Align('foo', 'left', { pad: false }));
@@ -125,7 +128,7 @@ describe('Align', () => {
   });
 
   it('test_align_width', () => {
-    const console = new Console({ width: 40 });
+    const console = createConsole({ width: 40 });
     const words =
       'Deep in the human unconscious is a pervasive need for a logical universe that makes sense. But the real universe is always one step beyond logic';
     console.beginCapture();
@@ -151,7 +154,7 @@ describe('Align', () => {
   });
 
   it('test_vertical_center', () => {
-    const console = new Console({ colorSystem: null, height: 6 });
+    const console = createConsole({ colorSystem: null, height: 6 });
     console.beginCapture();
     const verticalCenter = new VerticalCenter('foo');
     verticalCenter.toString(); // Test repr

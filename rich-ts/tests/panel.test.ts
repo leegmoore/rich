@@ -6,6 +6,9 @@ import { Segment } from '../src/segment.js';
 import { Style } from '../src/style.js';
 import { Text } from '../src/text.js';
 
+const createConsole = (options: ConstructorParameters<typeof Console>[0] = {}) =>
+  new Console({ force_terminal: false, legacy_windows: false, ...options });
+
 const tests = [
   new Panel('Hello, World', undefined, { padding: 0 }),
   new Panel('Hello, World', undefined, { expand: false, padding: 0 }),
@@ -27,7 +30,7 @@ const expected = [
 ];
 
 function render(panel: Panel, width = 50): string {
-  const console = new Console({ width, legacy_windows: false });
+  const console = createConsole({ width });
   console.beginCapture();
   console.print(panel);
   return console.endCapture();
@@ -42,7 +45,7 @@ describe('Panel', () => {
   });
 
   it('test_console_width', () => {
-    const console = new Console({ width: 50, legacy_windows: false });
+    const console = createConsole({ width: 50 });
     const panel = new Panel('Hello, World', undefined, { expand: false });
     const measurement = panel.__richMeasure__(console, console.options);
     expect(measurement.minimum).toBe(16);
@@ -50,7 +53,7 @@ describe('Panel', () => {
   });
 
   it('test_fixed_width', () => {
-    const console = new Console({ width: 50, legacy_windows: false });
+    const console = createConsole({ width: 50 });
     const panel = new Panel('Hello World', undefined, { width: 20 });
     const measurement = panel.__richMeasure__(console, console.options);
     expect(measurement.minimum).toBe(20);
@@ -58,7 +61,7 @@ describe('Panel', () => {
   });
 
   it('test_render_size', () => {
-    const console = new Console({ width: 63, height: 46, legacy_windows: false });
+    const console = createConsole({ width: 63, height: 46 });
     const options = console.options.updateDimensions(80, 4);
     const lines = console.renderLines(new Panel('foo', undefined, { title: 'Hello' }), options);
 

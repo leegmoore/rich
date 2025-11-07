@@ -6,9 +6,9 @@
  */
 
 import { Measurement } from './measure.js';
-import { Segment } from './segment';
-import { Style } from './style';
-import { Text } from './text';
+import { Segment } from './segment.js';
+import { Style } from './style.js';
+import { Text } from './text.js';
 import { Rule } from './rule.js';
 import { Theme } from './theme.js';
 import { DEFAULT } from './themes.js';
@@ -243,7 +243,7 @@ export class Console {
     this.width = options.width ?? 80;
     this.height = options.height ?? 25;
     this.legacy_windows = options.legacy_windows ?? false;
-    this.isTerminal = options.force_terminal ?? false;
+    this.isTerminal = Console._detectTerminal(options.force_terminal, options.file);
     // Handle colorSystem explicitly to allow null values
     if ('colorSystem' in options) {
       this.colorSystem = options.colorSystem !== undefined ? options.colorSystem : 'truecolor';
@@ -489,6 +489,75 @@ export class Console {
    */
   private _renderSegments(segments: Segment[]): string {
     return segments.map((seg) => this._renderSegment(seg)).join('');
+  }
+
+  /**
+   * Detect whether Rich should emit ANSI codes.
+   * Mirrors Python Rich behaviour by combining explicit overrides,
+   * environment hints and stream capabilities.
+   */
+  private static _detectTerminal(forceTerminal?: boolean, file?: unknown): boolean {
+    if (forceTerminal !== undefined) {
+      return forceTerminal;
+    }
+
+    const env = typeof process === 'undefined' ? undefined : process.env;
+    const ttyCompatible = env?.TTY_COMPATIBLE;
+    if (ttyCompatible === '0') {
+      return false;
+    }
+    if (ttyCompatible === '1') {
+      return true;
+    }
+
+    const forceColor = env?.FORCE_COLOR;
+    if (forceColor !== undefined) {
+      if (forceColor === '' || forceColor === '0') {
+        return false;
+      }
+      return true;
+    }
+
+    const fileIsTTY = Console._getIsTTY(file);
+    if (fileIsTTY !== undefined) {
+      return fileIsTTY;
+    }
+
+    const stdoutIsTTY =
+      typeof process !== 'undefined' && typeof process.stdout?.isTTY === 'boolean'
+        ? process.stdout.isTTY
+        : undefined;
+    if (stdoutIsTTY !== undefined) {
+      return stdoutIsTTY;
+    }
+
+    const stderrIsTTY =
+      typeof process !== 'undefined' && typeof process.stderr?.isTTY === 'boolean'
+        ? process.stderr.isTTY
+        : undefined;
+    if (stderrIsTTY !== undefined) {
+      return stderrIsTTY;
+    }
+
+    return false;
+  }
+
+  /**
+   * Attempt to read an isTTY flag from a provided file-like object.
+   */
+  private static _getIsTTY(file?: unknown): boolean | undefined {
+    if (!file || typeof file !== 'object') {
+      return undefined;
+    }
+
+    if ('isTTY' in file) {
+      const candidate = (file as { isTTY?: boolean }).isTTY;
+      if (typeof candidate === 'boolean') {
+        return candidate;
+      }
+    }
+
+    return undefined;
   }
 
   /**

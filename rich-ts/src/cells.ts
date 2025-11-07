@@ -1,4 +1,4 @@
-import { CELL_WIDTHS } from './cell_widths';
+import { CELL_WIDTHS } from './cell_widths.js';
 
 // Ranges of unicode ordinals that produce a 1-cell wide character
 // This is non-exhaustive, but covers most common Western characters

@@ -2,8 +2,8 @@
  * Text wrapping utilities.
  */
 
-import { loopLast } from './_loop';
-import { cellLen, chopCells } from './cells';
+import { loopLast } from './_loop.js';
+import { cellLen, chopCells } from './cells.js';
 
 const RE_WORD = /\s*\S+\s*/g;
 

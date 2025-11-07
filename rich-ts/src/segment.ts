@@ -7,8 +7,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 
-import { Style } from './style';
-import { cellLen, getCharacterCellSize, setCellSize, isSingleCellWidths } from './cells';
+import { Style } from './style.js';
+import { cellLen, getCharacterCellSize, setCellSize, isSingleCellWidths } from './cells.js';
 
 /**
  * Non-printable control codes which typically translate to ANSI codes.

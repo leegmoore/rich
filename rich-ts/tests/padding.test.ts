@@ -29,7 +29,7 @@ describe('Padding', () => {
   });
 
   it('test_expand_false', () => {
-    const console = new Console({ width: 100, colorSystem: 'none' });
+    const console = new Console({ width: 100, colorSystem: 'none', force_terminal: false });
     console.beginCapture();
     console.print(new Padding('foo', 1, { expand: false }));
     expect(console.endCapture()).toBe('     \n foo \n     \n');

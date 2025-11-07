@@ -2,6 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { Columns } from '../src/columns.js';
 import { Console } from '../src/console.js';
 
+const createConsole = (options: ConstructorParameters<typeof Console>[0] = {}) =>
+  new Console({ force_terminal: false, legacy_windows: false, ...options });
+
 const COLUMN_DATA = [
   'Ursus americanus',
   'American buffalo',
@@ -25,7 +28,7 @@ const COLUMN_DATA = [
 ];
 
 function render(): string {
-  const console = new Console({ width: 100, legacy_windows: false });
+  const console = createConsole({ width: 100 });
 
   console.beginCapture();
   console.rule('empty');

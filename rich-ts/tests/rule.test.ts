@@ -3,6 +3,9 @@ import { Rule } from '../src/rule.js';
 import { Console } from '../src/console.js';
 import { Text } from '../src/text.js';
 
+const createConsole = (options: ConstructorParameters<typeof Console>[0] = {}) =>
+  new Console({ force_terminal: false, legacy_windows: false, ...options });
+
 describe('Rule', () => {
   it('test_rule', () => {
     const console = new Console({
@@ -30,12 +33,12 @@ describe('Rule', () => {
   it('test_rule_error', () => {
     expect(() =>
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-      new Console({ width: 16, legacy_windows: false }).rule('foo', { align: 'foo' as any })
+      createConsole({ width: 16 }).rule('foo', { align: 'foo' as any })
     ).toThrow('invalid value for align');
   });
 
   it('test_rule_align', () => {
-    const console = new Console({ width: 16, legacy_windows: false });
+    const console = createConsole({ width: 16 });
     console.beginCapture();
     console.rule('foo');
     console.rule('foo', { align: 'left' });
@@ -74,7 +77,7 @@ describe('Rule', () => {
     { align: 'left' as const, outcome: '… ─\n' },
     { align: 'right' as const, outcome: '─ …\n' },
   ])('test_rule_not_enough_space_for_title_text ($align)', ({ align, outcome }) => {
-    const console = new Console({ width: 3, record: true });
+    const console = createConsole({ width: 3, record: true });
     console.beginCapture();
     console.rule('Hello!', { align });
     const result = console.endCapture();
@@ -82,7 +85,7 @@ describe('Rule', () => {
   });
 
   it('test_rule_center_aligned_title_not_enough_space_for_rule', () => {
-    const console = new Console({ width: 4, record: true });
+    const console = createConsole({ width: 4, record: true });
     console.beginCapture();
     console.rule('ABCD');
     const result = console.endCapture();
@@ -92,7 +95,7 @@ describe('Rule', () => {
   it.each(['left' as const, 'right' as const])(
     'test_rule_side_aligned_not_enough_space_for_rule (%s)',
     (align) => {
-      const console = new Console({ width: 2, record: true });
+      const console = createConsole({ width: 2, record: true });
       console.beginCapture();
       console.rule('ABCD', { align });
       const result = console.endCapture();
@@ -105,7 +108,7 @@ describe('Rule', () => {
     { align: 'left' as const, outcome: 'AB… ─\n' },
     { align: 'right' as const, outcome: '─ AB…\n' },
   ])('test_rule_just_enough_width_available_for_title ($align)', ({ align, outcome }) => {
-    const console = new Console({ width: 5, record: true });
+    const console = createConsole({ width: 5, record: true });
     console.beginCapture();
     console.rule('ABCD', { align });
     const result = console.endCapture();

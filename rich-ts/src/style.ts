@@ -6,9 +6,9 @@
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { Color, ColorParseError, ColorSystem } from './color';
-import { ColorTriplet } from './color_triplet';
-import { StyleSyntaxError } from './errors';
+import { Color, ColorParseError, ColorSystem } from './color.js';
+import { ColorTriplet } from './color_triplet.js';
+import { StyleSyntaxError } from './errors.js';
 
 /**
  * Style type - can be a Style instance or a string definition

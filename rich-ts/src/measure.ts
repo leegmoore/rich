@@ -3,9 +3,9 @@
  * Stores the minimum and maximum widths (in characters) required to render an object.
  */
 
-import { NotRenderableError } from './errors';
-import type { Console, ConsoleOptions } from './console';
-import { Text } from './text';
+import { NotRenderableError } from './errors.js';
+import type { Console, ConsoleOptions } from './console.js';
+import { Text } from './text.js';
 
 /**
  * Stores the minimum and maximum widths (in characters) required to render an object.

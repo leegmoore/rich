@@ -1,4 +1,4 @@
-import { ColorTriplet } from './color_triplet';
+import { ColorTriplet } from './color_triplet.js';
 
 /**
  * Convert RGB color to HLS (Hue, Lightness, Saturation).

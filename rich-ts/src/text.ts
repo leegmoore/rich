@@ -12,21 +12,21 @@
  * along with the Span class for marking up regions of text.
  */
 
-import { loopLast } from './_loop';
-import { pickBool } from './_pick';
-import { divideLine } from './_wrap';
-// TODO: import { AlignMethod } from './align';
-import { cellLen, setCellSize } from './cells';
-// TODO: import { Lines } from './containers';
-import { stripControlCodes } from './control';
-// TODO: import { EmojiVariant } from './emoji';
-// TODO: import { JupyterMixin } from './jupyter';
-import { Measurement } from './measure';
-import { Segment } from './segment';
-import { Style, StyleType } from './style';
+import { loopLast } from './_loop.js';
+import { pickBool } from './_pick.js';
+import { divideLine } from './_wrap.js';
+// TODO: import { AlignMethod } from './align.js';
+import { cellLen, setCellSize } from './cells.js';
+// TODO: import { Lines } from './containers.js';
+import { stripControlCodes } from './control.js';
+// TODO: import { EmojiVariant } from './emoji.js';
+// TODO: import { JupyterMixin } from './jupyter.js';
+import { Measurement } from './measure.js';
+import { Segment } from './segment.js';
+import { Style, StyleType } from './style.js';
 import * as markup from './markup.js';
 
-import type { Console, ConsoleOptions, JustifyMethod, OverflowMethod } from './console';
+import type { Console, ConsoleOptions, JustifyMethod, OverflowMethod } from './console.js';
 export type AlignMethod = 'left' | 'center' | 'right';
 
 const DEFAULT_JUSTIFY: JustifyMethod = 'default';
