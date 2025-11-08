@@ -31,8 +31,10 @@ WORKFLOW (standard TDD):
 4. Run tests: cd rich-ts && npm test [MODULE] -- --run
 5. Create rich-ts/src/[MODULE].ts - implement
 6. npm run check (must pass!)
-7. git add -A && git commit -m "Port [MODULE]" && git push
-8. Create PORT_LOG in phases/phase10/PORT_LOG_[MODULE].md
+7. git add -A (STAGE ONLY - do not commit yet!)
+8. Update PORT_LOG in phases/phase10/PORT_LOG_[MODULE].md
+
+IMPORTANT: Stage all changes but DO NOT commit or push. Leave staged for review.
 
 DEV STANDARDS:
 - npm (not pnpm/bun)

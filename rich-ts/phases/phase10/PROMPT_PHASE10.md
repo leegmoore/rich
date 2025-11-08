@@ -118,10 +118,10 @@ Port Phase 10 modules using Test-Driven Development:
 - Run all checks: `npm run check` (format + typecheck + lint + test - must pass!)
 - This runs Prettier (formatting), TypeScript (type checking), ESLint (code quality), and Vitest (tests)
 
-### Step 5: Commit and Push
+### Step 5: Stage Changes (DO NOT COMMIT!)
 - Stage all changes: `git add -A`
-- Commit with message: `git commit -m "Port [MODULE] module with tests"`
-- Push to remote: `git push`
+- **DO NOT** commit or push yet
+- Leave staged for review
 
 ### Step 6: Update Logs
 - Update the module's PORT_LOG file (in `rich-ts/phases/phase10/`) with:
