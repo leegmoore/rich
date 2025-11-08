@@ -1,23 +1,32 @@
 ===== PHASE 11: PALETTE SYSTEM - SEQUENTIAL =====
 
-PHASE: 11 - Palette System (3 modules in order)
+PHASE: 11 - Palette System + Pager (4 modules)
 DEPENDENCY: Phase 10 complete
 
 MODULES (port in THIS ORDER):
-1. palette (100 LOC) - Palette class for color quantization
-2. _palettes (309 LOC) - Standard palettes (256-color, Windows)
-3. terminal_theme (153 LOC) - Terminal theme with ANSI colors
+1. pager (34 LOC) - Abstract pager base [PARALLEL - can do anytime]
+2. palette (100 LOC) - Palette class for color quantization [START AFTER or WITH pager]
+3. _palettes (309 LOC) - Standard palettes (needs palette)
+4. terminal_theme (153 LOC) - Terminal theme (needs palette)
 
-TOTAL: ~562 LOC
+TOTAL: ~596 LOC
 
-WHY THIS ORDER: palette → _palettes → terminal_theme (dependencies chain)
+WHY THIS ORDER: 
+- pager is standalone (can do anytime)
+- palette → _palettes → terminal_theme (dependencies chain)
 
 WORKFLOW:
-1. Port palette first
-2. Then _palettes (needs palette)
-3. Then terminal_theme (needs palette)
+1. Port pager (standalone, quick win)
+2. Port palette
+3. Then _palettes (needs palette)
+4. Then terminal_theme (needs palette)
 
-Standard TDD: tests → implementation → npm run check → commit
+Standard TDD: tests → implementation → npm run check → STAGE ONLY
+
+CRITICAL: When all 4 modules complete:
+- Run: git add -A (stage everything)
+- DO NOT commit or push
+- Leave staged for code review
 
 GO!
 

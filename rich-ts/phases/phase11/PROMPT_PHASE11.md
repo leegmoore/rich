@@ -25,16 +25,19 @@ TypeScript developer using Test-Driven Development (TDD) to port Python code.
 
 ## 📋 PHASE 11 OVERVIEW
 
-**Goal:** Port 3 palette/color system modules IN SEQUENTIAL ORDER (dependencies chain).
+**Goal:** Port 4 modules - pager (from Phase 10) + 3 palette/color system modules.
 
-**Modules (IN THIS ORDER):**
-1. **palette** - Palette class for color quantization (~100 LOC, ~10 tests) - DEPENDS ON: color_triplet ✅
-2. **_palettes** - Standard palettes (256-color, Windows) (~309 LOC, data + helpers) - DEPENDS ON: palette
-3. **terminal_theme** - Terminal theme with ANSI color definitions (~153 LOC, ~8 tests) - DEPENDS ON: color_triplet ✅, palette
+**Modules (RECOMMENDED ORDER):**
+1. **pager** - Abstract pager base (~34 LOC, ~5 tests) - DEPENDS ON: nothing [CAN DO ANYTIME]
+2. **palette** - Palette class for color quantization (~100 LOC, ~10 tests) - DEPENDS ON: color_triplet ✅
+3. **_palettes** - Standard palettes (256-color, Windows) (~309 LOC, data + helpers) - DEPENDS ON: palette
+4. **terminal_theme** - Terminal theme with ANSI color definitions (~153 LOC, ~8 tests) - DEPENDS ON: color_triplet ✅, palette
 
-**Total:** ~562 LOC, ~18+ tests
+**Total:** ~596 LOC, ~23+ tests
 
-**Why this order?** Dependencies chain: palette is used by _palettes, and both are used by terminal_theme. MUST be sequential!
+**Why this order?** 
+- pager is standalone (quick win from Phase 10)
+- palette → _palettes → terminal_theme chain must be sequential
 
 **Why this phase?** Phase 12 needs terminal_theme for the CRITICAL ansi module which unblocks 34 tests!
 
@@ -55,6 +58,7 @@ I'm continuing the Rich TypeScript port. This is **Phase 11: Palette System**.
 ### 1. First, read these logs:
 - Read `rich-ts/phases/COMPLETE_PORT_PLAN.md` (overall strategy)
 - Read `rich-ts/phases/REMAINING_MODULES.md` (what's left)
+- Read `rich-ts/phases/phase11/PORT_LOG_PAGER.md`
 - Read `rich-ts/phases/phase11/PORT_LOG_PALETTE.md`
 - Read `rich-ts/phases/phase11/PORT_LOG_PALETTES.md`
 - Read `rich-ts/phases/phase11/PORT_LOG_TERMINAL_THEME.md`
@@ -69,13 +73,14 @@ I'm continuing the Rich TypeScript port. This is **Phase 11: Palette System**.
 - Clear names, JSDoc on public APIs
 - Use `??` and `?.` where appropriate
 
-### 3. CRITICAL - Do modules IN ORDER:
-**You MUST port in this sequence:**
-1. **First:** palette
-2. **Second:** _palettes (needs palette)
-3. **Third:** terminal_theme (needs palette)
+### 3. Module Order:
+**Recommended sequence:**
+1. **First:** pager (standalone, quick win)
+2. **Second:** palette (needed by _palettes and terminal_theme)
+3. **Third:** _palettes (needs palette)
+4. **Fourth:** terminal_theme (needs palette)
 
-**DO NOT skip ahead!** Dependencies must be satisfied.
+**Note:** pager can be done anytime (standalone), but palette → _palettes → terminal_theme MUST be sequential!
 
 ---
 
@@ -105,10 +110,10 @@ Port Phase 11 modules IN SEQUENTIAL ORDER using TDD:
 ### Step 4: Run Quality Checks
 - Run: `npm run check` (must pass!)
 
-### Step 5: Commit and Push
-- `git add -A`
-- `git commit -m "Port [MODULE] module with tests"`
-- `git push`
+### Step 5: Stage Changes (DO NOT COMMIT!)
+- Stage all changes: `git add -A`
+- **DO NOT** commit or push yet
+- Leave staged for code review
 
 ### Step 6: Update Logs
 - Update `rich-ts/phases/phase11/PORT_LOG_[MODULE].md` to DONE
@@ -121,7 +126,23 @@ Port Phase 11 modules IN SEQUENTIAL ORDER using TDD:
 
 ## 📝 MODULE-SPECIFIC NOTES
 
-### palette (100 LOC) - PORT THIS FIRST
+### pager (34 LOC) - QUICK WIN FROM PHASE 10
+**Purpose:** Abstract pager base class
+
+**Python Source:** `rich/pager.py`  
+**Key Features:**
+- Pager abstract base class
+- show() method signature
+- SystemPager comes later
+
+**TypeScript Notes:**
+- Abstract class with abstract show() method
+- Very simple
+- ~15 minutes
+
+---
+
+### palette (100 LOC) - PORT THIS SECOND
 **Purpose:** Palette class for color quantization and matching
 
 **Python Source:** `rich/palette.py`  
@@ -211,26 +232,29 @@ Port Phase 11 modules IN SEQUENTIAL ORDER using TDD:
 
 For Phase 11 to be COMPLETE:
 
+- [ ] pager module complete with tests passing
 - [ ] palette module complete with tests passing
 - [ ] _palettes module complete (data verified)
 - [ ] terminal_theme module complete with tests passing
-- [ ] All 3 done IN SEQUENTIAL ORDER
+- [ ] All 4 modules done
 - [ ] `npm run check` passes
 - [ ] All PORT_LOG files updated to DONE
+- [ ] All changes staged with `git add -A` (NOT committed!)
 - [ ] COMPLETE_PORT_PLAN.md shows Phase 11 complete
 
 ---
 
 ## 🚀 RECOMMENDED WORK ORDER
 
-**ONLY ONE OPTION - Sequential:**
-1. palette (45 min)
-2. _palettes (30 min)
-3. terminal_theme (45 min)
+**Recommended Order:**
+1. pager (15 min) - quick win
+2. palette (45 min) - needed by others
+3. _palettes (30 min) - needs palette
+4. terminal_theme (45 min) - needs palette
 
-**Total: ~2 hours**
+**Total: ~2.5 hours**
 
-**DO NOT parallelize** - dependencies require sequential execution!
+**Partial parallelization:** pager + palette can be done simultaneously, then _palettes, then terminal_theme
 
 ---
 
