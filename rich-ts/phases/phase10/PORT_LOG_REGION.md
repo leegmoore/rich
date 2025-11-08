@@ -72,7 +72,7 @@ Region math - rectangular area representation.
 7. Implement Region (likely as interface or simple class)
 8. Continue until all tests pass
 9. Run `npm run check`
-10. Commit and push
+10. Stage changes: `git add -A` (DO NOT commit or push!)
 11. Update this log
 
 ---

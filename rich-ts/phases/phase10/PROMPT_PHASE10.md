@@ -46,7 +46,7 @@ You're a TypeScript developer using Test-Driven Development (TDD) to port Python
 - Code is formatted (Prettier) and linted (ESLint)
 - `npm run check` passes for all modules
 - Progress logged in PORT_LOG files
-- Code committed to git
+- All changes staged with `git add -A` (NOT committed)
 
 ---
 
