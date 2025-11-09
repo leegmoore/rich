@@ -1,3 +1,25 @@
+===== PHASE 11: PALETTE SYSTEM + PAGER =====
+
+**ROLE:** TypeScript developer porting Rich Python library to TypeScript
+
+**PHASE:** 11 - Palette System + Pager (4 modules, ~596 LOC)  
+**DEPENDENCY:** Phase 10 complete  
+**STATUS:** Ready to port
+
+**MODULES (port in THIS ORDER):**
+1. **pager** (34 LOC) - Abstract pager base [standalone, quick win]
+2. **palette** (100 LOC) - Palette class for color quantization [needed by next 2]
+3. **_palettes** (309 LOC) - Standard palettes (needs palette)
+4. **terminal_theme** (153 LOC) - Terminal theme (needs palette)
+
+**WHY THIS ORDER:** pager is standalone; palette → _palettes → terminal_theme chain sequentially
+
+**WORKFLOW:** TDD (tests → implement → npm run check) → git add -A (STAGE ONLY - no commit!)
+
+**CRITICAL:** When all 4 complete, stage everything but DO NOT commit. Leave staged for code review.
+
+---
+
 # PHASE 11 PORTING PROMPT - Rich TypeScript
 
 **Use this prompt at the start of each fresh Claude Code Web session to continue Phase 11 work.**
@@ -261,22 +283,25 @@ For Phase 11 to be COMPLETE:
 ## 🎬 ACTION: START NOW
 
 1. **Read logs** (listed above)
-2. **Verify Phase 10 complete** (5 foundation helpers done)
-3. **Start with palette** (FIRST - required by others)
-4. Follow 6-step TDD process
-5. **Then _palettes** (SECOND)
-6. **Then terminal_theme** (THIRD - enables Phase 12 ansi!)
-7. Update logs as you go
-8. When all 3 complete, mark Phase 11 DONE
+2. **Verify Phase 10 complete** (4 foundation helpers done: _timer, region, filesize, abc)
+3. **Start with pager** (standalone, quick win from Phase 10)
+4. **Then palette** (needed by _palettes and terminal_theme)
+5. **Then _palettes** (needs palette)
+6. **Then terminal_theme** (needs palette - enables Phase 12 ansi!)
+7. Follow 6-step TDD process for each
+8. Update logs as you go
+9. When all 4 complete, stage with `git add -A` (DO NOT commit!)
+10. Mark Phase 11 DONE
 
 ---
 
 ## 💾 END OF SESSION
 
 Before ending:
-- All 3 module logs updated to DONE
+- All 4 module logs updated to DONE
 - COMPLETE_PORT_PLAN.md shows Phase 11 complete
 - Session notes with timestamp
+- **All changes staged** with `git add -A` (NOT committed!)
 - Confirm Phase 12 is ready (terminal_theme ✅)
 
 ---
@@ -285,5 +310,5 @@ Before ending:
 
 **After Phase 11:** Phase 12 with the **CRITICAL ansi module** that unblocks 34 text tests! 🚀
 
-**Remember:** SEQUENTIAL ORDER! palette → _palettes → terminal_theme. Don't skip ahead!
+**Remember:** Port order: pager (anytime) → palette → _palettes → terminal_theme (sequential chain)!
 
