@@ -1,3 +1,29 @@
+===== PHASE 12: ANSI + HELPERS - MOSTLY PARALLEL =====
+
+**ROLE:** TypeScript developer porting Rich Python library to TypeScript
+
+**PHASE:** 12 - ANSI + Core Helpers (6 modules, ~793 LOC)  
+**DEPENDENCY:** Phase 11 complete (terminal_theme needed for ansi)  
+**STATUS:** Ready to port
+
+**CRITICAL:** ansi module UNBLOCKS 34 SKIPPED TESTS!
+
+**MODULES (SPECIFIC ORDER):**
+1. **ansi** (241 LOC) - ANSI decoder [DO FIRST - needs terminal_theme, blocks file_proxy]
+2. **containers** (167 LOC) - Lines/Renderables [PARALLEL after ansi]
+3. **highlighter** (232 LOC) - Text highlighting [PARALLEL after ansi]
+4. **styled** (42 LOC) - Style wrapper [PARALLEL after ansi]
+5. **screen** (54 LOC) - Screen buffer [PARALLEL after ansi]
+6. **file_proxy** (57 LOC) - File stream proxy [DO LAST - needs ansi]
+
+**EXECUTION:** ansi first → 4 modules parallel → file_proxy last
+
+**WORKFLOW:** TDD → npm run check → git add -A (STAGE ONLY - no commit!)
+
+**CRITICAL:** After ansi, run `npm test text` - should see 34 fewer skipped tests!
+
+---
+
 # PHASE 12 PORTING PROMPT - Rich TypeScript
 
 **Use this prompt at the start of each fresh Claude Code Web session to continue Phase 12 work.**

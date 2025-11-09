@@ -1,6 +1,6 @@
 # Module Port Log: pager
 
-**Status:** NOT_STARTED  
+**Status:** DONE  
 **Dependencies:** None (standalone)  
 **Python Source:** `rich/pager.py` (~34 LOC)  
 **Python Tests:** Indirectly tested via pager implementations
@@ -77,11 +77,10 @@ Abstract pager base class.
 
 ## Session Notes
 
-*No sessions yet*
+- 2025-11-09 19:41 UTC: Added `rich-ts/src/pager.ts` and `tests/pager.test.ts` so the abstract `Pager` and `SystemPager` mirror the Python API; verified `npm test pager -- --run` and `npm run check` pass.
 
 ---
 
 ## Notes
 
 **SIMPLE:** Just an abstract base class definition. Very straightforward port.
-
