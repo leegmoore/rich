@@ -131,8 +131,32 @@ Port the FINAL 5 modules using Test-Driven Development:
 - Run tests frequently: `npm test [MODULE] -- --run`
 - Continue until ALL tests pass
 
-### Step 4: Run Quality Checks
-- Run: `npm run check` (must pass!)
+### Step 4: Run Quality Checks (ALL THREE MUST PASS!)
+
+**Run checks individually first:**
+```bash
+cd rich-ts
+npm test [MODULE] -- --run    # Must pass
+npm run typecheck              # Must pass (0 errors)
+npm run lint                   # Must pass (0 errors, warnings OK)
+```
+
+**If ANY fail, fix and re-run ALL THREE** (fixing one can break another)
+
+**Then run full check:**
+```bash
+npm run check  # Must complete with 0 errors
+```
+
+**CRITICAL:** Do not proceed to Step 5 until:
+- ✅ Tests pass
+- ✅ TypeScript compiles (0 errors)
+- ✅ ESLint shows 0 errors (warnings for non-null assertions OK)
+
+If you fix a test and it breaks TypeScript, fix TypeScript and re-run tests!
+If you fix lint and it breaks tests, fix tests and re-run lint!
+
+**All 3 must pass together in sequence before staging!**
 
 ### Step 5: Commit and Push
 - `git add -A`

@@ -27,17 +27,34 @@ git diff --cached --stat
 
 ## 🔍 REVIEW CHECKLIST
 
-### 1. Quality Checks
+### 1. Quality Checks (CRITICAL - All Must Pass!)
 ```bash
 cd rich-ts
-npm test progress_bar bar live_render spinner -- --run
+
+# Run each check separately to see results clearly
+npm test progress_bar bar live_render spinner _spinners -- --run
+npm run typecheck
+npm run lint
+
+# Then run full check
 npm run check
 ```
 
-**Verify:**
-- [ ] All Phase 13 tests pass
-- [ ] TypeScript: 0 errors
-- [ ] ESLint: 0 errors
+**Verify ALL THREE pass:**
+- [ ] **Tests:** All Phase 13 tests pass (progress_bar, bar, live_render, spinner, _spinners)
+- [ ] **TypeScript:** 0 compilation errors
+- [ ] **ESLint:** 0 errors (warnings OK if only non-null assertions)
+
+**Common Phase 13 lint errors to check for:**
+- [ ] Unused variables in _spinners.test.ts (name, index)
+- [ ] Unsafe `any` usage in progress_bar.test.ts (4 errors with _getPulseSegments)
+- [ ] Unsafe any call in file_proxy.test.ts
+- [ ] Unsafe return in screen.test.ts
+- [ ] Object to string in spinner.test.ts
+
+**If lint has errors:** Code not ready, request fixes!
+
+**IMPORTANT:** All 3 must pass together. Fixing one can break another, so verify all 3 consecutively.
 
 ---
 
