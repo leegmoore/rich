@@ -24,6 +24,20 @@ export type OverflowMethod = 'fold' | 'crop' | 'ellipsis' | 'ignore';
 /** Type for render results (generators of Segments or Text instances) */
 export type RenderResult = Generator<Segment | Text, void, unknown>;
 
+type RichConsoleIterable = Iterable<Segment | Text | string>;
+
+interface RichConsoleRenderable {
+  __richConsole__: (console: Console, options: ConsoleOptions) => RichConsoleIterable;
+}
+
+function hasRichConsole(value: unknown): value is RichConsoleRenderable {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const candidate = value as { __richConsole__?: unknown };
+  return typeof candidate.__richConsole__ === 'function';
+}
+
 export type RenderableType =
   | string
   | Text
@@ -198,8 +212,11 @@ export class Console {
   readonly isTerminal: boolean;
   readonly colorSystem: string | null;
   readonly theme: Theme;
+  readonly noColor: boolean;
+  readonly no_color: boolean;
   private captureBuffer: string[];
   private capturingOutput: boolean;
+  private getTimeFn: () => number;
 
   // TODO: Add full set of Console properties when needed:
   // - file: TextIO
@@ -238,6 +255,8 @@ export class Console {
       safe_box?: boolean;
       get_datetime?: () => Date;
       get_time?: () => number;
+      noColor?: boolean;
+      no_color?: boolean;
     } = {}
   ) {
     this.width = options.width ?? 80;
@@ -253,6 +272,9 @@ export class Console {
       this.colorSystem = 'truecolor';
     }
     this.theme = options.theme ?? DEFAULT;
+    const noColorOption = options.noColor ?? options.no_color ?? false;
+    this.noColor = noColorOption;
+    this.no_color = noColorOption;
     this.captureBuffer = [];
     this.capturingOutput = false;
 
@@ -267,6 +289,25 @@ export class Console {
       highlight: options.highlight ?? true,
       theme: this.theme,
     });
+
+    const perf = typeof globalThis !== 'undefined' ? globalThis.performance : undefined;
+    const defaultGetTime =
+      perf && typeof perf.now === 'function' ? () => perf.now() / 1000 : () => Date.now() / 1000;
+    this.getTimeFn = options.get_time ?? defaultGetTime;
+  }
+
+  /**
+   * Get the current monotonic time in seconds.
+   */
+  getTime(): number {
+    return this.getTimeFn();
+  }
+
+  /**
+   * Python-compatible alias for getTime().
+   */
+  get_time(): number {
+    return this.getTime();
   }
 
   /**
@@ -334,12 +375,22 @@ export class Console {
     }
 
     // Handle objects with __richConsole__ protocol (including Text)
-    if (renderable && typeof renderable === 'object' && '__richConsole__' in renderable) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      const richConsole = (renderable as any).__richConsole__;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-      const segments = Array.from(richConsole.call(renderable, this, renderOptions));
-      return segments as Segment[];
+    if (hasRichConsole(renderable)) {
+      const iterableResult = renderable.__richConsole__(this, renderOptions);
+      const rawSegments: Array<Segment | Text | string> = Array.from(
+        iterableResult as Iterable<Segment | Text | string>
+      );
+      const normalizedSegments: Segment[] = [];
+      for (const item of rawSegments) {
+        if (item instanceof Segment) {
+          normalizedSegments.push(item);
+        } else if (item instanceof Text) {
+          normalizedSegments.push(...item.render(this, ''));
+        } else if (typeof item === 'string') {
+          normalizedSegments.push(new Segment(item));
+        }
+      }
+      return normalizedSegments;
     }
 
     // TODO: Handle other renderable types
@@ -592,12 +643,22 @@ export class Console {
 
     // Handle Text and objects with __richConsole__ protocol
     // Text has __richConsole__ which wraps text to width
-    if (renderable && typeof renderable === 'object' && '__richConsole__' in renderable) {
-      // Handle objects with __richConsole__ protocol (including Text)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      const richConsole = (renderable as any).__richConsole__;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-      segments = Array.from(richConsole.call(renderable, this, renderOptions));
+    if (hasRichConsole(renderable)) {
+      const iterableResult = renderable.__richConsole__(this, renderOptions);
+      const rawSegments: Array<Segment | Text | string> = Array.from(
+        iterableResult as Iterable<Segment | Text | string>
+      );
+      const expanded: Segment[] = [];
+      for (const item of rawSegments) {
+        if (item instanceof Segment) {
+          expanded.push(item);
+        } else if (item instanceof Text) {
+          expanded.push(...item.render(this, ''));
+        } else if (typeof item === 'string') {
+          expanded.push(new Segment(item));
+        }
+      }
+      segments = expanded;
     } else {
       throw new Error(`Cannot render object of type ${typeof renderable}`);
     }

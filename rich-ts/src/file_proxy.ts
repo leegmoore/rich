@@ -21,9 +21,9 @@ export class FileProxy {
         if (Reflect.has(target, property)) {
           return Reflect.get(target, property, receiver);
         }
-        const fileValue = Reflect.get(target.file, property);
+        const fileValue: unknown = Reflect.get(target.file, property);
         if (typeof fileValue === 'function') {
-          return fileValue.bind(target.file);
+          return (fileValue as (...args: unknown[]) => unknown).bind(target.file);
         }
         return fileValue;
       },
@@ -87,8 +87,7 @@ export class FileProxy {
   }
 
   // Proxy unknown properties to the underlying file
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string | symbol]: any;
+  [key: string | symbol]: unknown;
 }
 
 export default FileProxy;

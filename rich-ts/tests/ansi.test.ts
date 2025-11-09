@@ -40,11 +40,11 @@ describe('AnsiDecoder', () => {
     const fgSpan = lines[3]?.spans[0];
     expect(fgSpan?.style).toBeInstanceOf(Style);
     expect((fgSpan?.style as Style).color?.name).toBe('#ff0000');
-    expect((fgSpan?.style as Style).bgcolor?.name).toBe('color(5)');
+    expect((fgSpan?.style as Style).bgcolor?.name).toBe('color(200)');
 
     const bgSpan = lines[4]?.spans[0];
     expect(bgSpan?.style).toBeInstanceOf(Style);
-    expect((bgSpan?.style as Style).color?.name).toBe('color(5)');
+    expect((bgSpan?.style as Style).color?.name).toBe('color(200)');
     expect((bgSpan?.style as Style).bgcolor?.name).toBe('#ff0000');
   });
 

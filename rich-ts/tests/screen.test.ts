@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Console } from '../src/console.js';
 import { Screen } from '../src/screen.js';
+import { Segment } from '../src/segment.js';
 import { Text } from '../src/text.js';
 
 describe('Screen', () => {
@@ -38,7 +39,9 @@ describe('Screen', () => {
     const screen = new Screen('abcdefghij', 'klmnopqrst', 'uvwxyz');
     const customOptions = console.options.update({ width: 5, height: 2 });
     const segments = Array.from(screen.__richConsole__(console, customOptions));
-    const output = segments.map((segment) => segment.text).join('');
+    const output = segments
+      .map((segment) => (segment instanceof Segment ? segment.text : segment.toString()))
+      .join('');
     expect(output).toBe('abcde\nfghij');
   });
 });

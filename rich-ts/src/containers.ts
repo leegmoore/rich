@@ -10,7 +10,7 @@ export class Renderables implements Iterable<RenderableType> {
 
   *__richConsole__(console: Console, options: ConsoleOptions): RenderResult {
     for (const renderable of this._renderables) {
-      yield* console.render(renderable as any, options);
+      yield* console.render(renderable, options);
     }
   }
 

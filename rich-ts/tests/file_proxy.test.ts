@@ -45,8 +45,9 @@ describe('FileProxy', () => {
   it('proxies stream methods to the underlying file', () => {
     const dummyFile = new DummyWritable();
     const proxy = new FileProxy(new Console(), dummyFile);
-    expect(typeof proxy.end).toBe('function');
-    proxy.end();
+    const proxied = proxy as unknown as Writable;
+    expect(typeof proxied.end).toBe('function');
+    proxied.end();
     expect(dummyFile.ended).toBe(true);
   });
 });

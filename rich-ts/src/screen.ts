@@ -13,7 +13,7 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> => {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
-  const prototype = Object.getPrototypeOf(value);
+  const prototype = Object.getPrototypeOf(value) as object | null;
   return prototype === Object.prototype || prototype === null;
 };
 
@@ -28,6 +28,12 @@ function isScreenOptions(value: unknown): value is ScreenOptions {
   return keys.every((key) => key === 'style' || key === 'applicationMode');
 }
 
+const isRenderableArgument = (
+  value: RenderableType | ScreenOptions | undefined
+): value is RenderableType => {
+  return value !== undefined && !isScreenOptions(value);
+};
+
 export class Screen {
   private readonly renderable: Renderables;
   private readonly style?: StyleType;
@@ -35,13 +41,15 @@ export class Screen {
 
   constructor(...renderables: RenderableType[]);
   constructor(options: ScreenOptions, ...renderables: RenderableType[]);
-  constructor(...args: Array<RenderableType | ScreenOptions>) {
+  constructor(first?: ScreenOptions | RenderableType, ...rest: RenderableType[]) {
     let options: ScreenOptions = {};
-    let renderables = args as RenderableType[];
+    let renderables: RenderableType[];
 
-    if (args.length > 0 && isScreenOptions(args[0])) {
-      options = args[0];
-      renderables = args.slice(1) as RenderableType[];
+    if (first !== undefined && isScreenOptions(first)) {
+      options = first;
+      renderables = rest;
+    } else {
+      renderables = isRenderableArgument(first) ? [first, ...rest] : [...rest];
     }
 
     if (renderables.length === 0) {

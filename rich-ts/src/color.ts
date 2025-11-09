@@ -693,9 +693,9 @@ export function blendRgb(
   color2: ColorTriplet,
   crossFade: number = 0.5
 ): ColorTriplet {
-  const red = Math.round(color1.red + (color2.red - color1.red) * crossFade);
-  const green = Math.round(color1.green + (color2.green - color1.green) * crossFade);
-  const blue = Math.round(color1.blue + (color2.blue - color1.blue) * crossFade);
+  const red = Math.floor(color1.red + (color2.red - color1.red) * crossFade);
+  const green = Math.floor(color1.green + (color2.green - color1.green) * crossFade);
+  const blue = Math.floor(color1.blue + (color2.blue - color1.blue) * crossFade);
   return new ColorTriplet(red, green, blue);
 }
 
@@ -825,7 +825,7 @@ export class Color {
     }
 
     if (this.type === ColorType.EIGHT_BIT) {
-      if (system === ColorSystem.EIGHT_BIT) {
+      if (system === ColorSystem.EIGHT_BIT || system === ColorSystem.TRUECOLOR) {
         return this;
       }
       // Downgrade EIGHT_BIT to STANDARD/WINDOWS
