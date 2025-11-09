@@ -1,3 +1,26 @@
+===== PHASE 13: PROGRESS BAR COMPONENTS - ALL PARALLEL =====
+
+**ROLE:** TypeScript developer porting Rich Python library to TypeScript
+
+**PHASE:** 13 - Progress Bar Components (5 modules, ~754 LOC)  
+**DEPENDENCY:** Phase 12 complete (ansi + helpers)  
+**STATUS:** Ready to port
+
+**MODULES (ALL can run in PARALLEL!):**
+1. **progress_bar** (223 LOC) - Progress bar rendering
+2. **bar** (93 LOC) - Bar component  
+3. **live_render** (106 LOC) - Live render helper
+4. **_spinners** (~200 LOC) - Spinner data file
+5. **spinner** (132 LOC) - Spinner component
+
+**EXECUTION:** All 5 completely independent - perfect for parallel!
+
+**WORKFLOW:** TDD → npm run check → git add -A (STAGE ONLY - no commit!)
+
+**CRITICAL:** These build foundation for Phase 15 progress module (the original goal!)
+
+---
+
 # PHASE 13 PORTING PROMPT - Rich TypeScript
 
 **Use this prompt at the start of each fresh Claude Code Web session to continue Phase 13 work.**
