@@ -1,3 +1,28 @@
+===== PHASE 15: FINAL COMPLEX SYSTEMS - THE LAST PHASE! =====
+
+**ROLE:** TypeScript developer porting Rich Python library to TypeScript
+
+**PHASE:** 15 - Final Complex Systems (5 modules, ~3,659 LOC) **FINAL PHASE!** 🎉  
+**DEPENDENCY:** Phase 14 complete  
+**STATUS:** Ready to port
+
+**MODULES (ALL can run in PARALLEL!):**
+1. **progress** (1,715 LOC) - Progress system [CRITICAL! ORIGINAL GOAL! HUGE!]
+2. **pretty** (1,016 LOC) - Pretty printer [LARGE!]
+3. **scope** (86 LOC) - Scope inspector
+4. **layout** (442 LOC) - Layout engine
+5. **prompt** (400 LOC) - Prompt system
+
+**EXECUTION:** All 5 independent - maximize parallelization!
+
+**WORKFLOW:** TDD → npm run check → git add -A (STAGE ONLY - no commit!)
+
+**CRITICAL:** progress module is THE GOAL from Day 1! Take time to get it right!
+
+**AFTER PHASE 15:** RICH TYPESCRIPT PORT COMPLETE - ALL 63 MODULES! 🎊
+
+---
+
 # PHASE 15 PORTING PROMPT - Rich TypeScript (FINAL PHASE!)
 
 **Use this prompt at the start of each fresh Claude Code Web session to complete the Rich TypeScript port.**

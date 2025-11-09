@@ -1,3 +1,27 @@
+===== PHASE 14: ADVANCED COMPONENTS =====
+
+**ROLE:** TypeScript developer porting Rich Python library to TypeScript
+
+**PHASE:** 14 - Advanced Components (6 modules, ~2,691 LOC)  
+**DEPENDENCY:** Phase 13 complete  
+**STATUS:** Ready to port
+
+**MODULES (4 parallel, then live, then status):**
+1. **tree** (257 LOC) - Tree component [PARALLEL]
+2. **syntax** (985 LOC) - Syntax highlighting [PARALLEL - LARGE!]
+3. **markdown** (779 LOC) - Markdown renderer [PARALLEL - LARGE!]
+4. **json** (139 LOC) - JSON pretty printer [PARALLEL]
+5. **live** (400 LOC) - Live display [DO 5th - needs screen, file_proxy, live_render]
+6. **status** (131 LOC) - Status component [DO 6th - needs live, spinner]
+
+**EXECUTION:** 4 parallel → live → status
+
+**WORKFLOW:** TDD → npm run check → git add -A (STAGE ONLY - no commit!)
+
+**NOTE:** syntax and markdown may need npm packages (lexer, markdown-it)
+
+---
+
 # PHASE 14 PORTING PROMPT - Rich TypeScript
 
 **Use this prompt at the start of each fresh Claude Code Web session to continue Phase 14 work.**
