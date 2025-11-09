@@ -24,6 +24,7 @@ import { stripControlCodes } from './control.js';
 import { Measurement } from './measure.js';
 import { Segment } from './segment.js';
 import { Style, StyleType } from './style.js';
+import { AnsiDecoder } from './ansi.js';
 import * as markup from './markup.js';
 
 import type { Console, ConsoleOptions, JustifyMethod, OverflowMethod } from './console.js';
@@ -43,6 +44,22 @@ export type TextType = string | Text;
  * Callable that returns a style for a given string.
  */
 export type GetStyleCallable = (text: string) => StyleType | undefined;
+
+const ensureRegexFlags = (flags: string, required: string): string => {
+  let result = flags;
+  for (const flag of required) {
+    if (!result.includes(flag)) {
+      result += flag;
+    }
+  }
+  return result;
+};
+
+type RegExpMatchWithIndices = RegExpExecArray & {
+  indices?: {
+    groups?: Record<string, [number, number] | undefined>;
+  };
+};
 
 /**
  * A marked up region in some text.
@@ -173,7 +190,9 @@ export class Lines {
     return this._lines.length;
   }
 
-  // TODO: Implement __rich_console__ when console module is ported
+  *__richConsole__(_console: Console, _options: ConsoleOptions): Iterable<Text> {
+    yield* this._lines;
+  }
 
   append(line: Text): void {
     this._lines.push(line);
@@ -228,12 +247,15 @@ export class Lines {
         const line = this._lines[lineIndex]!;
         const words = line.split(' ');
         const wordsSize = words._lines.reduce((sum, word) => sum + cellLen(word.plain), 0);
-        const numSpaces = words.length - 1;
-        const spaces = new Array(numSpaces).fill(1);
+        const baseSpaces = words.length - 1;
+        const spaces = new Array(baseSpaces).fill(1);
         let index = 0;
+        let totalSpacesWidth = baseSpaces;
         if (spaces.length > 0) {
-          while (wordsSize + numSpaces < width) {
-            spaces[spaces.length - index - 1]! += 1;
+          while (wordsSize + totalSpacesWidth < width) {
+            const slotIndex = spaces.length - index - 1;
+            spaces[slotIndex]! += 1;
+            totalSpacesWidth += 1;
             index = (index + 1) % spaces.length;
           }
         }
@@ -464,8 +486,8 @@ export class Text {
    * TODO: Requires ansi module.
    */
   static fromAnsi(
-    _text: string,
-    _options: {
+    text: string,
+    options: {
       style?: string | Style;
       justify?: JustifyMethod;
       overflow?: OverflowMethod;
@@ -474,8 +496,17 @@ export class Text {
       tabSize?: number;
     } = {}
   ): Text {
-    // TODO: Import AnsiDecoder from ansi module
-    throw new Error('fromAnsi requires ansi module - not yet ported');
+    const separator = new Text('\n', options.style ?? '', {
+      justify: options.justify,
+      overflow: options.overflow,
+      noWrap: options.noWrap,
+      end: options.end,
+      tabSize: options.tabSize,
+    });
+
+    const decoder = new AnsiDecoder();
+    const decodedLines = Array.from(decoder.decode(text));
+    return separator.join(decodedLines);
   }
 
   /**
@@ -767,10 +798,13 @@ export class Text {
     const stylePrefix = options.stylePrefix || '';
     let count = 0;
     const plain = this.plain;
-    const regex = typeof reHighlight === 'string' ? new RegExp(reHighlight, 'g') : reHighlight;
+    const regex =
+      typeof reHighlight === 'string'
+        ? new RegExp(reHighlight, 'gd')
+        : new RegExp(reHighlight.source, ensureRegexFlags(reHighlight.flags, 'gd'));
 
-    let match: RegExpExecArray | null;
-    while ((match = regex.exec(plain)) !== null) {
+    let match: RegExpMatchWithIndices | null;
+    while ((match = regex.exec(plain) as RegExpMatchWithIndices | null) !== null) {
       if (style) {
         const start = match.index;
         const end = start + match[0].length;
@@ -782,17 +816,27 @@ export class Text {
 
       count++;
 
-      // Handle named groups
-      if (match.groups) {
+      const groupIndices = match.indices?.groups;
+      if (groupIndices) {
+        for (const [name, range] of Object.entries(groupIndices)) {
+          if (range) {
+            const [start, end] = range;
+            if (end > start) {
+              this._spans.push(new Span(start, end, `${stylePrefix}${name}`));
+            }
+          }
+        }
+      } else if (match.groups) {
         for (const [name, value] of Object.entries(match.groups)) {
-          if (value !== undefined) {
-            const groupIndex = plain.indexOf(value, match.index);
-            if (groupIndex !== -1) {
-              const start = groupIndex;
-              const end = start + value.length;
-              if (end > start) {
-                this._spans.push(new Span(start, end, `${stylePrefix}${name}`));
-              }
+          if (value === undefined) {
+            continue;
+          }
+          const groupIndex = plain.indexOf(value, match.index);
+          if (groupIndex !== -1) {
+            const start = groupIndex;
+            const end = start + value.length;
+            if (end > start) {
+              this._spans.push(new Span(start, end, `${stylePrefix}${name}`));
             }
           }
         }

@@ -1,6 +1,6 @@
 # Module Port Log: highlighter
 
-**Status:** NOT_STARTED  
+**Status:** DONE  
 **Dependencies:** text ✅ (Phase 3)  
 **Python Source:** `rich/highlighter.py` (~232 LOC)  
 **Python Tests:** Indirectly tested via json, pretty, syntax modules
@@ -26,39 +26,35 @@ Base classes for text highlighting.
 
 **Total Tests:** ~15 (or indirectly via users)
 
-- [ ] test_highlighter_abstract
-- [ ] test_null_highlighter
-- [ ] test_repr_highlighter
-- [ ] test_regex_highlighter
-- [ ] test_json_highlighter
-- [ ] test_highlighter_apply
-- [ ] test_highlighter_ranges
-- [ ] Other highlighter tests
+- [x] test_highlighter_abstract
+- [x] test_null_highlighter
+- [x] test_repr_highlighter
+- [x] test_regex_highlighter
+- [x] test_json_highlighter
+- [x] test_highlighter_apply
+- [x] test_highlighter_ranges
+- [x] Other highlighter tests
 
 ---
 
 ## Implementation Progress
 
-- [ ] Highlighter abstract base class
-- [ ] highlight() abstract method
-- [ ] NullHighlighter class
-- [ ] ReprHighlighter class (highlight Python repr patterns)
-- [ ] RegexHighlighter class (highlight via regex)
-- [ ] JSONHighlighter class (highlight JSON)
-- [ ] Span application for highlights
-- [ ] All tests passing
+- [x] Highlighter abstract base class
+- [x] highlight() abstract method
+- [x] NullHighlighter class
+- [x] ReprHighlighter class (highlight Python repr patterns)
+- [x] RegexHighlighter class (highlight via regex)
+- [x] JSONHighlighter class (highlight JSON)
+- [x] Span application for highlights
+- [x] All tests passing
 
 ---
 
 ## Design Decisions
 
-*No decisions yet - module not started*
-
-**Key Considerations:**
-- Abstract class vs interface? (Use abstract class for shared implementation)
-- Regex patterns for each highlighter type
-- How to apply Spans to Text for highlights
-- Performance of regex matching
+- Ported Python `_combine_regex` behavior so mutually exclusive named groups share a single pattern, which prevents duplicate spans (e.g., numbers inside MAC addresses).
+- Added JavaScript-friendly regex rewrites (e.g., escaped brackets, backtick literal handling, and manual expansion of conditional hyphen groups) to keep parity with CPython patterns.
+- Updated `Text.highlightRegex` to clone regexes with the `d` (indices) flag so we can read named-group spans precisely instead of relying on `indexOf`.
 
 ---
 
@@ -72,28 +68,13 @@ Can be done in PARALLEL with containers, styled, screen (after ansi is complete)
 
 ## Next Steps
 
-1. **WAIT** for ansi module to be complete (can start after ansi done)
-2. Read Python source: `rich/highlighter.py`
-3. Check for Python tests: `tests/test_highlighter.py` or related tests
-4. Create `rich-ts/tests/highlighter.test.ts`
-5. Port tests to TypeScript/Vitest
-6. Run tests: `npm test highlighter -- --run` (should fail)
-7. Create `rich-ts/src/highlighter.ts`
-8. Implement Highlighter abstract class
-9. Implement NullHighlighter
-10. Implement ReprHighlighter
-11. Implement RegexHighlighter
-12. Implement JSONHighlighter
-13. Continue until all tests pass
-14. Run `npm run check`
-15. Commit and push
-16. Update this log to DONE
+- ✅ Module complete; no further action required until downstream modules (json, pretty, syntax) are ported.
 
 ---
 
 ## Session Notes
 
-*No sessions yet*
+- 2025-11-09: Rebuilt `src/highlighter.ts` patterns for JS compatibility, added RegExp indices support in `Text.highlightRegex`, and restored JSON key detection. `npm test highlighter -- --run`, `npm test text -- --run`, and `npm run check` now pass (lint warnings unchanged project-wide).
 
 ---
 
@@ -104,4 +85,3 @@ Can be done in PARALLEL with containers, styled, screen (after ansi is complete)
 **COMPLEXITY:** Medium (regex patterns, abstract class design)
 
 **TIME:** ~1 hour
-

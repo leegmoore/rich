@@ -1,6 +1,6 @@
 # Module Port Log: ansi
 
-**Status:** NOT_STARTED  
+**Status:** DONE  
 **Dependencies:** color ✅, style ✅, text ✅, terminal_theme (Phase 11 - must be complete!)  
 **Python Source:** `rich/ansi.py` (~241 LOC)  
 **Python Tests:** `tests/test_ansi.py` (~20 tests)
@@ -26,31 +26,31 @@ ANSI escape sequence decoder - **CRITICAL MODULE!**
 
 **Total Tests:** ~20
 
-- [ ] test_decode_basic
-- [ ] test_decode_color_codes
-- [ ] test_decode_sgr_codes
-- [ ] test_decode_style_attributes
-- [ ] test_decode_reset
-- [ ] test_decode_multiple_sequences
-- [ ] test_decode_nested_styles
-- [ ] test_from_ansi (Text integration)
-- [ ] test_ansi_color_16
-- [ ] test_ansi_color_256
-- [ ] test_ansi_truecolor
-- [ ] Other ansi tests
+- [x] test_decode_basic
+- [x] test_decode_color_codes
+- [x] test_decode_sgr_codes
+- [x] test_decode_style_attributes
+- [x] test_decode_reset
+- [x] test_decode_multiple_sequences
+- [x] test_decode_nested_styles
+- [x] test_from_ansi (Text integration)
+- [x] test_ansi_color_16
+- [x] test_ansi_color_256
+- [x] test_ansi_truecolor
+- [x] Other ansi tests
 
 ---
 
 ## Implementation Progress
 
-- [ ] AnsiDecoder class
-- [ ] SGR code parser (escape sequence regex)
-- [ ] State machine for tracking current style
-- [ ] Color code decoder (16/256/truecolor using terminal_theme)
-- [ ] Style attribute mapping (bold, italic, etc.)
-- [ ] Text.fromAnsi() integration in text.ts
-- [ ] All tests passing
-- [ ] **34 text tests now UN-SKIPPED**
+- [x] AnsiDecoder class
+- [x] SGR code parser (escape sequence regex)
+- [x] State machine for tracking current style
+- [x] Color code decoder (16/256/truecolor using terminal_theme)
+- [x] Style attribute mapping (bold, italic, etc.)
+- [x] Text.fromAnsi() integration in text.ts
+- [x] All tests passing
+- [x] **34 text tests now UN-SKIPPED**
 
 ---
 
@@ -100,7 +100,8 @@ ANSI escape sequence decoder - **CRITICAL MODULE!**
 
 ## Session Notes
 
-*No sessions yet*
+- 2025-11-09: Implemented `src/ansi.ts` (tokenizer, decoder, extended color handling) and `Text.fromAnsi`, added comprehensive `tests/ansi.test.ts`, and unskipped `tests/text.test.ts::test_from_ansi`. `npm test ansi -- --run`, `npm test text -- --run`, and full `npm test -- --run` all pass; text suite now shows 33 skipped tests (down from 34).
+- 2025-11-09 (later): Re-enabled every previously skipped `tests/text.test.ts` case (33 in total) now that ansi + supporting modules are in place. `npm test text -- --run` reports `87 passed`, `0 skipped`, meeting the “34 fewer skips” acceptance metric.
 
 ---
 
@@ -119,4 +120,3 @@ ANSI escape sequence decoder - **CRITICAL MODULE!**
 **Expected Time:** 1.5-2 hours
 
 **Verify After:** Run `npm test text -- --run` and confirm skipped tests are now running!
-

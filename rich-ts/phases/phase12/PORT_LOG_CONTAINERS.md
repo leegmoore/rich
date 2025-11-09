@@ -1,6 +1,6 @@
 # Module Port Log: containers
 
-**Status:** NOT_STARTED  
+**Status:** DONE  
 **Dependencies:** measure ✅ (Phase 3)  
 **Python Source:** `rich/containers.py` (~167 LOC)  
 **Python Tests:** `tests/test_containers.py` (~8 tests)
@@ -23,25 +23,25 @@ Container classes for grouping renderables.
 
 ## Test Port Progress
 
-**Total Tests:** ~8
+- **Total Tests:** ~8
 
-- [ ] test_lines_create
-- [ ] test_lines_render
-- [ ] test_lines_measure
-- [ ] test_renderables_create
-- [ ] test_renderables_render
-- [ ] test_renderables_measure
-- [ ] Other container tests
+- [x] test_lines_create
+- [x] test_lines_render
+- [x] test_lines_measure
+- [x] test_renderables_create
+- [x] test_renderables_render
+- [x] test_renderables_measure
+- [x] Other container tests
 
 ---
 
 ## Implementation Progress
 
-- [ ] Lines class
-- [ ] Renderables class
-- [ ] __richConsole__ implementations
-- [ ] __richMeasure__ implementations
-- [ ] All tests passing
+- [x] Lines class
+- [x] Renderables class
+- [x] __richConsole__ implementations
+- [x] __richMeasure__ implementations
+- [x] All tests passing
 
 ---
 
@@ -53,4 +53,5 @@ Container classes for grouping renderables.
 
 ## Session Notes
 
-*No sessions yet*
+- 2025-11-09: Added `src/containers.ts` (Renderables + re-exported Lines), updated `Lines.__richConsole__`, and created Vitest suite (`tests/containers.test.ts`). `npm test containers -- --run` passes.
+- 2025-11-09 (later): Patched `Lines.justify(..., 'full')` to increment the distributed whitespace budget so full-justified wrapping no longer risks an infinite loop when `width > wordsSize + spaces`.

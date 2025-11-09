@@ -18,11 +18,17 @@ export * from './repr.js';
 export * from './markup.js';
 export * from './emoji.js';
 export * from './cells.js';
+export * from './containers.js';
+export * from './screen.js';
+export * from './file_proxy.js';
+export * from './highlighter.js';
 export * from './_timer.js';
 export * from './pager.js';
 export * from './palette.js';
 export * from './_palettes.js';
 export * from './terminal_theme.js';
+export { AnsiDecoder } from './ansi.js';
+export { Styled } from './styled.js';
 export {
   Box,
   ASCII,

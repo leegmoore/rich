@@ -1,7 +1,7 @@
 # COMPLETE PORT PLAN - ALL 63 MODULES
 
-**Status:** Phases 1-7 complete (19 modules), Phases 10-15 remaining (30 modules)  
-**Update:** Phase 11 (Palette System) is complete as of 2025-11-09; Phase 12 may now begin.  
+**Status:** Phases 1-12 complete (33 modules), Phases 13-15 remaining (30 modules)  
+**Update:** Phase 12 (ANSI + helpers) is complete as of 2025-11-09; Phase 13 may now begin.  
 **Total:** 63 modules, ~23,000 LOC when complete
 
 ---
@@ -54,6 +54,7 @@
 ---
 
 ### **Phase 12: ANSI + Helpers** (~793 LOC)
+**Status:** COMPLETE (ansi/highlighter/styled/containers/screen/file_proxy shipped; text tests unskipped)  
 **Dependency:** Phase 11 complete (terminal_theme needed for ansi)  
 **Parallel:** ⚠️ Mostly parallel (ansi first, then others, file_proxy last)
 

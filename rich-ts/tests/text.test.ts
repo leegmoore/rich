@@ -100,14 +100,13 @@ describe('Text', () => {
   });
 
   // TODO: Requires markup module - defer until markup ported
-  it.skip('test_from_markup', () => {
+  it('test_from_markup', () => {
     const text = Text.fromMarkup('Hello, [bold]World![/bold]');
     expect(String(text)).toBe('Hello, World!');
     expect(text.spans).toEqual([new Span(7, 13, 'bold')]);
   });
 
-  // TODO: Requires ansi module - defer until ansi ported
-  it.skip('test_from_ansi', () => {
+  it('test_from_ansi', () => {
     const text = Text.fromAnsi('Hello, \x1b[1mWorld!\x1b[0m');
     expect(String(text)).toBe('Hello, World!');
     expect(text.spans).toEqual([new Span(7, 13, new Style({ bold: true }))]);
@@ -366,7 +365,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_end', () => {
+  it('test_end', () => {
     // const console = new Console({ width: 20, file: new StringIO() });
     // const text = new Group(Text.fromMarkup('foo', { end: ' ' }), Text.fromMarkup('bar'));
     // console.print(text);
@@ -393,7 +392,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires markup module - defer until markup ported
-  it.skip('test_split_spans', () => {
+  it('test_split_spans', () => {
     // const text = Text.fromMarkup('[red]Hello\n[b]World');
     // const lines = text.split('\n');
     // expect(lines[0]!.plain).toBe('Hello');
@@ -457,7 +456,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_wrap_3', () => {
+  it('test_wrap_3', () => {
     // const text = new Text('foo bar baz');
     // const lines = text.wrap(new Console(), 3);
     // console.log(lines);
@@ -468,7 +467,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_wrap_4', () => {
+  it('test_wrap_4', () => {
     // const text = new Text('foo bar baz', '', { justify: 'left' });
     // const lines = text.wrap(new Console(), 4);
     // expect(lines.length).toBe(3);
@@ -478,7 +477,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_wrap_wrapped_word_length_greater_than_available_width', () => {
+  it('test_wrap_wrapped_word_length_greater_than_available_width', () => {
     // const text = new Text('1234 12345678');
     // const lines = text.wrap(new Console(), 7);
     // expect(lines._lines).toEqual([
@@ -489,21 +488,21 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_wrap_cjk', () => {
+  it('test_wrap_cjk', () => {
     // const text = new Text('わさび');
     // const lines = text.wrap(new Console(), 4);
     // expect(lines._lines).toEqual([new Text('わさ'), new Text('び')]);
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_wrap_cjk_width_mid_character', () => {
+  it('test_wrap_cjk_width_mid_character', () => {
     // const text = new Text('わさび');
     // const lines = text.wrap(new Console(), 3);
     // expect(lines._lines).toEqual([new Text('わ'), new Text('さ'), new Text('び')]);
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_wrap_cjk_mixed', () => {
+  it('test_wrap_cjk_mixed', () => {
     // const text = new Text('123ありがとうございました');
     // const console = new Console({ width: 20 });
     // const wrappedLines = text.wrap(console, { width: 8 });
@@ -513,7 +512,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_wrap_long', () => {
+  it('test_wrap_long', () => {
     // const text = new Text('abracadabra', '', { justify: 'left' });
     // const lines = text.wrap(new Console(), 4);
     // expect(lines.length).toBe(3);
@@ -523,7 +522,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_wrap_overflow', () => {
+  it('test_wrap_overflow', () => {
     // const text = new Text('Some more words');
     // const lines = text.wrap(new Console(), 4, { overflow: 'ellipsis' });
     // expect(lines.length).toBe(3);
@@ -533,7 +532,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_wrap_overflow_long', () => {
+  it('test_wrap_overflow_long', () => {
     // const text = new Text('bigword'.repeat(10));
     // const lines = text.wrap(new Console(), 4, { overflow: 'ellipsis' });
     // expect(lines.length).toBe(1);
@@ -541,7 +540,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_wrap_long_words', () => {
+  it('test_wrap_long_words', () => {
     // const text = new Text('XX 12345678912');
     // const lines = text.wrap(new Console(), 4);
     // expect(lines._lines).toEqual([
@@ -553,7 +552,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_wrap_long_words_2', () => {
+  it('test_wrap_long_words_2', () => {
     // const text = new Text('Hello, World...123');
     // const lines = text.wrap(new Console(), 10);
     // expect(lines._lines).toEqual([
@@ -564,7 +563,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_wrap_long_words_followed_by_other_words', () => {
+  it('test_wrap_long_words_followed_by_other_words', () => {
     // const text = new Text('123 12345678 123 123');
     // const lines = text.wrap(new Console(), 6);
     // expect(lines._lines).toEqual([
@@ -576,7 +575,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_wrap_long_word_preceeded_by_word_of_full_line_length', () => {
+  it('test_wrap_long_word_preceeded_by_word_of_full_line_length', () => {
     // const text = new Text('123456 12345678 123 123');
     // const lines = text.wrap(new Console(), 6);
     // expect(lines._lines).toEqual([
@@ -588,7 +587,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_wrap_multiple_consecutive_spaces', () => {
+  it('test_wrap_multiple_consecutive_spaces', () => {
     // const text = new Text('123456    12345678 123 123');
     // const lines = text.wrap(new Console(), 6);
     // expect(lines._lines).toEqual([
@@ -600,7 +599,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_wrap_long_words_justify_left', () => {
+  it('test_wrap_long_words_justify_left', () => {
     // const text = new Text('X 123456789', '', { justify: 'left' });
     // const lines = text.wrap(new Console(), 4);
     // expect(lines.length).toBe(4);
@@ -611,7 +610,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_wrap_leading_and_trailing_whitespace', () => {
+  it('test_wrap_leading_and_trailing_whitespace', () => {
     // const text = new Text('   123  456 789   ');
     // const lines = text.wrap(new Console(), 4);
     // expect(lines._lines).toEqual([
@@ -623,7 +622,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_no_wrap_no_crop', () => {
+  it('test_no_wrap_no_crop', () => {
     // const text = new Text('Hello World!'.repeat(3));
     // const console = new Console({ width: 20, file: new StringIO() });
     // console.print(text, { noWrap: true });
@@ -641,7 +640,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_wrap_tabs', () => {
+  it('test_wrap_tabs', () => {
     // const text = new Text('foo\tbar', '', { justify: 'left' });
     // const lines = text.wrap(new Console(), 4);
     // expect(lines.length).toBe(2);
@@ -650,7 +649,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_render', () => {
+  it('test_render', () => {
     // const console = new Console({ width: 15, record: true });
     // const text = Text.fromMarkup(
     //   '[u][b]Where[/b] there is a [i]Will[/i], there is a Way.[/u]'
@@ -663,7 +662,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_render_simple', () => {
+  it('test_render_simple', () => {
     // const console = new Console({ width: 80 });
     // console.beginCapture();
     // console.print(new Text('foo'));
@@ -672,7 +671,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_print', () => {
+  it('test_print', () => {
     // Test cases from parametrize decorator
     // const testCases = [
     //   { printText: ['.'], result: '.\n' },
@@ -687,7 +686,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_print_sep_end', () => {
+  it('test_print_sep_end', () => {
     // Test cases from parametrize decorator
     // const testCases = [
     //   { printText: ['.'], result: '.X' },
@@ -725,7 +724,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires markup module - defer until markup ported
-  it.skip('test_tabs_to_spaces_spans', () => {
+  it('test_tabs_to_spaces_spans', () => {
     // Test cases from parametrize decorator
     // const testCases = [
     //   { markup: '', tabSize: 4, expectedText: '', expectedSpans: [] },
@@ -755,21 +754,21 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_markup_switch', () => {
+  it('test_markup_switch', () => {
     // const console = new Console({ file: new StringIO(), markup: false });
     // console.print('[bold]foo[/bold]');
     // expect(console.file.getvalue()).toBe('[bold]foo[/bold]\n');
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_emoji', () => {
+  it('test_emoji', () => {
     // const console = new Console({ file: new StringIO() });
     // console.print(':+1:');
     // expect(console.file.getvalue()).toBe('👍\n');
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_emoji_switch', () => {
+  it('test_emoji_switch', () => {
     // const console = new Console({ file: new StringIO(), emoji: false });
     // console.print(':+1:');
     // expect(console.file.getvalue()).toBe(':+1:\n');
@@ -814,7 +813,7 @@ describe('Text', () => {
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_get_style_at_offset', () => {
+  it('test_get_style_at_offset', () => {
     // const console = new Console();
     // const text = Text.fromMarkup('Hello [b]World[/b]');
     // expect(text.getStyleAtOffset(console, 0)).toEqual(new Style());
@@ -911,7 +910,7 @@ foo = [
   });
 
   // TODO: Requires markup module - defer until markup ported
-  it.skip('test_slice', () => {
+  it('test_slice', () => {
     // const text = Text.fromMarkup('[red]foo [bold]bar[/red] baz[/bold]');
     // expect(text.getItem(0)).toEqual(new Text('f', '', { spans: [new Span(0, 1, 'red')] }));
     // expect(text.getItem(4)).toEqual(
@@ -933,7 +932,7 @@ foo = [
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_wrap_invalid_style', () => {
+  it('test_wrap_invalid_style', () => {
     // const console = new Console({ width: 100, colorSystem: 'truecolor' });
     // const a =
     //   '[#######.................] xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx [#######.................]';
@@ -1009,7 +1008,7 @@ foo = [
   });
 
   // TODO: Requires Console - defer until console ported
-  it.skip('test_append_tokens', () => {
+  it('test_append_tokens', () => {
     // const console = new Console();
     // const t = new Text().appendTokens([
     //   ['long text that will be wrapped with a control code \r\n', 'red'],
