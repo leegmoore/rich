@@ -113,12 +113,20 @@ I'm continuing the Rich TypeScript port. This is **Phase 14: Advanced Components
 
 Port Phase 14 modules using Test-Driven Development:
 
-**PARALLEL EXECUTION:**
-- Modules 1-4 (tree, syntax, markdown, json) can be done simultaneously
-- Module 5 (live) after modules 1-4
-- Module 6 (status) after module 5
+**MODULE ORDER:**
+- **First 4:** tree, syntax, markdown, json (can be done in any order)
+- **5th:** live (needs screen, file_proxy, live_render from earlier phases)
+- **6th:** status (needs live from this phase)
 
-**For EACH module:**
+**RECOMMENDED SEQUENCE (for single agent):**
+1. json (139 LOC - quick win warm-up)
+2. tree (257 LOC)
+3. markdown (779 LOC - large, needs markdown-it)
+4. syntax (985 LOC - largest, may need lexer)
+5. live (400 LOC - after 1-4)
+6. status (131 LOC - after live)
+
+**For EACH module in order:**
 
 ### Step 1: Read Source Materials
 - Read Python source: `rich/[MODULE].py`
@@ -164,10 +172,10 @@ If you fix lint and it breaks tests, fix tests and re-run lint!
 
 **All 3 must pass together in sequence before staging!**
 
-### Step 5: Commit and Push
-- `git add -A`
-- `git commit -m "Port [MODULE] module with tests"`
-- `git push`
+### Step 5: Stage Changes (DO NOT COMMIT!)
+- Stage all changes: `git add -A`
+- **DO NOT** commit or push yet
+- Leave staged for code review
 
 ### Step 6: Update Logs
 - Update `rich-ts/phases/phase14/PORT_LOG_[MODULE].md` to DONE

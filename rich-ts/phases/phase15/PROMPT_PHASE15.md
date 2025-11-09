@@ -158,10 +158,10 @@ If you fix lint and it breaks tests, fix tests and re-run lint!
 
 **All 3 must pass together in sequence before staging!**
 
-### Step 5: Commit and Push
-- `git add -A`
-- `git commit -m "Port [MODULE] module with tests"`
-- `git push`
+### Step 5: Stage Changes (DO NOT COMMIT!)
+- Stage all changes: `git add -A`
+- **DO NOT** commit or push yet
+- Leave staged for code review
 
 ### Step 6: Update Logs
 - Update `rich-ts/phases/phase15/PORT_LOG_[MODULE].md` to DONE
