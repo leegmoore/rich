@@ -84,6 +84,7 @@ I'm completing the Rich TypeScript port. This is **Phase 15: Final Complex Syste
 - Read `rich-ts/phases/COMPLETE_PORT_PLAN.md`
 - Read `rich-ts/phases/phase15/PORT_LOG_PROGRESS.md` ⚠️ **CRITICAL - READ FIRST**
 - Read `rich-ts/phases/phase15/PORT_LOG_PRETTY.md`
+- Read `rich-ts/phases/phase15/PORT_LOG_LOG_RENDER.md`
 - Read `rich-ts/phases/phase15/PORT_LOG_SCOPE.md`
 - Read `rich-ts/phases/phase15/PORT_LOG_LAYOUT.md`
 - Read `rich-ts/phases/phase15/PORT_LOG_PROMPT.md`
