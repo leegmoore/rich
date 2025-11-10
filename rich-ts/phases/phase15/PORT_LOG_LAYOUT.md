@@ -1,6 +1,6 @@
 # Module Port Log: layout
 
-**Status:** NOT_STARTED  
+**Status:** DONE  
 **Dependencies:** console ✅, region ✅ (Phase 10), segment ✅, abc ✅ (Phase 10)  
 **Python Source:** `rich/layout.py` (~442 LOC)  
 **Python Tests:** `tests/test_layout.py` (~15 tests)
@@ -29,40 +29,41 @@ Layout engine for complex screen layouts.
 
 **Total Tests:** ~15
 
-- [ ] test_layout_create
-- [ ] test_layout_split
-- [ ] test_layout_split_row
-- [ ] test_layout_split_column
-- [ ] test_layout_ratios
-- [ ] test_layout_update
-- [ ] test_layout_named_regions
-- [ ] test_layout_render
-- [ ] test_layout_measure
-- [ ] test_layout_minimum_size
-- [ ] test_layout_nested_splits
-- [ ] Other layout tests
+- [x] test_layout_create
+- [x] test_layout_split
+- [x] test_layout_split_row
+- [x] test_layout_split_column
+- [x] test_layout_ratios (via nested render assertions)
+- [x] test_layout_update / named regions
+- [x] test_layout_render (nested layout snapshot)
+- [x] test_layout_measure
+- [x] test_layout_minimum_size (implicit via ratio helpers)
+- [x] test_layout_nested_splits
+- [x] Other layout tests (tree view, refresh stubs)
 
 ---
 
 ## Implementation Progress
 
-- [ ] Layout class
-- [ ] Split tree structure (nodes can be splits or content)
-- [ ] split() method (horizontal/vertical with ratios)
-- [ ] update() method to change region content
-- [ ] Named region access
-- [ ] Recursive rendering
-- [ ] Size calculation with ratios
-- [ ] Minimum size enforcement
-- [ ] __richConsole__ implementation
-- [ ] __richMeasure__ implementation
-- [ ] All tests passing
+- [x] Layout class
+- [x] Split tree structure (nodes can be splits or content)
+- [x] split() method (horizontal/vertical with ratios)
+- [x] update() method to change region content
+- [x] Named region access
+- [x] Recursive rendering
+- [x] Size calculation with ratios
+- [x] Minimum size enforcement
+- [x] __richConsole__ implementation
+- [x] __richMeasure__ implementation
+- [x] All tests passing (`npm test layout -- --run` & `npm run check`)
 
 ---
 
 ## Design Decisions
 
-*No decisions yet - module not started*
+- Matched Python placeholder rendering by routing through `Panel` while yielding actual `Segment`s to avoid manual ANSI injection and to keep `Console.renderLines` responsible for formatting.
+- Added recursive flattening in `Console.renderLines` plus vertical padding so layouts with differing heights keep aligned regions.
+- Reused shared `_ratio` helper for proportional sizing; added explicit accumulator typing to satisfy `tsc --strict`.
 
 **Key Design:**
 - Tree structure: each node is either a split or a renderable
@@ -111,7 +112,7 @@ Can be done in PARALLEL with all other Phase 15 modules
 
 ## Session Notes
 
-*No sessions yet*
+- *2025-11-10:* Ported layout module + tests, fixed placeholder/title rendering, ensured layout respects per-region dimensions, updated console/panel helpers, and validated via `npm run check`.
 
 ---
 
@@ -122,4 +123,3 @@ Can be done in PARALLEL with all other Phase 15 modules
 **TIME:** 1.5-2 hours
 
 **VISUAL:** Layout rendering is important - test with examples!
-
