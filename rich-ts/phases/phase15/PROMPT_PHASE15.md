@@ -64,10 +64,10 @@ Porting **ALL OF RICH** to TypeScript - the complete library!
 
 **Why these last?** These are complete, complex systems that depend on everything built in previous phases. Progress is the most complex module in the entire port!
 
-**ALL DEPENDENCIES MET** from Phases 1-14! All 5 modules can be ported simultaneously.
+**ALL DEPENDENCIES MET** from Phases 1-14! All 6 modules can be ported simultaneously.
 
 **Success Criteria:**
-- All 5 modules ported
+- All 6 modules ported
 - **progress module works** - THE ORIGINAL GOAL!
 - All tests pass
 - TypeScript strict mode
@@ -110,9 +110,9 @@ I'm completing the Rich TypeScript port. This is **Phase 15: Final Complex Syste
 
 ## 🎯 YOUR TASK
 
-Port the FINAL 5 modules using Test-Driven Development:
+Port the FINAL 6 modules using Test-Driven Development:
 
-**ALL 5 modules can be done in PARALLEL** - all dependencies met!
+**ALL 6 modules can be done in PARALLEL** - all dependencies met!
 
 **For EACH module:**
 
