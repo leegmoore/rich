@@ -224,6 +224,26 @@ If you fix lint and it breaks tests, fix tests and re-run lint!
 
 ---
 
+### _log_render (94 LOC)
+**Purpose:** Log rendering helper for formatting log records
+
+**Python Source:** `rich/_log_render.py`  
+**Tests:** `tests/test_log_render.py` (~10 tests)  
+**Key Features:**
+- LogRender class
+- Format log records with timestamps, levels, messages
+- Column-based layout
+- Style support for different log levels
+- Path formatting for source files
+
+**TypeScript Notes:**
+- Format log record objects
+- Column layout with console
+- Style application per log level
+- ~30 minutes
+
+---
+
 ### scope (86 LOC)
 **Purpose:** Scope inspector for showing variable scopes
 
