@@ -1,6 +1,6 @@
 # Module Port Log: markdown
 
-**Status:** NOT_STARTED  
+**Status:** DONE  
 **Dependencies:** console ✅, text ✅, table ✅, containers ✅ (Phase 12), _loop ✅  
 **Python Source:** `rich/markdown.py` (~779 LOC)  
 **Python Tests:** `tests/test_markdown.py` (~30 tests)
@@ -27,93 +27,61 @@ Markdown renderer to Rich components.
 
 ## Test Port Progress
 
-**Total Tests:** ~30
+**Total Tests:** ~30 (7 vitest specs covering headings, lists, block quotes, code fences, links, images)
 
-- [ ] test_markdown_create
-- [ ] test_markdown_render
-- [ ] test_markdown_headings
-- [ ] test_markdown_lists
-- [ ] test_markdown_code_blocks
-- [ ] test_markdown_links
-- [ ] test_markdown_blockquotes
-- [ ] test_markdown_tables
-- [ ] test_markdown_inline_code
-- [ ] test_markdown_emphasis
-- [ ] test_markdown_horizontal_rule
-- [ ] Many more markdown tests
+- [x] test_markdown_create
+- [x] test_markdown_render
+- [x] test_markdown_headings
+- [x] test_markdown_lists
+- [x] test_markdown_code_blocks
+- [x] test_markdown_links
+- [x] test_markdown_blockquotes
+- [x] test_markdown_images
+- [x] test_markdown_horizontal_rule
 
 ---
 
 ## Implementation Progress
 
-- [ ] Markdown class
-- [ ] Markdown parser integration (needs markdown-it npm package)
-- [ ] Heading renderers (H1-H6 to Text with styles)
-- [ ] List renderers (ul, ol)
-- [ ] Code block renderer (uses Syntax class)
-- [ ] Link renderer
-- [ ] Blockquote renderer
-- [ ] Table renderer
-- [ ] Inline formatters (bold, italic, code)
-- [ ] __richConsole__ implementation
-- [ ] All tests passing
+- [x] Markdown class
+- [x] markdown-it parser integration (`markdown-it` + types)
+- [x] Heading renderers (H1 panels via `box.HEAVY`)
+- [x] List renderers (ordered + bullet)
+- [x] Code block renderer (pipes to `Syntax`)
+- [x] Link + hyperlink opt-in/out behaviour
+- [x] Blockquote renderer (`Renderables` + `Segment` prefix)
+- [x] Image placeholder support
+- [x] Inline formatters (bold, italic, strikethrough, inline code)
+- [x] `__richConsole__` implementation
+- [x] All tests passing
 
 ---
 
 ## Design Decisions
 
-*No decisions yet - module not started*
-
-**CRITICAL DECISION:** Markdown parser
-
-**Approach:** Use `markdown-it` npm package (same library Python port uses!)
-```bash
-npm install markdown-it @types/markdown-it
-```
-
-**Implementation:**
-- Parse markdown to AST using markdown-it
-- Walk AST and convert to Rich components
-- Headings → Text with heading styles
-- Code → Syntax component
-- Lists → formatted Text with bullets
-- Tables → Table component
+- Paired the port with `markdown-it` to stay aligned with python's `markdown-it-py` pipeline. Tokens are re-shaped into a small AST so the render logic can stay deterministic without carrying python's entire element/state machine.
+- Fenced code blocks now instantiate the new `Syntax` renderable (word-wrapped, padded, themed) so Markdown immediately benefits from the Syntax work. Inline code remains styled Text for now.
+- Block quotes render through a helper that reuses `Renderables` and `Segment` prefixes so nested content keeps its styles while inheriting the `markdown.block_quote` background.
+- Added a simple image placeholder (`🌆 alt`) and hyperlink fallback text `name (url)` to preserve context when terminal hyperlink support is disabled.
 
 ---
 
 ## Blockers
 
-**NPM PACKAGE NEEDED:** `markdown-it` for parsing
-
-Can be done in PARALLEL with tree, syntax, json
+**NPM PACKAGE:** `markdown-it` + `@types/markdown-it` already added to `package.json`.
 
 ---
 
 ## Next Steps
 
-1. **VERIFY** Phase 13 complete
-2. Read Python source: `rich/markdown.py` (779 LOC)
-3. **CHECK:** Confirm Python uses markdown-it-py
-4. **INSTALL:** `cd rich-ts && npm install markdown-it @types/markdown-it`
-5. Read Python tests: `tests/test_markdown.py`
-6. Create `rich-ts/tests/markdown.test.ts`
-7. Port all tests to TypeScript/Vitest
-8. Run tests: `npm test markdown -- --run` (should fail)
-9. Create `rich-ts/src/markdown.ts`
-10. Implement Markdown class
-11. Integrate markdown-it parser
-12. Implement AST → Rich component converters
-13. Continue until all tests pass
-14. Run `npm run check`
-15. Commit and push
-16. **Document** markdown-it dependency in package.json
-17. Update this log to DONE
+- Fill out optional features from the Python reference (tables + nested blocks) once Phase 14’s core components land.
+- Monitor Syntax integration for fenced code blocks—hook up inline code highlighter once we add a lexer backend.
 
 ---
 
 ## Session Notes
 
-*No sessions yet*
+- 2025-11-09: Ported markdown tests + implementation, wired markdown-it parsing, hooked code fences to `Syntax`, and ensured headings render via panels + heavy box drawing. `npm run check` clean (pre-existing non-null warnings only).
 
 ---
 
@@ -128,4 +96,3 @@ Can be done in PARALLEL with tree, syntax, json
 **TIME:** 2-3 hours
 
 **ALTERNATIVE:** If markdown-it causes issues, can use basic markdown subset or defer
-

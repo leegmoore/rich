@@ -13,6 +13,8 @@ import { Rule } from './rule.js';
 import { Theme } from './theme.js';
 import { DEFAULT } from './themes.js';
 import { ColorSystem } from './color.js';
+import { Control } from './control.js';
+import type { Live } from './live.js';
 
 /** Justify methods for text alignment */
 export type JustifyMethod = 'default' | 'left' | 'center' | 'right' | 'full';
@@ -42,6 +44,12 @@ export type RenderableType =
   | string
   | Text
   | { __richConsole__: (console: Console, options: ConsoleOptions) => RenderResult };
+
+export type ConsoleRenderable = RenderableType | Control;
+
+export interface RenderHook {
+  processRenderables(renderables: ConsoleRenderable[]): ConsoleRenderable[];
+}
 
 /**
  * Size of the terminal.
@@ -217,6 +225,12 @@ export class Console {
   private captureBuffer: string[];
   private capturingOutput: boolean;
   private getTimeFn: () => number;
+  private liveStack: Live[] = [];
+  private renderHooks: RenderHook[] = [];
+  private altScreenEnabled = false;
+  readonly isJupyter: boolean;
+  readonly isInteractive: boolean;
+  readonly isDumbTerminal: boolean;
 
   // TODO: Add full set of Console properties when needed:
   // - file: TextIO
@@ -257,6 +271,7 @@ export class Console {
       get_time?: () => number;
       noColor?: boolean;
       no_color?: boolean;
+      encoding?: string;
     } = {}
   ) {
     this.width = options.width ?? 80;
@@ -277,12 +292,15 @@ export class Console {
     this.no_color = noColorOption;
     this.captureBuffer = [];
     this.capturingOutput = false;
+    this.isJupyter = options.force_jupyter ?? false;
+    this.isInteractive = options.force_interactive ?? this.isTerminal;
+    this.isDumbTerminal = !this.isTerminal;
 
     this.options = new ConsoleOptions({
       maxWidth: this.width,
       minWidth: 1,
       isTerminal: this.isTerminal,
-      encoding: 'utf-8',
+      encoding: options.encoding ?? 'utf-8',
       maxHeight: this.height,
       legacy_windows: this.legacy_windows,
       markup: options.markup ?? true,
@@ -374,6 +392,10 @@ export class Console {
       renderable = text;
     }
 
+    if (renderable instanceof Control) {
+      return [renderable.segment];
+    }
+
     // Handle objects with __richConsole__ protocol (including Text)
     if (hasRichConsole(renderable)) {
       const iterableResult = renderable.__richConsole__(this, renderOptions);
@@ -408,79 +430,112 @@ export class Console {
    * TODO: Full implementation with all print options.
    */
   print(...args: unknown[]): void {
-    // Handle multiple arguments - join with spaces
     if (args.length === 0) {
-      this._printSingle('\n');
+      this._printRenderables([this.renderStr('\n')]);
       return;
     }
 
-    // If last arg is an options object with height, extract it
     let options: { height?: number } | undefined;
-    let renderables = args;
-
+    let rawRenderables: unknown[] = args;
     const lastArg = args[args.length - 1];
-    if (
-      args.length > 1 &&
-      typeof lastArg === 'object' &&
-      lastArg !== null &&
-      !('__richConsole__' in (lastArg as Record<string, unknown>)) &&
-      'height' in (lastArg as Record<string, unknown>)
-    ) {
-      options = args[args.length - 1] as { height?: number };
-      renderables = args.slice(0, -1);
+    if (this.isHeightOptionsCandidate(lastArg)) {
+      options = lastArg as { height?: number };
+      rawRenderables = args.slice(0, -1);
     }
 
-    if (renderables.length === 1) {
-      this._printSingle(renderables[0], options);
-    } else {
-      // Multiple args - render each and join with spaces
-      const outputs: string[] = [];
-      for (const renderable of renderables) {
-        const output = this._renderToString(renderable, options);
-        outputs.push(output);
-      }
-      const finalOutput = outputs.join(' ') + '\n';
-
-      if (this.capturingOutput) {
-        this.captureBuffer.push(finalOutput);
-      } else {
-        process.stdout.write(finalOutput);
-      }
+    if (rawRenderables.length === 0) {
+      rawRenderables = [''];
     }
+
+    const normalized: ConsoleRenderable[] = [];
+    rawRenderables.forEach((value, index) => {
+      normalized.push(this._coerceRenderable(value));
+      if (index < rawRenderables.length - 1) {
+        normalized.push(this.renderStr(' '));
+      }
+    });
+    this._printRenderables(normalized, options);
   }
 
-  private _printSingle(renderable: unknown, options?: { height?: number }): void {
-    let output = this._renderToString(renderable, options);
-    // Only add newline if output doesn't already end with one
-    if (!output.endsWith('\n')) {
-      output += '\n';
+  private _printRenderables(renderables: ConsoleRenderable[], options?: { height?: number }): void {
+    const processed = this.applyRenderHooks(renderables);
+    const outputs = processed.map((renderable) => this._renderToString(renderable, options));
+    let finalOutput = outputs.join('');
+    if (!finalOutput.endsWith('\n')) {
+      finalOutput += '\n';
     }
     if (this.capturingOutput) {
-      this.captureBuffer.push(output);
+      this.captureBuffer.push(finalOutput);
     } else {
-      process.stdout.write(output);
+      process.stdout.write(finalOutput);
     }
   }
 
-  private _renderToString(renderable: unknown, options?: { height?: number }): string {
+  private applyRenderHooks(renderables: ConsoleRenderable[]): ConsoleRenderable[] {
+    if (this.renderHooks.length === 0) {
+      return renderables;
+    }
+    return this.renderHooks.reduce(
+      (current, hook) => hook.processRenderables(current),
+      renderables
+    );
+  }
+
+  private isHeightOptionsCandidate(value: unknown): value is { height?: number } {
+    if (typeof value !== 'object' || value === null) {
+      return false;
+    }
+    if (hasRichConsole(value)) {
+      return false;
+    }
+    return 'height' in (value as Record<string, unknown>);
+  }
+
+  private _coerceRenderable(value: unknown): ConsoleRenderable {
+    if (value instanceof Control) {
+      return value;
+    }
+    if (typeof value === 'string') {
+      return this.renderStr(value);
+    }
+    if (value instanceof Text) {
+      return value;
+    }
+    if (hasRichConsole(value)) {
+      return value as RenderableType;
+    }
+    if (typeof value === 'number' || typeof value === 'bigint' || typeof value === 'boolean') {
+      return this.renderStr(String(value));
+    }
+    if (value === null || value === undefined) {
+      return this.renderStr('');
+    }
+    return this.renderStr(String(value));
+  }
+
+  private _renderToString(renderable: ConsoleRenderable, options?: { height?: number }): string {
     // Update console options if height is provided
     const renderOptions =
       options?.height !== undefined
         ? this.options.update({ height: options.height })
         : this.options;
 
-    if (typeof renderable === 'string') {
-      // Convert string to Text via renderStr() to handle markup processing
-      const text = this.renderStr(renderable);
-      renderable = text;
+    if (renderable instanceof Control) {
+      return renderable.segment.text;
     }
 
-    if (renderable && typeof renderable === 'object' && '__richConsole__' in renderable) {
+    if (typeof renderable === 'string') {
+      return renderable;
+    }
+
+    if (renderable instanceof Text) {
+      const segments = renderable.render(this, '');
+      return this._renderSegments(segments);
+    }
+
+    if (hasRichConsole(renderable)) {
       // Handle objects with __richConsole__ protocol (like Padding, Rule, etc.)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      const richConsole = (renderable as any).__richConsole__;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-      const items = Array.from(richConsole.call(renderable, this, renderOptions));
+      const items = Array.from(renderable.__richConsole__(this, renderOptions));
       // Items can be Segments, Text instances, or other renderables (like Table from Columns)
       return items
         .map((item) => {
@@ -499,12 +554,9 @@ export class Console {
           }
         })
         .join('');
-    } else if (renderable instanceof Text) {
-      const segments = renderable.render(this, '');
-      return this._renderSegments(segments);
-    } else {
-      return String(renderable);
     }
+
+    return String(renderable);
   }
 
   /**
@@ -641,6 +693,10 @@ export class Console {
       renderable = this.renderStr(renderable);
     }
 
+    if (renderable instanceof Control) {
+      return [[renderable.segment]];
+    }
+
     // Handle Text and objects with __richConsole__ protocol
     // Text has __richConsole__ which wraps text to width
     if (hasRichConsole(renderable)) {
@@ -724,6 +780,88 @@ export class Console {
   measure(renderable: RenderableType, options?: ConsoleOptions): Measurement {
     const measureOptions = options ?? this.options;
     return Measurement.get(this, measureOptions, renderable);
+  }
+
+  setLive(live: Live): boolean {
+    this.liveStack.push(live);
+    return this.liveStack.length === 1;
+  }
+
+  clearLive(): void {
+    this.liveStack.pop();
+  }
+
+  getLiveStack(): readonly Live[] {
+    return this.liveStack;
+  }
+
+  isTopLive(live: Live): boolean {
+    return this.liveStack.length > 0 && this.liveStack[0] === live;
+  }
+
+  pushRenderHook(hook: RenderHook): void {
+    this.renderHooks.push(hook);
+  }
+
+  popRenderHook(): void {
+    this.renderHooks.pop();
+  }
+
+  control(control: Control): void {
+    const text = control.segment.text;
+    if (this.capturingOutput) {
+      this.captureBuffer.push(text);
+    } else {
+      process.stdout.write(text);
+    }
+  }
+
+  showCursor(show: boolean): void {
+    if (!this.isTerminal) {
+      return;
+    }
+    this.control(Control.showCursor(show));
+  }
+
+  setAltScreen(enable: boolean): boolean {
+    if (!this.isTerminal) {
+      this.altScreenEnabled = false;
+      return false;
+    }
+    if (this.altScreenEnabled === enable) {
+      return this.altScreenEnabled;
+    }
+    this.altScreenEnabled = enable;
+    this.control(Control.altScreen(enable));
+    return this.altScreenEnabled;
+  }
+
+  line(count: number = 1): void {
+    if (count <= 0) {
+      return;
+    }
+    const text = '\n'.repeat(count);
+    if (this.capturingOutput) {
+      this.captureBuffer.push(text);
+    } else {
+      process.stdout.write(text);
+    }
+  }
+
+  get is_terminal(): boolean {
+    return this.isTerminal;
+  }
+
+  get is_dumb_terminal(): boolean {
+    return this.isDumbTerminal;
+  }
+
+  get is_interactive(): boolean {
+    return this.isInteractive;
+  }
+
+  get is_jupyter(): boolean {
+    return this.isJupyter;
   }
 
   // TODO: Implement remaining Console methods:

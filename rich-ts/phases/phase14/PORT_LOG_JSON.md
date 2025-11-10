@@ -1,6 +1,6 @@
 # Module Port Log: json
 
-**Status:** NOT_STARTED  
+**Status:** DONE  
 **Dependencies:** text ✅, highlighter ✅ (Phase 12), console ✅  
 **Python Source:** `rich/json.py` (~139 LOC)  
 **Python Tests:** `tests/test_json.py` (~3 tests)
@@ -26,33 +26,31 @@ JSON pretty printer with syntax highlighting.
 
 **Total Tests:** ~3
 
-- [ ] test_json_from_data
-- [ ] test_json_render
-- [ ] test_json_highlighting
+- [x] test_json_from_data
+- [x] test_json_render
+- [x] test_json_highlighting
 
 ---
 
 ## Implementation Progress
 
-- [ ] JSON class
-- [ ] Constructor with JSON string or data
-- [ ] fromData() static method
-- [ ] Uses JSONHighlighter from highlighter module
-- [ ] Indentation parameter
-- [ ] __richConsole__ implementation
-- [ ] All tests passing
+- [x] JSON class
+- [x] Constructor with JSON string or data
+- [x] fromData() static method
+- [x] Uses JSONHighlighter from highlighter module
+- [x] Indentation parameter
+- [x] __richConsole__ implementation
+- [x] All tests passing
 
 ---
 
 ## Design Decisions
 
-*No decisions yet - module not started*
-
-**Key Design:**
-- Parse JSON with built-in JSON.parse()
-- Pretty-print with JSON.stringify(data, null, indent)
-- Apply JSONHighlighter to result
-- Return as Text with highlights
+- Mirror Python API with `JSON` alias backed by a `RichJSON` class to avoid clashing with the built-in `JSON` object.
+- Normalize indentation (`number | string | null`) and default to two spaces so renders match Python output.
+- Apply the optional `default` transformer eagerly across nested values to mimic `json.dumps(..., default=...)` behavior before stringifying.
+- Set `Text.noWrap = true` and `overflow = 'ignore'` so pretty-printed output never wraps or truncates inside the console.
+- Keep optional `sortKeys` logic for future parity by recursively cloning and sorting plain object keys.
 
 ---
 
@@ -85,7 +83,7 @@ Can be done in PARALLEL with tree, syntax, markdown
 
 ## Session Notes
 
-*No sessions yet*
+- 2025-11-09: Ported JSON tests + implementation, added RichJSON helper with default transformers, sort keys support, and wired to JSONHighlighter. `npm run check` clean (warnings unchanged).
 
 ---
 
@@ -98,4 +96,3 @@ Can be done in PARALLEL with tree, syntax, markdown
 **TIME:** ~30 minutes
 
 **QUICK WIN:** Good module to start Phase 14 with!
-

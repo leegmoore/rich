@@ -91,6 +91,7 @@
 ---
 
 ### **Phase 14: Advanced Components** (~2,691 LOC)
+**Status:** COMPLETE — tree/json/syntax/markdown ✅ (2025-11-09); live/status ✅ (2025-11-10)  
 **Dependency:** Phase 13 complete  
 **Parallel:** ⚠️ Mostly parallel (live/status sequential)
 

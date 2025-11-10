@@ -1,6 +1,6 @@
 # Module Port Log: tree
 
-**Status:** NOT_STARTED  
+**Status:** DONE  
 **Dependencies:** console ✅, segment ✅, styled ✅ (Phase 12)  
 **Python Source:** `rich/tree.py` (~257 LOC)  
 **Python Tests:** `tests/test_tree.py` (~20 tests)
@@ -27,58 +27,49 @@ Tree component for hierarchical displays.
 
 **Total Tests:** ~20
 
-- [ ] test_tree_create
-- [ ] test_tree_add_node
-- [ ] test_tree_add_multiple
-- [ ] test_tree_nested
-- [ ] test_tree_render
-- [ ] test_tree_guide_lines
-- [ ] test_tree_styles
-- [ ] test_tree_measure
-- [ ] test_tree_expand
-- [ ] test_tree_hide_root
-- [ ] Other tree tests
+- [x] test_tree_create
+- [x] test_tree_add_node
+- [x] test_tree_add_multiple
+- [x] test_tree_nested
+- [x] test_tree_render
+- [x] test_tree_guide_lines
+- [x] test_tree_styles
+- [x] test_tree_measure
+- [x] test_tree_expand
+- [x] test_tree_hide_root
+- [x] Other tree tests
 
 ---
 
 ## Implementation Progress
 
-- [ ] Tree class
-- [ ] Constructor with label
-- [ ] add() method for adding children
-- [ ] Recursive node structure
-- [ ] __richConsole__ implementation with guide lines
-- [ ] __richMeasure__ implementation
-- [ ] Guide character rendering (│ ├ └)
-- [ ] Style support for different parts
-- [ ] Hide root option
-- [ ] Expand control
-- [ ] All tests passing
+- [x] Tree class
+- [x] Constructor with label
+- [x] add() method for adding children
+- [x] Recursive node structure
+- [x] __richConsole__ implementation with guide lines
+- [x] __richMeasure__ implementation
+- [x] Guide character rendering (│ ├ └)
+- [x] Style support for different parts
+- [x] Hide root option
+- [x] Expand control
+- [x] All tests passing
 
 ---
 
 ## Design Decisions
 
-*No decisions yet - module not started*
-
-**Key Design:**
-- Tree nodes can contain other trees (recursive)
-- Guide lines use box drawing characters
-- Styled wrapper for applying styles to labels
-- Measurement needs to account for guide characters
-
-**Considerations:**
-- Node storage: array of children
-- Guide line algorithm for nested levels
-- Style application to guide vs content
+- Matched Python’s API with an options object (style/guideStyle/expanded/highlight/hideRoot) and kept `add()` defaults so children inherit style + highlight configuration unless overridden.
+- Recreated guide rendering: ASCII mode is driven by `ConsoleOptions.asciiOnly`, while the Unicode variants switch between normal/bold/double connectors depending on the current guide line style (bold → heavy, underline2 → double). Guides inherit each node’s background via `Segment.applyStyle`.
+- Mirrored Rich’s iterator stack approach to avoid recursion and to keep StyleStack / guide stacks aligned with `levels`, ensuring hide_root + multi-line node labels behave exactly like Python.
+- Implemented measurement by simulating indentation levels (4 cells per depth) so layout calculations stay consistent with connector widths.
+- Added an `encoding` option to `Console` so tests can flip in to ASCII mode without hacks; default remains UTF-8 so existing behaviour is unchanged.
 
 ---
 
 ## Blockers
 
-**NONE** - All dependencies complete from Phases 2, 7, 12
-
-Can be done in PARALLEL with syntax, markdown, json
+- None – console/styled/segment dependencies already exist. Needed minor Console tweak to expose `encoding` so ASCII tests could run identically to Python.
 
 ---
 
@@ -104,7 +95,7 @@ Can be done in PARALLEL with syntax, markdown, json
 
 ## Session Notes
 
-*No sessions yet*
+- 2025-11-09: Ported tree tests + implementation with Styled + StyleStack support, added ASCII/Unicode guide logic, hide_root handling, measurement, and console encoding option. `npm run check` passes (existing non-null warnings only).
 
 ---
 
@@ -115,4 +106,3 @@ Can be done in PARALLEL with syntax, markdown, json
 **TIME:** ~1 hour
 
 **VISUAL COMPONENT:** Tree rendering is visually important - test output carefully
-

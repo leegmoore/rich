@@ -1,6 +1,6 @@
 # Module Port Log: status
 
-**Status:** NOT_STARTED  
+**Status:** DONE  
 **Dependencies:** console ✅, live (Phase 14 - must complete first!), spinner ✅ (Phase 13)  
 **Python Source:** `rich/status.py` (~131 LOC)  
 **Python Tests:** `tests/test_status.py` (~8 tests)
@@ -26,83 +26,62 @@ Status indicator with animated spinner.
 
 **Total Tests:** ~8
 
-- [ ] test_status_create
-- [ ] test_status_render
-- [ ] test_status_spinner
-- [ ] test_status_message
-- [ ] test_status_update
-- [ ] test_status_context_manager
-- [ ] Other status tests
+- [x] test_status_create
+- [x] test_status_render
+- [x] test_status_spinner
+- [x] test_status_message
+- [x] test_status_update
+- [x] test_status_context_manager
+- [x] Other status tests
 
 ---
 
 ## Implementation Progress
 
-- [ ] Status class
-- [ ] Constructor with status message and spinner
-- [ ] start() and stop() methods
-- [ ] update() method to change status message
-- [ ] Integration with Live class
-- [ ] Integration with Spinner class
-- [ ] Context manager pattern (if using)
-- [ ] All tests passing
+- [x] Status class
+- [x] Constructor with status message + spinner configuration
+- [x] start() and stop() methods
+- [x] update() method to change message/style/speed
+- [x] Integration with Live class
+- [x] Integration with Spinner class
+- [x] Renderable delegation for `console.print(status)`
+- [x] All tests passing
 
 ---
 
 ## Design Decisions
 
-*No decisions yet - module not started*
-
-**Key Design:**
-- Wraps Live class for display
-- Wraps Spinner for animation
-- Combines: [spinner] status message
-- Updates spinner frame + message on refresh
+- Reused Live as-is (transient mode, shared console reference) so Status remains a tiny wrapper—mirrors Python’s `.console` attribute for access to the underlying console.
+- Spinner updates mutate the existing instance unless the spinner name changes, which matches Rich’s behavior and avoids restarting the animation unnecessarily; spinner swaps trigger a full Live refresh.
+- Implemented `__richConsole__` delegation so `console.print(status)` snapshots the spinner frame without spinning up the Live loop—this keeps captured output deterministic for tests.
 
 ---
 
 ## Blockers
 
-**BLOCKS ON:** live module from Phase 14
-
-**PORT LAST** in Phase 14 - after live is complete!
+- None (Live completed prior to this session). Status still sits last in the phase as intended.
 
 ---
 
 ## Next Steps
 
-1. **WAIT** for live module to be complete
-2. Read Python source: `rich/status.py`
-3. Read Python tests: `tests/test_status.py`
-4. Create `rich-ts/tests/status.test.ts`
-5. Port all tests to TypeScript/Vitest
-6. Run tests: `npm test status -- --run` (should fail)
-7. Create `rich-ts/src/status.ts`
-8. Implement Status class
-9. Integrate Live and Spinner
-10. Implement start/stop lifecycle
-11. Implement update() for message changes
-12. Continue until all tests pass
-13. Run `npm run check`
-14. Commit and push
-15. Update this log to DONE
-16. **Mark Phase 14 COMPLETE!**
+- Wire Status into any future helpers (e.g., `console.status(...)`) once higher-level APIs land in later phases.
+- Consider exposing a small helper for async tasks (promise wrapper) to mimic `with status:` ergonomics in JS/TS codebases.
 
 ---
 
 ## Session Notes
 
-*No sessions yet*
+- 2025-11-10: Implemented Status on top of the new Live/Spinner stack, added Live console getter, delegated printing via spinner, and ported vitest coverage for message/spinner updates plus capture output. `npm run check` clean aside from existing lint warnings.
 
 ---
 
 ## Notes
 
-**PORT LAST in Phase 14** - Depends on live
+**PORT LAST in Phase 14** - Built on top of Live
 
 **USED BY:** Applications showing indeterminate progress
 
 **COMPLEXITY:** Low (wrapper around Live + Spinner)
 
 **TIME:** ~30 minutes
-

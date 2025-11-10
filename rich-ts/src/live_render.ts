@@ -84,7 +84,8 @@ export class LiveRender {
       }
     }
 
-    this._shape = shape;
+    const adjustedShape: [number, number] = [shape[0], shape[1] > 0 ? shape[1] + 1 : 0];
+    this._shape = adjustedShape;
     const newline = Segment.line();
     for (const [isLast, line] of loopLast(lines)) {
       for (const segment of line) {
