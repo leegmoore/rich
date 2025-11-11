@@ -215,7 +215,7 @@ export class Live implements RenderHook {
 
   private normalizeRenderable(renderable: RenderableType | string): RenderableType {
     if (typeof renderable === 'string') {
-      return this._console.renderStr(renderable);
+      return this._console.renderStr(renderable, { end: '' });
     }
     return renderable;
   }

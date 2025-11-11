@@ -157,7 +157,11 @@ export class Columns {
     table.title = this.title;
 
     if (this.width !== undefined) {
-      columnCount = Math.floor(maxWidth / (this.width + widthPadding));
+      const singleColumnWidth = this.width + widthPadding;
+      const calculatedColumns =
+        singleColumnWidth > 0 ? Math.floor(maxWidth / singleColumnWidth) : renderables.length || 1;
+      // Prevent zero/negative column counts which would hang iteration when width exceeds console
+      columnCount = Math.max(1, calculatedColumns);
       for (let i = 0; i < columnCount; i++) {
         table.addColumn('', '', { width: this.width });
       }

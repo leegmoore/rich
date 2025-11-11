@@ -373,21 +373,27 @@ export class Console {
       markup?: boolean;
       highlight?: boolean;
       highlighter?: unknown;
+      end?: string;
     } = {}
   ): Text {
     const markup = options.markup ?? this.options.markup;
     const emoji = options.emoji ?? true;
 
     if (markup) {
-      // Use Text.fromMarkup() which handles the markup rendering
-      // Set end='' to avoid adding newlines when rendering multiple args
-      const result = Text.fromMarkup(text, { style: options.style, emoji });
-      result.end = '';
-      return result;
+      return Text.fromMarkup(text, {
+        style: options.style,
+        emoji,
+        justify: options.justify,
+        overflow: options.overflow,
+        end: options.end,
+      });
     }
-    const result = new Text(text, options.style);
-    result.end = '';
-    return result;
+
+    return new Text(text, options.style ?? '', {
+      justify: options.justify,
+      overflow: options.overflow,
+      end: options.end,
+    });
   }
 
   /**
@@ -416,45 +422,40 @@ export class Console {
    */
   render(renderable: unknown, options?: ConsoleOptions): Segment[] {
     const renderOptions = options ?? this.options;
-    renderable = this.richCast(renderable);
+    let normalized = this.richCast(renderable);
 
-    // Handle strings - convert to Text which will use __richConsole__
-    if (typeof renderable === 'string') {
-      const text = this.renderStr(renderable);
-      renderable = text;
+    if (typeof normalized === 'string') {
+      normalized = this.renderStr(normalized);
     }
 
-    if (renderable instanceof Control) {
-      return [renderable.segment];
+    if (normalized instanceof Segment) {
+      return [normalized];
     }
 
-    // Handle objects with __richConsole__ protocol (including Text)
-    if (hasRichConsole(renderable)) {
-      const iterableResult = renderable.__richConsole__(this, renderOptions);
-      const rawSegments: Array<Segment | Text | string> = Array.from(
-        iterableResult as Iterable<Segment | Text | string>
-      );
-      const normalizedSegments: Segment[] = [];
-      for (const item of rawSegments) {
+    if (normalized instanceof Control) {
+      return [normalized.segment];
+    }
+
+    if (normalized === null || normalized === undefined) {
+      return [];
+    }
+
+    if (hasRichConsole(normalized)) {
+      const segments: Segment[] = [];
+      const iterableResult = normalized.__richConsole__(this, renderOptions) as Iterable<
+        Segment | RenderableType | string | undefined
+      >;
+      for (const item of iterableResult) {
         if (item instanceof Segment) {
-          normalizedSegments.push(item);
-        } else if (item instanceof Text) {
-          normalizedSegments.push(...item.render(this, ''));
-        } else if (typeof item === 'string') {
-          normalizedSegments.push(new Segment(item));
+          segments.push(item);
+        } else if (item !== undefined && item !== null) {
+          segments.push(...this.render(item, renderOptions));
         }
       }
-      return normalizedSegments;
+      return segments;
     }
 
-    // TODO: Handle other renderable types
-    // - Segment
-    // - Style
-    // - Control codes
-    // - Pretty objects
-    // - etc.
-
-    throw new Error(`Cannot render object of type ${typeof renderable}`);
+    throw new Error(`Cannot render object of type ${typeof normalized}`);
   }
 
   /**
@@ -463,7 +464,7 @@ export class Console {
    */
   print(...args: unknown[]): void {
     if (args.length === 0) {
-      this._printRenderables([this.renderStr('\n')]);
+      this._printRenderables([this.renderStr('\n', { end: '' })]);
       return;
     }
 
@@ -483,7 +484,7 @@ export class Console {
     rawRenderables.forEach((value, index) => {
       normalized.push(this._coerceRenderable(value));
       if (index < rawRenderables.length - 1) {
-        normalized.push(this.renderStr(' '));
+        normalized.push(this.renderStr(' ', { end: '' }));
       }
     });
     this._printRenderables(normalized, options);
@@ -497,7 +498,7 @@ export class Console {
     args.forEach((value, index) => {
       normalized.push(this._coerceRenderable(value));
       if (index < args.length - 1) {
-        normalized.push(this.renderStr(' '));
+        normalized.push(this.renderStr(' ', { end: '' }));
       }
     });
     this._printRenderables(normalized, { appendNewline: false });
@@ -559,11 +560,11 @@ export class Console {
 
   private getLogPrefix(): Text | null {
     if (this.logTimeFormat) {
-      return this.renderStr(this.logTimeFormat);
+      return this.renderStr(this.logTimeFormat, { end: '' });
     }
     if (this.logTimeEnabled) {
       const timestamp = new Date().toISOString();
-      return this.renderStr(`[${timestamp}]`);
+      return this.renderStr(`[${timestamp}]`, { end: '' });
     }
     return null;
   }
@@ -626,7 +627,7 @@ export class Console {
       return castValue;
     }
     if (typeof castValue === 'string') {
-      return this.renderStr(castValue);
+      return this.renderStr(castValue, { end: '' });
     }
     if (castValue instanceof Text) {
       return castValue;
@@ -639,15 +640,15 @@ export class Console {
       typeof castValue === 'bigint' ||
       typeof castValue === 'boolean'
     ) {
-      return this.renderStr(String(castValue));
+      return this.renderStr(String(castValue), { end: '' });
     }
     if (castValue === null || castValue === undefined) {
-      return this.renderStr('');
+      return this.renderStr('', { end: '' });
     }
     if (Array.isArray(castValue) || isPlainObject(castValue)) {
       return new Pretty(castValue);
     }
-    return this.renderStr(String(castValue));
+    return this.renderStr(String(castValue), { end: '' });
   }
 
   private _renderToString(renderable: ConsoleRenderable, options?: { height?: number }): string {
@@ -657,40 +658,23 @@ export class Console {
         ? this.options.update({ height: options.height })
         : this.options;
 
-    const normalized = this.richCast(renderable);
+    let normalized = this.richCast(renderable);
 
     if (normalized instanceof Control) {
       return normalized.segment.text;
     }
 
     if (typeof normalized === 'string') {
-      return this._renderToString(this.renderStr(normalized), options);
+      normalized = this.renderStr(normalized, { end: '' });
+    }
+
+    if (normalized instanceof Segment) {
+      return this._renderSegment(normalized);
     }
 
     if (hasRichConsole(normalized)) {
-      // Handle objects with __richConsole__ protocol (like Padding, Rule, etc.)
-      const iterable = normalized.__richConsole__(this, renderOptions) as Iterable<
-        Segment | Text | string | ConsoleRenderable
-      >;
-      const items = Array.from(iterable);
-      // Items can be Segments, Text instances, or other renderables (like Table from Columns)
-      return items
-        .map((item) => {
-          if (item instanceof Text) {
-            // Render Text to segments WITHOUT the Text's end property
-            // The end will be added by print() itself
-            const segments = item.render(this, '');
-            return this._renderSegments(segments);
-          } else if (item instanceof Segment) {
-            return this._renderSegment(item);
-          } else if (item && typeof item === 'object' && '__richConsole__' in item) {
-            // Recursively render objects with __richConsole__ (e.g., Table from Columns)
-            return this._renderToString(item, options);
-          } else {
-            return String(item);
-          }
-        })
-        .join('');
+      const segments = this.render(normalized, renderOptions);
+      return this._renderSegments(segments);
     }
 
     return String(normalized);
@@ -823,65 +807,19 @@ export class Console {
     pad: boolean = true
   ): Segment[][] {
     const renderOptions = options ?? this.options;
-    renderable = this.richCast(renderable);
-    let segments: Segment[];
+    const normalized = this.richCast(renderable);
 
-    // Handle string renderables - convert to Text first
-    if (typeof renderable === 'string') {
-      renderable = this.renderStr(renderable);
+    if (normalized instanceof Control) {
+      return [[normalized.segment]];
     }
 
-    if (renderable instanceof Control) {
-      return [[renderable.segment]];
-    }
+    let segments = this.render(normalized, renderOptions);
 
-    // Handle Text and objects with __richConsole__ protocol
-    // Text has __richConsole__ which wraps text to width
-    if (hasRichConsole(renderable)) {
-      const iterableResult = renderable.__richConsole__(this, renderOptions);
-      const rawSegments: Array<Segment | Text | string | RenderableType> = Array.from(
-        iterableResult as Iterable<Segment | Text | string | RenderableType>
-      );
-      const expanded: Segment[] = [];
-      const pushItem = (item: Segment | Text | string | RenderableType): void => {
-        if (item instanceof Segment) {
-          expanded.push(item);
-          return;
-        }
-        if (item instanceof Text) {
-          expanded.push(...item.render(this, ''));
-          return;
-        }
-        if (typeof item === 'string') {
-          expanded.push(new Segment(item));
-          return;
-        }
-        if (hasRichConsole(item)) {
-          const nested = item.__richConsole__(this, renderOptions);
-          for (const nestedItem of nested as Iterable<Segment | Text | string | RenderableType>) {
-            pushItem(nestedItem);
-          }
-          return;
-        }
-        throw new Error(`Cannot render object of type ${typeof item}`);
-      };
-      for (const item of rawSegments) {
-        pushItem(item);
-      }
-      segments = expanded;
-    } else {
-      throw new Error(`Cannot render object of type ${typeof renderable}`);
-    }
-
-    // Apply style if provided (but only if it's not a null style)
-    // Null styles are only used for padding segments, not content
     const shouldApplyStyle = style && !style.isNull;
     if (shouldApplyStyle) {
       segments = Array.from(Segment.applyStyle(segments, style));
     }
 
-    // Split into lines and crop to width
-    // Pass style even if null - it's used for padding segments in adjustLineLength
     const paddingStyle = style ?? undefined;
     const lines = Array.from(
       Segment.splitAndCropLines(segments, renderOptions.maxWidth, paddingStyle, pad, false)
