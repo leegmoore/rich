@@ -3,9 +3,10 @@ import { Table } from './table.js';
 
 /**
  * Print diagnostic information about Rich configuration.
+ * @param console - Optional console instance to use. If not provided, creates a new one.
  */
-export function report(): void {
-  const console = new Console();
+export function report(console?: Console): void {
+  const consoleInstance = console ?? new Console();
   const table = new Table({ title: 'Rich Diagnostics', showHeader: false });
   table.addColumn('Property', '', { style: 'bold' });
   table.addColumn('Value');
@@ -47,9 +48,9 @@ export function report(): void {
   table.addRow('Dumb Terminal', isDumbTerminal ? 'Yes' : 'No');
 
   // No Color
-  const noColor = console.noColor;
+  const noColor = consoleInstance.noColor;
   table.addRow('No Color', noColor ? 'Yes' : 'No');
 
-  console.print(table);
+  consoleInstance.print(table);
 }
 

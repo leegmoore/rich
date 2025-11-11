@@ -15,7 +15,7 @@ describe('diagnose', () => {
       colorSystem: 'truecolor',
     });
     console.beginCapture();
-    report();
+    report(console);
     const output = console.endCapture();
     const stripped = stripAnsi(output);
 
@@ -40,7 +40,7 @@ describe('diagnose', () => {
       colorSystem: 'truecolor',
     });
     console.beginCapture();
-    report();
+    report(console);
     const output = console.endCapture();
     const stripped = stripAnsi(output);
 
@@ -57,7 +57,7 @@ describe('diagnose', () => {
       colorSystem: 'truecolor',
     });
     console.beginCapture();
-    report();
+    report(console);
     const output = console.endCapture();
     const stripped = stripAnsi(output);
 

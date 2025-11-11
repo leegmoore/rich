@@ -39,12 +39,21 @@ export function renderScope(
 
   let items = Object.entries(scope);
   
-  // Filter out private and dunder variables if not requested
+  // Filter out dunder variables if not requested
   if (!options.dunder) {
     items = items.filter(([key]) => !key.startsWith('__'));
   }
+  // Filter out private (single underscore) variables if not requested
+  // Note: dunder variables (__) also start with _, so we need to be careful
   if (!options.private) {
-    items = items.filter(([key]) => !key.startsWith('_'));
+    items = items.filter(([key]) => {
+      // If dunder is enabled, only filter single underscore (not double)
+      if (options.dunder) {
+        return !key.startsWith('_') || key.startsWith('__');
+      }
+      // If dunder is disabled, filter all starting with _
+      return !key.startsWith('_');
+    });
   }
   
   // Sort if requested

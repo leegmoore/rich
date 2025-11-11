@@ -157,17 +157,26 @@ export class Inspect {
       return [];
     }
     if (typeof obj === 'object') {
-      const keys = Object.keys(obj);
-      let filtered = keys;
+      let keys = Object.keys(obj);
       
+      // Filter dunder first (__)
       if (!this.dunder) {
-        filtered = filtered.filter((key) => !key.startsWith('__'));
+        keys = keys.filter((key) => !key.startsWith('__'));
       }
+      // Filter private (single _) - but keep dunder if dunder is enabled
       if (!this.private) {
-        filtered = filtered.filter((key) => !key.startsWith('_'));
+        keys = keys.filter((key) => {
+          // If it starts with __, it was already filtered above if dunder is false
+          // So if we get here and it starts with __, dunder must be true, so keep it
+          if (key.startsWith('__')) {
+            return true; // Keep dunder if we got past the dunder filter
+          }
+          // Otherwise, filter single underscore
+          return !key.startsWith('_');
+        });
       }
       
-      return filtered;
+      return keys;
     }
     return [];
   }
