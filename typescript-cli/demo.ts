@@ -17,7 +17,11 @@ import { Pretty } from '../rich-ts/src/pretty.js';
 import { Align } from '../rich-ts/src/align.js';
 import { Rule } from '../rich-ts/src/rule.js';
 
-const console = new Console();
+const console = new Console({
+  force_terminal: true,
+  highlight: true,
+  markup: true,
+});
 
 async function main() {
   // 1. Basic Text & Styles
@@ -112,15 +116,19 @@ print("Code block")
 
   // 10. Progress Bar (short demo)
   console.print('\n=== 10. PROGRESS BAR ===');
-  const progress = new Progress({ console });
-  const taskId = progress.addTask('Downloading...', { total: 100 });
-  progress.start();
-  for (let i = 0; i < 100; i++) {
-    progress.update(taskId, { advance: 1 });
-    await new Promise((resolve) => setTimeout(resolve, 10));
+  try {
+    const progress = new Progress({ console });
+    const taskId = progress.addTask('Downloading...', { total: 100 });
+    progress.start();
+    for (let i = 0; i < 100; i++) {
+      progress.update(taskId, { advance: 1, refresh: true });
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    progress.stop();
+    console.print('[green]✓[/green] Progress complete');
+  } catch (error) {
+    console.print(`[red]Progress error: ${error instanceof Error ? error.message : String(error)}[/red]`);
   }
-  progress.stop();
-  console.print('[green]✓[/green] Progress complete');
 
   // 11. JSON
   console.print('\n=== 11. JSON ===');
@@ -134,7 +142,10 @@ print("Code block")
 }
 
 main().catch((error) => {
-  console.error('Error:', error);
+  console.print(`[red]Error:[/red] ${error instanceof Error ? error.message : String(error)}`);
+  if (error instanceof Error && error.stack) {
+    console.print(`[dim]${error.stack}[/dim]`);
+  }
   process.exit(1);
 });
 
