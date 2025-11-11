@@ -44,6 +44,9 @@ export * from './layout.js';
 export * from './_log_render.js';
 export * from './scope.js';
 export * from './diagnose.js';
+export * from './inspect.js';
+export * from './logging.js';
+export * from './traceback.js';
 export { NULL_FILE, NullFile } from './_null_file.js';
 export { getFileno } from './_fileno.js';
 export {
