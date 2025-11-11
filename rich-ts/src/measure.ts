@@ -6,6 +6,7 @@
 import { NotRenderableError } from './errors.js';
 import type { Console, ConsoleOptions } from './console.js';
 import { Text } from './text.js';
+import { Segment } from './segment.js';
 
 /**
  * Stores the minimum and maximum widths (in characters) required to render an object.
@@ -96,9 +97,11 @@ export class Measurement {
       return new Measurement(0, 0);
     }
 
+    const casted = console.richCast(renderable);
+
     // Handle string renderables
-    if (typeof renderable === 'string') {
-      const textRenderable = console.renderStr(renderable, {
+    if (typeof casted === 'string') {
+      const textRenderable = console.renderStr(casted, {
         markup: options.markup,
         highlight: false,
       });
@@ -106,14 +109,14 @@ export class Measurement {
     }
 
     // Handle Text instances
-    if (renderable instanceof Text) {
+    if (casted instanceof Text) {
       // Check if the renderable has __richMeasure__ method
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      const richMeasure = (renderable as any).__richMeasure__;
+      const richMeasure = (casted as any).__richMeasure__;
       if (typeof richMeasure === 'function') {
         /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
         const renderWidth = richMeasure
-          .call(renderable, console, options)
+          .call(casted, console, options)
           .normalize()
           .withMaximum(maxWidth);
         if (renderWidth.maximum < 1) {
@@ -127,13 +130,13 @@ export class Measurement {
     }
 
     // Handle objects with __richMeasure__ method
-    if (renderable && typeof renderable === 'object' && '__richMeasure__' in renderable) {
+    if (casted && typeof casted === 'object' && '__richMeasure__' in casted) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      const richMeasure = (renderable as any).__richMeasure__;
+      const richMeasure = (casted as any).__richMeasure__;
       if (typeof richMeasure === 'function') {
         /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
         const renderWidth = richMeasure
-          .call(renderable, console, options)
+          .call(casted, console, options)
           .normalize()
           .withMaximum(maxWidth);
         if (renderWidth.maximum < 1) {
@@ -142,6 +145,15 @@ export class Measurement {
         return renderWidth.normalize();
         /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
       }
+    }
+
+    // Fallback: objects with __richConsole__ can be measured by rendering them
+    if (casted && typeof casted === 'object' && '__richConsole__' in casted) {
+      const renderedSegments = console.render(casted, options);
+      const lines = Array.from(Segment.splitLines(renderedSegments));
+      const widths = lines.map((line) => Segment.getLineLength(line));
+      const maxLineWidth = widths.length === 0 ? 0 : Math.max(...widths);
+      return new Measurement(maxLineWidth, maxLineWidth).withMaximum(maxWidth);
     }
 
     // Not a renderable type

@@ -496,10 +496,11 @@ export class Text {
       tabSize?: number;
     } = {}
   ): Text {
+    const overflow = options.overflow ?? 'ignore';
     const separator = new Text('\n', options.style ?? '', {
       justify: options.justify,
-      overflow: options.overflow,
-      noWrap: options.noWrap,
+      overflow,
+      noWrap: options.noWrap ?? true,
       end: options.end,
       tabSize: options.tabSize,
     });
@@ -955,36 +956,51 @@ export class Text {
    * Render the text as Segments.
    * TODO: Requires Console type.
    */
-  render(_console: any, end = ''): Segment[] {
-    // TODO: This requires console.getStyle - implement fully when console module is ported
+  render(console: Console, end = ''): Segment[] {
     const segments: Segment[] = [];
     const text = this.plain;
 
+    const getStyleFromConsole = (styleDefinition: string): Style => {
+      if (console && typeof console.getStyle === 'function') {
+        return console.getStyle(styleDefinition, Style.null());
+      }
+      try {
+        return Style.parse(styleDefinition);
+      } catch {
+        return Style.null();
+      }
+    };
+
+    const resolveStyle = (style?: string | Style): Style | undefined => {
+      if (!style) {
+        return undefined;
+      }
+      if (typeof style === 'string') {
+        const normalized = style.trim();
+        if (!normalized) {
+          return undefined;
+        }
+        return getStyleFromConsole(normalized);
+      }
+      return style;
+    };
+
+    const baseStyle = resolveStyle(this.style);
+
     if (this._spans.length === 0) {
-      // Use the Text's style if it has one (but convert empty string to undefined)
-      const segmentStyle = this.style === '' ? undefined : this.style;
-      segments.push(new Segment(text, segmentStyle as Style | undefined));
+      segments.push(new Segment(text, baseStyle));
       if (end) {
         segments.push(new Segment(end));
       }
       return segments;
     }
 
-    // Use console.getStyle to resolve string styles (theme lookups and parsing)
-    const getStyle = (_style: string | Style): Style => {
-      if (typeof _style === 'string') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        return _console.getStyle(_style);
-      }
-      return _style;
-    };
-
     const enumeratedSpans = this._spans.map((span, index) => [index + 1, span] as const);
     const styleMap: Record<number, Style> = {};
     for (const [index, span] of enumeratedSpans) {
-      styleMap[index] = getStyle(span.style);
+      styleMap[index] = resolveStyle(span.style) ?? Style.null();
     }
-    styleMap[0] = getStyle(this.style);
+    styleMap[0] = baseStyle ?? Style.null();
 
     const spans: Array<[number, boolean, number]> = [
       [0, false, 0],

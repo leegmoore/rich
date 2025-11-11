@@ -1,4 +1,5 @@
 import { CELL_WIDTHS } from './cell_widths.js';
+import { LRUCache } from './lru_cache.js';
 
 // Ranges of unicode ordinals that produce a 1-cell wide character
 // This is non-exhaustive, but covers most common Western characters
@@ -38,12 +39,13 @@ export function isSingleCellWidths(text: string): boolean {
  * @param character - A single character
  * @returns Number of cells (0, 1 or 2) occupied by that character
  */
-const characterCellSizeCache = new Map<string, number>();
+const characterCellSizeCache = new LRUCache<string, number>(4096);
 
 export function getCharacterCellSize(character: string): number {
   // Check cache first
-  if (characterCellSizeCache.has(character)) {
-    return characterCellSizeCache.get(character)!;
+  const cached = characterCellSizeCache.get(character);
+  if (cached !== undefined) {
+    return cached;
   }
 
   const codepoint = character.codePointAt(0);
@@ -87,12 +89,13 @@ export function getCharacterCellSize(character: string): number {
  * @param text - Text to display
  * @returns Number of cells required to display text
  */
-const cachedCellLenCache = new Map<string, number>();
+const cachedCellLenCache = new LRUCache<string, number>(4096);
 
 function cachedCellLen(text: string): number {
   // Check cache first
-  if (cachedCellLenCache.has(text)) {
-    return cachedCellLenCache.get(text)!;
+  const cached = cachedCellLenCache.get(text);
+  if (cached !== undefined) {
+    return cached;
   }
 
   if (isSingleCellWidths(text)) {

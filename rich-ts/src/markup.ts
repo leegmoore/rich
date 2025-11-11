@@ -5,6 +5,10 @@ import { _emoji_replace } from './_emoji_replace.js';
 import { MarkupError } from './errors.js';
 import { Style, StyleType } from './style.js';
 import { Span, Text } from './text.js';
+import { LRUCache } from './lru_cache.js';
+
+const MARKUP_CACHE_SIZE = 4096;
+const markupCache = new LRUCache<string, Text>(MARKUP_CACHE_SIZE);
 
 // Regex to match markup tags
 // eslint-disable-next-line no-useless-escape
@@ -125,9 +129,25 @@ export function render(
   emoji: boolean = true,
   emojiVariant?: 'text' | 'emoji'
 ): Text {
+  const cacheKey =
+    typeof style === 'string'
+      ? `${emoji ? '1' : '0'}|${emojiVariant ?? ''}|${style}|${markup}`
+      : null;
+
+  if (cacheKey) {
+    const cached = markupCache.get(cacheKey);
+    if (cached) {
+      return cached.copy();
+    }
+  }
+
   // Fast path for no markup
   if (!markup.includes('[')) {
-    return new Text(emoji ? _emoji_replace(markup, emojiVariant) : markup, style);
+    const text = new Text(emoji ? _emoji_replace(markup, emojiVariant) : markup, style);
+    if (cacheKey) {
+      markupCache.set(cacheKey, text.copy());
+    }
+    return text;
   }
 
   const text = new Text('', style);
@@ -248,5 +268,8 @@ export function render(
 
   // Sort spans (reversed then by start position)
   text.spans = spans.reverse().sort((a, b) => a.start - b.start);
+  if (cacheKey) {
+    markupCache.set(cacheKey, text.copy());
+  }
   return text;
 }

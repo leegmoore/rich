@@ -390,9 +390,10 @@ export class Segment {
     newLines: boolean = false
   ): Segment[][] {
     const targetHeight = height ?? lines.length;
-    const blank = newLines
-      ? [new Segment(' '.repeat(width) + '\n', style)]
-      : [new Segment(' '.repeat(width), style)];
+    const blankText = newLines
+      ? ' '.repeat(Math.max(0, width)) + '\n'
+      : ' '.repeat(Math.max(0, width));
+    const createBlankLine = (): Segment[] => [new Segment(blankText, style)];
 
     const shapedLines = lines.slice(0, targetHeight);
     for (let i = 0; i < shapedLines.length; i++) {
@@ -400,7 +401,7 @@ export class Segment {
     }
 
     while (shapedLines.length < targetHeight) {
-      shapedLines.push(blank);
+      shapedLines.push(createBlankLine());
     }
 
     return shapedLines;

@@ -1,4 +1,5 @@
 import { ColorTriplet } from './color_triplet.js';
+import { LRUCache } from './lru_cache.js';
 
 /**
  * Convert RGB color to HLS (Hue, Lightness, Saturation).
@@ -886,12 +887,13 @@ export class Color {
   /**
    * Parse a color from a string.
    */
-  private static parseCache = new Map<string, Color>();
+  private static parseCache = new LRUCache<string, Color>(4096);
 
   static parse(colorString: string): Color {
     // Check cache
-    if (this.parseCache.has(colorString)) {
-      return this.parseCache.get(colorString)!;
+    const cached = this.parseCache.get(colorString);
+    if (cached) {
+      return cached;
     }
 
     const original = colorString;

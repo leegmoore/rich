@@ -14,6 +14,7 @@ import { Theme } from './theme.js';
 import { DEFAULT } from './themes.js';
 import { ColorSystem } from './color.js';
 import { Control } from './control.js';
+import { Pretty } from './pretty.js';
 import type { Live } from './live.js';
 
 /** Justify methods for text alignment */
@@ -38,6 +39,16 @@ function hasRichConsole(value: unknown): value is RichConsoleRenderable {
   }
   const candidate = value as { __richConsole__?: unknown };
   return typeof candidate.__richConsole__ === 'function';
+}
+
+const RICH_CAST_MAX_DEPTH = 10;
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const prototype = Object.getPrototypeOf(value) as object | null;
+  return prototype === Object.prototype || prototype === null;
 }
 
 export type RenderableType =
@@ -405,6 +416,7 @@ export class Console {
    */
   render(renderable: unknown, options?: ConsoleOptions): Segment[] {
     const renderOptions = options ?? this.options;
+    renderable = this.richCast(renderable);
 
     // Handle strings - convert to Text which will use __richConsole__
     if (typeof renderable === 'string') {
@@ -576,26 +588,66 @@ export class Console {
     return 'height' in (value as Record<string, unknown>);
   }
 
+  richCast<T = unknown>(value: T): T {
+    let current: unknown = value;
+    let depth = 0;
+    const seen = new Set<object>();
+
+    while (
+      depth < RICH_CAST_MAX_DEPTH &&
+      current !== null &&
+      typeof current === 'object' &&
+      '__rich__' in (current as Record<string, unknown>)
+    ) {
+      const candidate = (current as { __rich__?: () => unknown }).__rich__;
+      if (typeof candidate !== 'function') {
+        break;
+      }
+      const currentObject: object = current;
+      if (seen.has(currentObject)) {
+        break;
+      }
+      seen.add(currentObject);
+      const result = candidate.call(current);
+      if (result === current) {
+        break;
+      }
+      current = result;
+      depth += 1;
+    }
+
+    return current as T;
+  }
+
   private _coerceRenderable(value: unknown): ConsoleRenderable {
-    if (value instanceof Control) {
-      return value;
+    const castValue = this.richCast(value);
+
+    if (castValue instanceof Control) {
+      return castValue;
     }
-    if (typeof value === 'string') {
-      return this.renderStr(value);
+    if (typeof castValue === 'string') {
+      return this.renderStr(castValue);
     }
-    if (value instanceof Text) {
-      return value;
+    if (castValue instanceof Text) {
+      return castValue;
     }
-    if (hasRichConsole(value)) {
-      return value as RenderableType;
+    if (hasRichConsole(castValue)) {
+      return castValue as RenderableType;
     }
-    if (typeof value === 'number' || typeof value === 'bigint' || typeof value === 'boolean') {
-      return this.renderStr(String(value));
+    if (
+      typeof castValue === 'number' ||
+      typeof castValue === 'bigint' ||
+      typeof castValue === 'boolean'
+    ) {
+      return this.renderStr(String(castValue));
     }
-    if (value === null || value === undefined) {
+    if (castValue === null || castValue === undefined) {
       return this.renderStr('');
     }
-    return this.renderStr(String(value));
+    if (Array.isArray(castValue) || isPlainObject(castValue)) {
+      return new Pretty(castValue);
+    }
+    return this.renderStr(String(castValue));
   }
 
   private _renderToString(renderable: ConsoleRenderable, options?: { height?: number }): string {
@@ -605,22 +657,22 @@ export class Console {
         ? this.options.update({ height: options.height })
         : this.options;
 
-    if (renderable instanceof Control) {
-      return renderable.segment.text;
+    const normalized = this.richCast(renderable);
+
+    if (normalized instanceof Control) {
+      return normalized.segment.text;
     }
 
-    if (typeof renderable === 'string') {
-      return renderable;
+    if (typeof normalized === 'string') {
+      return this._renderToString(this.renderStr(normalized), options);
     }
 
-    if (renderable instanceof Text) {
-      const segments = renderable.render(this, '');
-      return this._renderSegments(segments);
-    }
-
-    if (hasRichConsole(renderable)) {
+    if (hasRichConsole(normalized)) {
       // Handle objects with __richConsole__ protocol (like Padding, Rule, etc.)
-      const items = Array.from(renderable.__richConsole__(this, renderOptions));
+      const iterable = normalized.__richConsole__(this, renderOptions) as Iterable<
+        Segment | Text | string | ConsoleRenderable
+      >;
+      const items = Array.from(iterable);
       // Items can be Segments, Text instances, or other renderables (like Table from Columns)
       return items
         .map((item) => {
@@ -641,7 +693,7 @@ export class Console {
         .join('');
     }
 
-    return String(renderable);
+    return String(normalized);
   }
 
   /**
@@ -669,7 +721,7 @@ export class Console {
               ? ColorSystem.WINDOWS
               : ColorSystem.TRUECOLOR;
     // Render with ANSI codes
-    return segment.style.render(segment.text, colorSystemEnum);
+    return segment.style.render(segment.text, colorSystemEnum, this.options.legacyWindows);
   }
 
   /**
@@ -771,6 +823,7 @@ export class Console {
     pad: boolean = true
   ): Segment[][] {
     const renderOptions = options ?? this.options;
+    renderable = this.richCast(renderable);
     let segments: Segment[];
 
     // Handle string renderables - convert to Text first
