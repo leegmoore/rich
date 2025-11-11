@@ -155,7 +155,7 @@ export class Markdown {
       case 'paragraph':
         return [this.renderParagraph(node)];
       case 'heading':
-        return [this.renderHeading(node)];
+        return this.renderHeading(node);
       case 'bullet_list':
         return this.renderList(node, false);
       case 'ordered_list':
@@ -184,15 +184,19 @@ export class Markdown {
     return text;
   }
 
-  private renderHeading(node: MarkdownNode): RenderableType {
+  private renderHeading(node: MarkdownNode): RenderableType[] {
     const level = node.level ?? 1;
     const text = this.inlineTokensToText(node.inlineTokens);
     text.justify = 'center';
     text.style = `markdown.h${Math.min(level, 6)}`;
     if (level === 1) {
-      return new Panel(text, HEAVY, { style: 'markdown.h1.border' });
+      return [new Panel(text, HEAVY, { style: 'markdown.h1.border' })];
     }
-    return text;
+    // For h2 and beyond, add a blank line before the heading (like Python)
+    if (level === 2) {
+      return [new Text(''), text];
+    }
+    return [text];
   }
 
   private renderList(node: MarkdownNode, ordered: boolean): RenderableType[] {

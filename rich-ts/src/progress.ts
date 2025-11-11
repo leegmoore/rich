@@ -1007,6 +1007,7 @@ export class Progress {
   ): void {
     const task = this.tasksMap.get(taskId);
     if (!task) {
+      // Silently ignore updates to non-existent tasks
       return;
     }
     const startCompleted = task.completed;
@@ -1015,10 +1016,14 @@ export class Progress {
       task.resetSamples();
     }
     if (updates.advance !== undefined) {
-      task.completed += updates.advance;
+      task.completed = Math.max(0, task.completed + updates.advance);
     }
     if (updates.completed !== undefined) {
-      task.completed = updates.completed;
+      task.completed = Math.max(0, updates.completed);
+    }
+    // Ensure completed doesn't exceed total if total is set
+    if (task.total !== null && task.completed > task.total) {
+      task.completed = task.total;
     }
     if (updates.description !== undefined) {
       task.description = updates.description;
@@ -1050,18 +1055,34 @@ export class Progress {
   }
 
   start(): void {
-    if (!this.disable) {
+    if (this.disable || !this.live) {
+      return;
+    }
+    try {
       this.live.start(true);
+    } catch (error) {
+      // Silently handle start errors to prevent crashes
     }
   }
 
   stop(): void {
-    this.live.stop();
+    if (!this.disable && this.live) {
+      try {
+        this.live.stop();
+      } catch (error) {
+        // Silently handle stop errors to prevent crashes
+      }
+    }
   }
 
   refresh(): void {
-    if (!this.disable && this.live.isStarted) {
-      this.live.refresh();
+    if (!this.disable && this.live && this.live.isStarted) {
+      try {
+        this.live.refresh();
+      } catch (error) {
+        // Silently handle refresh errors to prevent crashes
+        // This can happen if console is closed or in invalid state
+      }
     }
   }
 
