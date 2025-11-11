@@ -37,16 +37,27 @@ export function renderScope(
     return [!key.startsWith('__'), key.toLowerCase()];
   };
 
-  const items = options.sortKeys !== false
-    ? Object.entries(scope).sort((a, b) => {
-        const [sortA, keyA] = sortItems(a);
-        const [sortB, keyB] = sortItems(b);
-        if (sortA !== sortB) {
-          return sortA ? -1 : 1;
-        }
-        return keyA.localeCompare(keyB);
-      })
-    : Object.entries(scope);
+  let items = Object.entries(scope);
+  
+  // Filter out private and dunder variables if not requested
+  if (!options.dunder) {
+    items = items.filter(([key]) => !key.startsWith('__'));
+  }
+  if (!options.private) {
+    items = items.filter(([key]) => !key.startsWith('_'));
+  }
+  
+  // Sort if requested
+  if (options.sortKeys !== false) {
+    items = items.sort((a, b) => {
+      const [sortA, keyA] = sortItems(a);
+      const [sortB, keyB] = sortItems(b);
+      if (sortA !== sortB) {
+        return sortA ? -1 : 1;
+      }
+      return keyA.localeCompare(keyB);
+    });
+  }
 
   for (const [key, value] of items) {
     const keyStyle = key.startsWith('__') ? 'scope.key.special' : 'scope.key';
