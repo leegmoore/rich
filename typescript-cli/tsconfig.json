@@ -1,0 +1,7 @@
+{
+  "extends": "../rich-ts/tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler"
+  }
+}
