@@ -1,0 +1,16 @@
+{
+  "name": "typescript-cli",
+  "version": "1.0.0",
+  "description": "TypeScript Rich CLI Demo",
+  "type": "module",
+  "scripts": {
+    "demo": "tsx demo.ts"
+  },
+  "dependencies": {
+    "tsx": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}
+
