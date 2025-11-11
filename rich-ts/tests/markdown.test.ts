@@ -72,7 +72,9 @@ describe('Markdown', () => {
 
   it('emits OSC hyperlinks when enabled', () => {
     const output = renderMarkdown(SAMPLE);
+    // eslint-disable-next-line no-control-regex
     expect(output).toMatch(/\x1b]8;[^;]*;http:\/\/example\.com\x1b\\/);
+    // eslint-disable-next-line no-control-regex
     expect(output).toMatch(/example[\s\S]*\x1b]8;;\x1b\\/);
   });
 
@@ -102,6 +104,7 @@ describe('Markdown', () => {
 
   it('renders strikethrough spans when enabled', () => {
     const output = renderMarkdown('This has ~~strike~~ text.');
+    // eslint-disable-next-line no-control-regex
     expect(output).toMatch(/\x1b\[9mstrike\x1b\[0m/);
   });
 

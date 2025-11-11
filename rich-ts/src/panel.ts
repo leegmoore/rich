@@ -1,7 +1,6 @@
 import type { AlignMethod } from './align.js';
 import { Box, ROUNDED } from './box.js';
 import { cellLen } from './cells.js';
-import { ColorSystem } from './color.js';
 import type { Console, ConsoleOptions, RenderableType, RenderResult } from './console.js';
 import { Measurement, measureRenderables } from './measure.js';
 import { Padding, type PaddingDimensions } from './padding.js';
@@ -241,17 +240,8 @@ export class Panel {
         borderStyle
       );
       yield new Segment(box.topLeft + box.top, borderStyle);
-      // Render title to segments and merge into a single text string with ANSI codes
-      const titleSegments = alignedTitle.render(console, '');
-      const titleStr = titleSegments
-        .map((seg) => {
-          if (seg.style && !seg.style.isNull) {
-            return seg.style.render(seg.text, ColorSystem.TRUECOLOR);
-          }
-          return seg.text;
-        })
-        .join('');
-      yield new Segment(titleStr);
+      const renderedTitle = console.render(alignedTitle, childOptions.updateWidth(panelWidth - 4));
+      yield* renderedTitle;
       yield new Segment(box.top + box.topRight, borderStyle);
     }
     yield newLine;
@@ -281,17 +271,11 @@ export class Panel {
         borderStyle
       );
       yield new Segment(box.bottomLeft + box.bottom, borderStyle);
-      // Render subtitle to segments and merge into a single text string with ANSI codes
-      const subtitleSegments = alignedSubtitle.render(console, '');
-      const subtitleTextStr = subtitleSegments
-        .map((seg) => {
-          if (seg.style && !seg.style.isNull) {
-            return seg.style.render(seg.text, ColorSystem.TRUECOLOR);
-          }
-          return seg.text;
-        })
-        .join('');
-      yield new Segment(subtitleTextStr);
+      const renderedSubtitle = console.render(
+        alignedSubtitle,
+        childOptions.updateWidth(panelWidth - 4)
+      );
+      yield* renderedSubtitle;
       yield new Segment(box.bottom + box.bottomRight, borderStyle);
     }
     yield newLine;

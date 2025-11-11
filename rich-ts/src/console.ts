@@ -225,12 +225,15 @@ export class Console {
   private captureBuffer: string[];
   private capturingOutput: boolean;
   private getTimeFn: () => number;
+  private getDatetimeFn: () => Date;
   private liveStack: Live[] = [];
   private renderHooks: RenderHook[] = [];
   private altScreenEnabled = false;
   readonly isJupyter: boolean;
   readonly isInteractive: boolean;
   readonly isDumbTerminal: boolean;
+  private readonly logTimeEnabled: boolean;
+  private readonly logTimeFormat?: string;
 
   // TODO: Add full set of Console properties when needed:
   // - file: TextIO
@@ -295,6 +298,8 @@ export class Console {
     this.isJupyter = options.force_jupyter ?? false;
     this.isInteractive = options.force_interactive ?? this.isTerminal;
     this.isDumbTerminal = !this.isTerminal;
+    this.logTimeEnabled = options.log_time ?? false;
+    this.logTimeFormat = options.log_time_format;
 
     this.options = new ConsoleOptions({
       maxWidth: this.width,
@@ -312,6 +317,7 @@ export class Console {
     const defaultGetTime =
       perf && typeof perf.now === 'function' ? () => perf.now() / 1000 : () => Date.now() / 1000;
     this.getTimeFn = options.get_time ?? defaultGetTime;
+    this.getDatetimeFn = options.get_datetime ?? (() => new Date());
   }
 
   /**
@@ -326,6 +332,20 @@ export class Console {
    */
   get_time(): number {
     return this.getTime();
+  }
+
+  /**
+   * Get the current datetime object.
+   */
+  getDatetime(): Date {
+    return this.getDatetimeFn();
+  }
+
+  /**
+   * Python-compatible alias for getDatetime().
+   */
+  get_datetime(): Date {
+    return this.getDatetime();
   }
 
   /**
@@ -457,18 +477,83 @@ export class Console {
     this._printRenderables(normalized, options);
   }
 
-  private _printRenderables(renderables: ConsoleRenderable[], options?: { height?: number }): void {
+  write(...args: unknown[]): void {
+    if (args.length === 0) {
+      return;
+    }
+    const normalized: ConsoleRenderable[] = [];
+    args.forEach((value, index) => {
+      normalized.push(this._coerceRenderable(value));
+      if (index < args.length - 1) {
+        normalized.push(this.renderStr(' '));
+      }
+    });
+    this._printRenderables(normalized, { appendNewline: false });
+  }
+
+  private _printRenderables(
+    renderables: ConsoleRenderable[],
+    options?: { height?: number; appendNewline?: boolean }
+  ): void {
     const processed = this.applyRenderHooks(renderables);
     const outputs = processed.map((renderable) => this._renderToString(renderable, options));
     let finalOutput = outputs.join('');
-    if (!finalOutput.endsWith('\n')) {
+    const shouldAppendNewline = options?.appendNewline ?? true;
+    if (shouldAppendNewline && !finalOutput.endsWith('\n')) {
       finalOutput += '\n';
     }
-    if (this.capturingOutput) {
-      this.captureBuffer.push(finalOutput);
-    } else {
-      process.stdout.write(finalOutput);
+    this.writeRaw(finalOutput);
+  }
+
+  updateScreenLines(lines: Segment[][], x: number, y: number): void {
+    if (!this.isTerminal) {
+      const fallback = lines.map((line) => this._renderSegments(line)).join('\n');
+      if (fallback) {
+        this.writeRaw(fallback);
+      }
+      return;
     }
+    const moveCursor = (row: number, col: number): string => `\x1b[${row + 1};${col + 1}H`;
+    let output = '';
+    for (let index = 0; index < lines.length; index += 1) {
+      const line = lines[index];
+      if (!line) {
+        continue;
+      }
+      output += `${moveCursor(y + index, x)}${this._renderSegments(line)}`;
+    }
+    this.writeRaw(output);
+  }
+
+  private writeRaw(text: string): void {
+    if (!text) {
+      return;
+    }
+    if (this.capturingOutput) {
+      this.captureBuffer.push(text);
+    } else {
+      process.stdout.write(text);
+    }
+  }
+
+  log(...args: unknown[]): void {
+    const entries = [...args];
+    const prefix = this.getLogPrefix();
+    if (prefix) {
+      entries.unshift(prefix);
+    }
+    this.print(...entries);
+  }
+
+  private getLogPrefix(): Text | null {
+    if (this.logTimeFormat) {
+      return this.renderStr(this.logTimeFormat);
+    }
+    if (this.logTimeEnabled) {
+      const timestamp = new Date().toISOString();
+      return this.renderStr(`[${timestamp}]`);
+    }
+    return null;
   }
 
   private applyRenderHooks(renderables: ConsoleRenderable[]): ConsoleRenderable[] {
@@ -701,18 +786,34 @@ export class Console {
     // Text has __richConsole__ which wraps text to width
     if (hasRichConsole(renderable)) {
       const iterableResult = renderable.__richConsole__(this, renderOptions);
-      const rawSegments: Array<Segment | Text | string> = Array.from(
-        iterableResult as Iterable<Segment | Text | string>
+      const rawSegments: Array<Segment | Text | string | RenderableType> = Array.from(
+        iterableResult as Iterable<Segment | Text | string | RenderableType>
       );
       const expanded: Segment[] = [];
-      for (const item of rawSegments) {
+      const pushItem = (item: Segment | Text | string | RenderableType): void => {
         if (item instanceof Segment) {
           expanded.push(item);
-        } else if (item instanceof Text) {
-          expanded.push(...item.render(this, ''));
-        } else if (typeof item === 'string') {
-          expanded.push(new Segment(item));
+          return;
         }
+        if (item instanceof Text) {
+          expanded.push(...item.render(this, ''));
+          return;
+        }
+        if (typeof item === 'string') {
+          expanded.push(new Segment(item));
+          return;
+        }
+        if (hasRichConsole(item)) {
+          const nested = item.__richConsole__(this, renderOptions);
+          for (const nestedItem of nested as Iterable<Segment | Text | string | RenderableType>) {
+            pushItem(nestedItem);
+          }
+          return;
+        }
+        throw new Error(`Cannot render object of type ${typeof item}`);
+      };
+      for (const item of rawSegments) {
+        pushItem(item);
       }
       segments = expanded;
     } else {
@@ -732,6 +833,17 @@ export class Console {
     const lines = Array.from(
       Segment.splitAndCropLines(segments, renderOptions.maxWidth, paddingStyle, pad, false)
     );
+
+    if (renderOptions.height !== undefined) {
+      const targetHeight = Math.max(renderOptions.height, 0);
+      const extraLines = targetHeight - lines.length;
+      if (extraLines > 0) {
+        const blankStyle = style && !style.isNull ? style : undefined;
+        for (let index = 0; index < extraLines; index += 1) {
+          lines.push([new Segment(' '.repeat(renderOptions.maxWidth), blankStyle)]);
+        }
+      }
+    }
 
     return lines;
   }

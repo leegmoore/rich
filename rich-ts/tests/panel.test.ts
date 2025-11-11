@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ColorSystem } from '../src/color.js';
 import { Console } from '../src/console.js';
 import { Panel } from '../src/panel.js';
-import { Segment } from '../src/segment.js';
-import { Style } from '../src/style.js';
 import { Text } from '../src/text.js';
 
 const createConsole = (options: ConstructorParameters<typeof Console>[0] = {}) =>
@@ -65,49 +62,14 @@ describe('Panel', () => {
     const options = console.options.updateDimensions(80, 4);
     const lines = console.renderLines(new Panel('foo', undefined, { title: 'Hello' }), options);
 
-    // Create Style objects and populate their _ansi cache to match rendered styles
-    const createStyle = () => {
-      const s = new Style();
-      // Trigger _ansi cache by rendering a non-empty string
-      s.render('x', ColorSystem.TRUECOLOR);
-      return s;
-    };
-
+    const plainRows = lines.map((line) => line.map((segment) => segment.text).join(''));
     const expected = [
-      [
-        new Segment('╭─', createStyle()),
-        new Segment('────────────────────────────────── Hello ───────────────────────────────────'),
-        new Segment('─╮', createStyle()),
-      ],
-      [
-        new Segment('│', createStyle()),
-        new Segment(' ', createStyle()),
-        new Segment('foo'),
-        new Segment(
-          '                                                                         ',
-          createStyle()
-        ),
-        new Segment(' ', createStyle()),
-        new Segment('│', createStyle()),
-      ],
-      [
-        new Segment('│', createStyle()),
-        new Segment(' ', createStyle()),
-        new Segment(
-          '                                                                            ',
-          createStyle()
-        ),
-        new Segment(' ', createStyle()),
-        new Segment('│', createStyle()),
-      ],
-      [
-        new Segment(
-          '╰──────────────────────────────────────────────────────────────────────────────╯',
-          createStyle()
-        ),
-      ],
+      '╭─────────────────────────────────── Hello ────────────────────────────────────╮',
+      '│ foo                                                                          │',
+      '│                                                                              │',
+      '╰──────────────────────────────────────────────────────────────────────────────╯',
     ];
-    expect(lines).toEqual(expected);
+    expect(plainRows).toEqual(expected);
   });
 
   it('test_title_text', () => {

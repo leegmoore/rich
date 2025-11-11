@@ -4,8 +4,8 @@
 
 ---
 
-## ✅ Already Ported (33 modules)
-_emoji_codes, _emoji_replace, _loop, _pick, _ratio, _wrap, align, box, cell_widths, cells, color, color_triplet, columns, console, constrain, control, default_styles, emoji, errors, index, markup, measure, padding, panel, protocol, repr, rule, segment, style, table, text, theme, themes
+## ✅ Already Ported (34 modules)
+_emoji_codes, _emoji_replace, _loop, _pick, _ratio, _wrap, align, box, cell_widths, cells, color, color_triplet, columns, console, constrain, control, default_styles, emoji, errors, index, markup, measure, padding, panel, protocol, repr, rule, segment, style, table, text, theme, themes, _log_render
 
 ---
 
@@ -70,7 +70,7 @@ _emoji_codes, _emoji_replace, _loop, _pick, _ratio, _wrap, align, box, cell_widt
 
 NOT porting these (Python/system specific):
 - `__init__`, `__main__` - Python package structure
-- `_extension`, `_fileno`, `_inspect`, `_log_render`, `_null_file`, `_stack` - Python internals
+- `_extension`, `_fileno`, `_inspect`, `_null_file`, `_stack` - Python internals
 - `_win32_console`, `_windows`, `_windows_renderer` - Win32 ctypes bindings
 - `diagnose` - Python diagnostic CLI
 - `jupyter` - Jupyter notebook integration
@@ -163,4 +163,3 @@ Let me trace dependencies to create parallel phases...
 3. Phase 12: **ansi module** (unblocks 34 tests!)
 
 **Then can parallelize most of the rest!**
-

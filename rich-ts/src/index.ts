@@ -31,12 +31,17 @@ export * from './screen.js';
 export * from './file_proxy.js';
 export * from './highlighter.js';
 export * from './_timer.js';
+export * from './progress.js';
 export * from './pager.js';
 export * from './palette.js';
 export * from './_palettes.js';
 export * from './terminal_theme.js';
 export { AnsiDecoder } from './ansi.js';
 export { Styled } from './styled.js';
+export * from './pretty.js';
+export * from './prompt.js';
+export * from './layout.js';
+export * from './_log_render.js';
 export {
   Box,
   ASCII,
