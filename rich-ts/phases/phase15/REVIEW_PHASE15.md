@@ -9,7 +9,7 @@
 
 Review STAGED code from Phase 15 - INCLUDING THE MAIN PROGRESS MODULE!
 
-**Modules:** progress, pretty, scope, layout, prompt (~3,659 LOC)
+**Modules:** progress, pretty, _log_render, scope, layout, prompt (~3,753 LOC)
 
 **CRITICAL:** **progress module (1,715 LOC) - ORIGINAL SCOPE GOAL!** 🎯
 
@@ -30,7 +30,7 @@ git diff --cached --stat
 ### 1. Quality Checks
 ```bash
 cd rich-ts
-npm test progress pretty scope layout prompt -- --run
+npm test progress pretty _log_render scope layout prompt -- --run
 npm run check
 ```
 
@@ -53,6 +53,7 @@ npm run check
 
 **Other modules:**
 - [ ] pretty: Object traversal, circular refs
+- [ ] _log_render: Log record formatting, level styling
 - [ ] scope: Integration with pretty
 - [ ] layout: Region splits, recursive tree
 - [ ] prompt: Input validation, Node.js readline
