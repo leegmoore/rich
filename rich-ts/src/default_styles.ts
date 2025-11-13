@@ -147,7 +147,7 @@ export const DEFAULT_STYLES: Record<string, Style> = {
   'markdown.emph': new Style({ italic: true }),
   'markdown.strong': new Style({ bold: true }),
   'markdown.code': new Style({ bold: true, color: 'cyan', bgcolor: 'black' }),
-  'markdown.code_block': new Style({ color: 'cyan', bgcolor: 'black' }),
+  'markdown.code_block': new Style({ color: 'yellow', bgcolor: 'black' }),
   'markdown.block_quote': new Style({ color: 'magenta' }),
   'markdown.list': new Style({ color: 'cyan' }),
   'markdown.item': new Style({}),

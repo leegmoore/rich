@@ -12,10 +12,13 @@ import { Text } from './text.js';
 import { Rule } from './rule.js';
 import { Theme } from './theme.js';
 import { DEFAULT } from './themes.js';
-import { ColorSystem } from './color.js';
+import { ColorSystem, blendRgb } from './color.js';
 import { Control } from './control.js';
 import { Pretty } from './pretty.js';
 import type { Live } from './live.js';
+import { CONSOLE_HTML_FORMAT, CONSOLE_SVG_FORMAT } from './_export_format.js';
+import { DEFAULT_TERMINAL_THEME, SVG_EXPORT_THEME } from './terminal_theme.js';
+import { cellLen } from './cells.js';
 
 /** Justify methods for text alignment */
 export type JustifyMethod = 'default' | 'left' | 'center' | 'right' | 'full';
@@ -245,6 +248,8 @@ export class Console {
   readonly isDumbTerminal: boolean;
   private readonly logTimeEnabled: boolean;
   private readonly logTimeFormat?: string;
+  readonly record: boolean;
+  private _recordBuffer: Segment[] = [];
 
   // TODO: Add full set of Console properties when needed:
   // - file: TextIO
@@ -288,8 +293,11 @@ export class Console {
       encoding?: string;
     } = {}
   ) {
-    this.width = options.width ?? 80;
-    this.height = options.height ?? 25;
+    // Prefer explicit options; otherwise detect from TTY when available
+    const ttyColumns = typeof process !== 'undefined' && process.stdout && (process.stdout as any).columns ? (process.stdout as any).columns as number : undefined;
+    const ttyRows = typeof process !== 'undefined' && process.stdout && (process.stdout as any).rows ? (process.stdout as any).rows as number : undefined;
+    this.width = options.width ?? ttyColumns ?? 80;
+    this.height = options.height ?? ttyRows ?? 25;
     this.legacy_windows = options.legacy_windows ?? false;
     this.isTerminal = Console._detectTerminal(options.force_terminal, options.file);
     // Handle colorSystem explicitly to allow null values
@@ -311,6 +319,8 @@ export class Console {
     this.isDumbTerminal = !this.isTerminal;
     this.logTimeEnabled = options.log_time ?? false;
     this.logTimeFormat = options.log_time_format;
+    this.record = options.record ?? false;
+    this._recordBuffer = [];
 
     this.options = new ConsoleOptions({
       maxWidth: this.width,
@@ -509,6 +519,19 @@ export class Console {
     options?: { height?: number; appendNewline?: boolean }
   ): void {
     const processed = this.applyRenderHooks(renderables);
+    
+    // Record segments if recording is enabled
+    if (this.record) {
+      const renderOptions =
+        options?.height !== undefined
+          ? this.options.update({ height: options.height })
+          : this.options;
+      for (const renderable of processed) {
+        const segments = this.render(renderable, renderOptions);
+        this._recordBuffer.push(...segments);
+      }
+    }
+    
     const outputs = processed.map((renderable) => this._renderToString(renderable, options));
     let finalOutput = outputs.join('');
     const shouldAppendNewline = options?.appendNewline ?? true;
@@ -967,19 +990,275 @@ export class Console {
     return this.isJupyter;
   }
 
-  // TODO: Implement remaining Console methods:
-  // - log()
-  // - status()
-  // - export_html()
-  // - export_svg()
-  // - export_text()
-  // - save_html()
-  // - save_svg()
-  // - save_text()
-  // - push_theme()
-  // - pop_theme()
-  // - use_theme()
-  // - clear()
+  /**
+   * Export console contents as plain text.
+   * @param clear - Clear record buffer after exporting. Defaults to true.
+   * @param styles - If true, ANSI escape codes will be included. Defaults to false.
+   * @returns String containing console contents.
+   */
+  exportText(clear: boolean = true, styles: boolean = false): string {
+    if (!this.record) {
+      throw new Error('To export console contents set record=true in the constructor');
+    }
+
+    let text: string;
+    if (styles) {
+      const colorSystemEnum =
+        this.colorSystem === 'truecolor'
+          ? ColorSystem.TRUECOLOR
+          : this.colorSystem === '256'
+            ? ColorSystem.EIGHT_BIT
+            : this.colorSystem === 'standard'
+              ? ColorSystem.STANDARD
+              : this.colorSystem === 'windows'
+                ? ColorSystem.WINDOWS
+                : ColorSystem.TRUECOLOR;
+      text = Array.from(Segment.filterControl(this._recordBuffer, false))
+        .map((segment) => (segment.style ? segment.style.render(segment.text, colorSystemEnum, this.legacy_windows) : segment.text))
+        .join('');
+    } else {
+      text = Array.from(Segment.filterControl(this._recordBuffer, false))
+        .map((segment) => segment.text)
+        .join('');
+    }
+
+    if (clear) {
+      this._recordBuffer = [];
+    }
+
+    return text;
+  }
+
+  /**
+   * Export console contents as HTML.
+   * @param options - Export options
+   * @returns String containing console contents as HTML.
+   */
+  exportHtml(options: {
+    theme?: import('./terminal_theme.js').TerminalTheme;
+    clear?: boolean;
+    codeFormat?: string;
+    inlineStyles?: boolean;
+  } = {}): string {
+    if (!this.record) {
+      throw new Error('To export console contents set record=true in the constructor');
+    }
+
+    const theme = options.theme || DEFAULT_TERMINAL_THEME;
+    const clear = options.clear !== undefined ? options.clear : true;
+    const codeFormat = options.codeFormat || CONSOLE_HTML_FORMAT;
+    const inlineStyles = options.inlineStyles || false;
+
+    const fragments: string[] = [];
+    let stylesheet = '';
+
+    const simplifiedSegments = Array.from(Segment.simplify(Segment.filterControl(this._recordBuffer, false)));
+
+    if (inlineStyles) {
+      for (const segment of simplifiedSegments) {
+        let text = Console.escapeHtml(segment.text);
+        if (segment.style) {
+          const rule = segment.style.getHtmlStyle(theme);
+          if (segment.style.link) {
+            text = `<a href="${Console.escapeHtml(segment.style.link)}">${text}</a>`;
+          }
+          text = rule ? `<span style="${rule}">${text}</span>` : text;
+        }
+        fragments.push(text);
+      }
+    } else {
+      const styles: Map<string, number> = new Map();
+      for (const segment of simplifiedSegments) {
+        let text = Console.escapeHtml(segment.text);
+        if (segment.style) {
+          const rule = segment.style.getHtmlStyle(theme);
+          const styleNumber = styles.get(rule) ?? styles.size + 1;
+          if (!styles.has(rule)) {
+            styles.set(rule, styleNumber);
+          }
+          if (segment.style.link) {
+            text = `<a class="r${styleNumber}" href="${Console.escapeHtml(segment.style.link)}">${text}</a>`;
+          } else {
+            text = `<span class="r${styleNumber}">${text}</span>`;
+          }
+        }
+        fragments.push(text);
+      }
+      const stylesheetRules: string[] = [];
+      for (const [styleRule, styleNumber] of styles.entries()) {
+        if (styleRule) {
+          stylesheetRules.push(`.r${styleNumber} {${styleRule}}`);
+        }
+      }
+      stylesheet = stylesheetRules.join('\n');
+    }
+
+    const renderedCode = codeFormat
+      .replace(/{code}/g, fragments.join(''))
+      .replace(/{stylesheet}/g, stylesheet)
+      .replace(/{foreground}/g, theme.foreground_color.hex)
+      .replace(/{background}/g, theme.background_color.hex);
+
+    if (clear) {
+      this._recordBuffer = [];
+    }
+
+    return renderedCode;
+  }
+
+  /**
+   * Export console contents as SVG.
+   * @param options - Export options
+   * @returns String containing console contents as SVG.
+   */
+  exportSvg(options: {
+    title?: string;
+    theme?: import('./terminal_theme.js').TerminalTheme;
+    clear?: boolean;
+    codeFormat?: string;
+    fontAspectRatio?: number;
+    uniqueId?: string;
+  } = {}): string {
+    if (!this.record) {
+      throw new Error('To export console contents set record=true in the constructor');
+    }
+
+    const title = options.title || 'Rich';
+    const theme = options.theme || SVG_EXPORT_THEME;
+    const clear = options.clear !== undefined ? options.clear : true;
+    const codeFormat = options.codeFormat || CONSOLE_SVG_FORMAT;
+    const fontAspectRatio = options.fontAspectRatio || 0.61;
+    const uniqueId = options.uniqueId || `rich-${Math.random().toString(36).substring(2, 11)}`;
+
+    const charHeight = 20;
+    const charWidth = charHeight * fontAspectRatio;
+    const lineHeight = charHeight * 1.22;
+
+    const marginTop = 1;
+    const marginRight = 1;
+    const marginBottom = 1;
+    const marginLeft = 1;
+
+    const simplifiedSegments = Array.from(Segment.simplify(Segment.filterControl(this._recordBuffer, false)));
+    const lines = Array.from(Segment.splitLines(simplifiedSegments));
+
+    const terminalWidth = this.width;
+    const terminalHeight = lines.length;
+
+    const width = terminalWidth * charWidth + marginLeft + marginRight;
+    const height = terminalHeight * lineHeight + marginTop + marginBottom;
+
+    const terminalX = marginLeft;
+    const terminalY = marginTop;
+
+    const styleCache = new Map<Style, string>();
+
+    function getSvgStyle(style: Style): string {
+      if (styleCache.has(style)) {
+        return styleCache.get(style)!;
+      }
+      const cssRules: string[] = [];
+      let color = style.color && !style.color.isDefault ? style.color.getTruecolor(theme, true) : theme.foreground_color;
+      let bgcolor = style.bgcolor && !style.bgcolor.isDefault ? style.bgcolor.getTruecolor(theme, false) : theme.background_color;
+
+      if (style.reverse) {
+        [color, bgcolor] = [bgcolor, color];
+      }
+      if (style.dim) {
+        color = blendRgb(color, bgcolor, 0.4);
+      }
+      cssRules.push(`fill: ${color.hex}`);
+      if (style.bold) {
+        cssRules.push('font-weight: bold');
+      }
+      if (style.italic) {
+        cssRules.push('font-style: italic');
+      }
+      if (style.underline) {
+        cssRules.push('text-decoration: underline');
+      }
+      if (style.strike) {
+        cssRules.push('text-decoration: line-through');
+      }
+
+      const css = cssRules.join(';');
+      styleCache.set(style, css);
+      return css;
+    }
+
+    const backgrounds: string[] = [];
+    const matrix: string[] = [];
+    let y = 0;
+
+    for (const line of lines) {
+      let x = 0;
+      for (const segment of line) {
+        const text = segment.text;
+        if (segment.style && segment.style.bgcolor && !segment.style.bgcolor.isDefault) {
+          const bgColor = segment.style.bgcolor.getTruecolor(theme, false);
+          const width = cellLen(text) * charWidth;
+          backgrounds.push(
+            `<rect x="${terminalX + x * charWidth}" y="${terminalY + y * lineHeight}" width="${width}" height="${charHeight}" fill="${bgColor.hex}" />`
+          );
+        }
+        if (text) {
+          const svgStyle = segment.style ? getSvgStyle(segment.style) : `fill: ${theme.foreground_color.hex}`;
+          const escapedText = Console.escapeSvg(text);
+          matrix.push(
+            `<text x="${terminalX + x * charWidth}" y="${terminalY + y * lineHeight + charHeight}" style="${svgStyle}">${escapedText}</text>`
+          );
+        }
+        x += cellLen(text);
+      }
+      y += 1;
+    }
+
+    const svg = codeFormat
+      .replace(/{unique_id}/g, uniqueId)
+      .replace(/{width}/g, String(width))
+      .replace(/{height}/g, String(height))
+      .replace(/{char_height}/g, String(charHeight))
+      .replace(/{line_height}/g, String(lineHeight))
+      .replace(/{terminal_width}/g, String(terminalWidth))
+      .replace(/{terminal_height}/g, String(terminalHeight))
+      .replace(/{terminal_x}/g, String(terminalX))
+      .replace(/{terminal_y}/g, String(terminalY))
+      .replace(/{styles}/g, '')
+      .replace(/{lines}/g, '')
+      .replace(/{chrome}/g, `<text x="${marginLeft}" y="${marginTop - 5}" class="${uniqueId}-title">${Console.escapeSvg(title)}</text>`)
+      .replace(/{backgrounds}/g, backgrounds.join('\n'))
+      .replace(/{matrix}/g, matrix.join('\n'));
+
+    if (clear) {
+      this._recordBuffer = [];
+    }
+
+    return svg;
+  }
+  /**
+   * Escape HTML special characters.
+   */
+  static escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  /**
+   * Escape SVG special characters.
+   */
+  static escapeSvg(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   // - show_cursor()
   // - set_alt_screen()
   // - input()

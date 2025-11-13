@@ -155,7 +155,7 @@ export class Markdown {
       case 'paragraph':
         return [this.renderParagraph(node)];
       case 'heading':
-        return [this.renderHeading(node)];
+        return this.renderHeading(node);
       case 'bullet_list':
         return this.renderList(node, false);
       case 'ordered_list':
@@ -181,18 +181,26 @@ export class Markdown {
     if (!text.style) {
       text.style = 'markdown.paragraph';
     }
+    // Ensure paragraph ends with newline so block elements like horizontal rules start on new line
+    if (!text.end || text.end === '') {
+      text.end = '\n';
+    }
     return text;
   }
 
-  private renderHeading(node: MarkdownNode): RenderableType {
+  private renderHeading(node: MarkdownNode): RenderableType[] {
     const level = node.level ?? 1;
     const text = this.inlineTokensToText(node.inlineTokens);
     text.justify = 'center';
     text.style = `markdown.h${Math.min(level, 6)}`;
     if (level === 1) {
-      return new Panel(text, HEAVY, { style: 'markdown.h1.border' });
+      return [new Panel(text, HEAVY, { style: 'markdown.h1.border' })];
     }
-    return text;
+    // For h2 and beyond, add a blank line before the heading (like Python)
+    if (level === 2) {
+      return [new Text(''), text];
+    }
+    return [text];
   }
 
   private renderList(node: MarkdownNode, ordered: boolean): RenderableType[] {
@@ -235,11 +243,12 @@ export class Markdown {
     const lexerInfo = (node.info ?? '').trim();
     const lexerCandidate = lexerInfo.split(/\s+/)[0]?.trim();
     const lexer = lexerCandidate && lexerCandidate.length > 0 ? lexerCandidate : 'text';
-    return new Syntax(code, lexer, {
+    const syntax = new Syntax(code, lexer, {
       theme: this.codeTheme,
       wordWrap: true,
       padding: 1,
     });
+    return new CodeBlockRenderable(syntax, 'markdown.code_block');
   }
 
   private renderImage(node: MarkdownNode): RenderableType {
@@ -420,6 +429,31 @@ class BlockQuoteRenderable {
     const newLine = Segment.line();
     for (const line of lines) {
       yield prefix;
+      yield* line;
+      yield newLine;
+    }
+  }
+}
+
+class CodeBlockRenderable {
+  constructor(
+    private readonly syntax: Syntax,
+    private readonly styleName: string
+  ) {}
+
+  *__richConsole__(console: Console, options: ConsoleOptions): RenderResult {
+    // Get the markdown.code_block style (yellow foreground, black background)
+    const codeBlockStyle = console.getStyle(this.styleName, Style.null());
+    // Render the syntax with the code block style applied
+    // This ensures the code block has the yellow color from markdown.code_block
+    const lines = console.renderLines(
+      this.syntax,
+      options.update({ height: undefined }),
+      codeBlockStyle,
+      true // apply style to background
+    );
+    const newLine = Segment.line();
+    for (const line of lines) {
       yield* line;
       yield newLine;
     }

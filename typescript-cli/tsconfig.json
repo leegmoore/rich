@@ -1,0 +1,13 @@
+{
+  "extends": "../rich-ts/tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "outDir": "./dist",
+    "rootDir": ".",
+    "noEmit": true
+  },
+  "include": ["demo.ts"],
+  "exclude": ["node_modules", "dist"]
+}
+

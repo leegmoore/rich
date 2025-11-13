@@ -76,7 +76,7 @@ export class Rule {
    * Rich console rendering protocol.
    */
   *__richConsole__(console: Console, options: ConsoleOptions): RenderResult {
-    const width = options.maxWidth;
+    const width = options.maxWidth ?? 80;
 
     // Resolve style through console (enables theme lookups)
     const ruleStyle = console.getStyle(this.style);
@@ -111,7 +111,7 @@ export class Rule {
       return;
     }
 
-    const ruleText = new Text('', undefined, { end: this.end });
+    const ruleText = new Text('', undefined, { end: this.end, noWrap: true, overflow: 'ignore' });
 
     if (this.align === 'center') {
       titleText.truncate(truncateWidth, { overflow: 'ellipsis' });
@@ -144,7 +144,7 @@ export class Rule {
    * Generate a plain rule line without title.
    */
   private _ruleLine(charsLen: number, width: number, style: Style): Text {
-    const ruleText = new Text(this.characters.repeat(Math.floor(width / charsLen) + 1), style);
+    const ruleText = new Text(this.characters.repeat(Math.floor(width / charsLen) + 1), style, { end: this.end, noWrap: true, overflow: 'ignore' });
     ruleText.truncate(width);
     ruleText.plain = setCellSize(ruleText.plain, width);
     return ruleText;
@@ -153,7 +153,9 @@ export class Rule {
   /**
    * Rich measure protocol.
    */
-  __richMeasure__(_console: Console, _options: ConsoleOptions): Measurement {
-    return new Measurement(1, 1);
+  __richMeasure__(_console: Console, options: ConsoleOptions): Measurement {
+    // Rule always takes full width, so return maxWidth for both min and max
+    const width = options.maxWidth ?? 80;
+    return new Measurement(width, width);
   }
 }

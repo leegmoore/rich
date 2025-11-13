@@ -758,18 +758,26 @@ export class Color {
 
   /**
    * Get RGB triplet for this color.
+   * @param theme - Optional terminal theme. If not provided, uses default theme colors.
+   * @param foreground - True for foreground color, false for background. Defaults to true.
    */
-  getTruecolor(foreground: boolean = true): ColorTriplet {
+  getTruecolor(theme?: import('./terminal_theme.js').TerminalTheme, foreground: boolean = true): ColorTriplet {
     if (this.triplet) {
       return this.triplet;
     }
     if (this.type === ColorType.DEFAULT) {
+      if (theme) {
+        return foreground ? theme.foreground_color : theme.background_color;
+      }
       return foreground ? new ColorTriplet(0, 0, 0) : new ColorTriplet(255, 255, 255);
     }
     if (this.type === ColorType.WINDOWS) {
       return WINDOWS_PALETTE.get(this.number!);
     }
     if (this.type === ColorType.STANDARD) {
+      if (theme && this.number !== undefined) {
+        return theme.ansi_colors.get(this.number);
+      }
       return DEFAULT_TERMINAL_THEME_ANSI_COLORS.get(this.number!);
     }
     if (this.type === ColorType.EIGHT_BIT) {

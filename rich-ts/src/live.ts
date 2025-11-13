@@ -47,6 +47,7 @@ export class Live implements RenderHook {
   private readonly liveRender: LiveRender;
   private readonly refreshPerSecond: number;
   transient: boolean;
+  private _hasPositioned = false; // Track if we've positioned cursor at least once
 
   constructor(renderable?: RenderableType, options: LiveOptions = {}) {
     this._console = options.console ?? new Console({ force_terminal: true });
@@ -124,6 +125,8 @@ export class Live implements RenderHook {
       return;
     }
     this._started = false;
+    this._hasPositioned = false; // Reset positioning flag
+    this.liveRender._shape = undefined; // Reset shape so cursor positioning works correctly on next start
     this._console.clearLive();
 
     if (this.refreshTimer) {
@@ -188,7 +191,43 @@ export class Live implements RenderHook {
     }
 
     if (this._console.is_terminal && !this._console.is_dumb_terminal) {
-      this._console.print(new Control());
+      // Directly render and write to avoid recursion through stdout redirection
+      // When Live redirects stdout, console.print() -> writeRaw() -> redirected stdout.write
+      // -> FileProxy.write() -> console.print() creates infinite loop
+      // So we bypass the redirection and write directly to the original stdout
+      // Position cursor to overwrite the previous progress bar
+      // We need to position the cursor to the start of the live render area
+      // Only position if we have a shape (have rendered before) to avoid jumping on first render
+      const reset = this.altScreenActive
+        ? Control.home()
+        : this.liveRender._shape
+          ? this.liveRender.positionCursor()
+          : new Control(); // Don't position on first render
+      // Render the reset control first (cursor positioning)
+      const resetSegments = this._console.render(reset);
+      // Render the liveRender - this will set _shape if not already set
+      const liveSegments = this._console.render(this.liveRender);
+      // After rendering, if we haven't positioned yet but now have a shape, mark as positioned
+      // This ensures we only position on subsequent refreshes
+      if (!this._hasPositioned && this.liveRender._shape) {
+        this._hasPositioned = true;
+      }
+      const allSegments = [...resetSegments, ...liveSegments];
+      // Render segments to string
+      const output = allSegments.map((seg) => this._console['_renderSegment'](seg)).join('');
+      // Write directly to original stdout to bypass FileProxy recursion
+      if (this.stdoutWrite) {
+        // Use the original stdout.write that was saved before redirection
+        this.stdoutWrite(output, 'utf8');
+      } else {
+        // Fallback to console's writeRaw if redirection not active
+        this._console['writeRaw'](output);
+      }
+      // Mark that we've positioned if we actually positioned the cursor
+      // We've positioned if: alt screen is active (always positions), or we have a shape and called positionCursor
+      if (this.altScreenActive || (this.liveRender._shape && !this._hasPositioned)) {
+        this._hasPositioned = true;
+      }
     } else if (!this._started && !this.transient) {
       this._console.print(this.liveRender);
     }
@@ -196,8 +235,16 @@ export class Live implements RenderHook {
 
   processRenderables(renderables: ConsoleRenderable[]): ConsoleRenderable[] {
     this.liveRender.verticalOverflow = this.currentOverflow;
-    if (this._console.is_interactive) {
-      const reset = this.altScreenActive ? Control.home() : this.liveRender.positionCursor();
+    // Always add liveRender when Live is started and we're in a terminal
+    // This ensures the progress bar content is always rendered
+    if (this._started && (this._console.is_interactive || (this._console.is_terminal && !this._console.is_dumb_terminal))) {
+      // Position cursor in processRenderables - this is called when other things are printed
+      // Only position if we've already positioned before (have a shape) to avoid jumping
+      const reset = this.altScreenActive
+        ? Control.home()
+        : this._hasPositioned && this.liveRender._shape
+          ? this.liveRender.positionCursor()
+          : new Control(); // Don't position on first render
       return [reset, ...renderables, this.liveRender];
     }
     if (!this._started && !this.transient) {

@@ -6,9 +6,9 @@
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { Color, ColorParseError, ColorSystem } from './color.js';
-import { ColorTriplet } from './color_triplet.js';
+import { Color, ColorParseError, ColorSystem, blendRgb } from './color.js';
 import { StyleSyntaxError } from './errors.js';
+import { DEFAULT_TERMINAL_THEME, type TerminalTheme } from './terminal_theme.js';
 
 /**
  * Style type - can be a Style instance or a string definition
@@ -62,24 +62,6 @@ const STYLE_MAP: Record<number, string> = {
   12: '53', // overline
 };
 
-/**
- * Default terminal theme (simplified - full theme would come from terminal_theme module)
- */
-const DEFAULT_TERMINAL_THEME = {
-  foregroundColor: new ColorTriplet(0xd4, 0xd4, 0xd4),
-  backgroundColor: new ColorTriplet(0x00, 0x00, 0x00),
-};
-
-/**
- * Blend two RGB colors
- */
-function blendRgb(color1: ColorTriplet, color2: ColorTriplet, fraction: number): ColorTriplet {
-  return new ColorTriplet(
-    Math.round(color1.red + (color2.red - color1.red) * fraction),
-    Math.round(color1.green + (color2.green - color1.green) * fraction),
-    Math.round(color1.blue + (color2.blue - color1.blue) * fraction)
-  );
-}
 
 /**
  * Generate a random link ID
@@ -691,9 +673,11 @@ export class Style {
   }
 
   /**
-   * Get a CSS style rule
+   * Get a CSS style rule for HTML export.
+   * @param theme - Optional terminal theme. Defaults to DEFAULT_TERMINAL_THEME.
+   * @returns CSS style string
    */
-  getHtmlStyle(theme?: any): string {
+  getHtmlStyle(theme?: TerminalTheme): string {
     const actualTheme = theme || DEFAULT_TERMINAL_THEME;
     const css: string[] = [];
 
@@ -705,18 +689,20 @@ export class Style {
     }
 
     if (this.dim) {
-      const foregroundColor = color ? color.getTruecolor() : actualTheme.foregroundColor;
-      color = Color.fromTriplet(blendRgb(foregroundColor, actualTheme.backgroundColor, 0.5));
+      const foregroundColor = color
+        ? color.getTruecolor(actualTheme, true)
+        : actualTheme.foreground_color;
+      color = Color.fromTriplet(blendRgb(foregroundColor, actualTheme.background_color, 0.5));
     }
 
     if (color) {
-      const themeColor = color.getTruecolor();
+      const themeColor = color.getTruecolor(actualTheme, true);
       css.push(`color: ${themeColor.hex}`);
       css.push(`text-decoration-color: ${themeColor.hex}`);
     }
 
     if (bgcolor) {
-      const themeColor = bgcolor.getTruecolor(false);
+      const themeColor = bgcolor.getTruecolor(actualTheme, false);
       css.push(`background-color: ${themeColor.hex}`);
     }
 
